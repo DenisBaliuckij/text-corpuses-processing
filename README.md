@@ -6,14 +6,8 @@ This solution is aimed to set up an environment for text corpuses crawling and n
 
 ## Current state
 
-Right now the solution consists of two scripts - proxies crawler and arXiv publications crawler. 
+Current scripts are able to actualize proxies list, download list of pdf urls and pdf itself
 
-
-# Markdown extensions
-
-StackEdit extends the standard Markdown syntax by adding extra **Markdown extensions**, providing you with some nice features.
-
-> **ProTip:** You can disable any **Markdown extension** in the **File properties** dialog.
 
 
 # Proposed ecosystem design
@@ -25,7 +19,7 @@ A[Apache Airflow Orchestrator] -- Process logic in dags --> B[Text corp in non-n
 ```
 
 # ToDos
-1. Add proxies support (fully tested)
-2. Add centralized config
-3. Convert workflows in Airflow dags with adding documentation
-4. Add other sources
+0. Convert downloaded pdfs to latex
+1. Add centralized config
+2. Convert workflows in Airflow dags with adding documentation
+3. Add other sources

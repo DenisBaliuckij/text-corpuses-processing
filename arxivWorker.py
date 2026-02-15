@@ -9,49 +9,80 @@ import requests
 import pyodbc 
 import requests
 import bs4
+i=1
+for s in "abcdefghijklmnopqrstuvwxyz":
+    while True:
+        cnxn = pyodbc.connect("Driver={ODBC Driver 18 for SQL Server};"
+                              "Server=LAPTOP-I91584GB\SQLEXPRESS;"
+                              "Database=TextCorpuses;"
+                              "Trusted_Connection=yes;"
+                              "TrustServerCertificate=yes;")
+        cursor = cnxn.cursor()
+        cursor.execute("execute [dbo].[GetLatestProxy]")
+        fetchResults = cursor.fetchone()
+        proxieIp = fetchResults[0]
+        proxiePort = fetchResults[1]
+        proxieProtocol = fetchResults[2]
+        cursor.close()
+        cnxn.close()
+#print(str(proxieIp) + str(proxiePort) + str(proxieProtocol))
+    
+    
 
-
-
-cnxn = pyodbc.connect("Driver={ODBC Driver 18 for SQL Server};"
-                      "Server=LAPTOP-I91584GB\SQLEXPRESS;"
-                      "Database=TextCorpuses;"
-                      "Trusted_Connection=yes;"
-                      "TrustServerCertificate=yes;")
-"""
-proxies = {'http': 'socks5://user:pass@host:port',
-           'https': 'socks5://user:pass@host:port'}
-cursor = cnxn.cursor()
-cursor.execute("execute [dbo].[GetLatestProxy]")
-proxieIp = cursor.fetchone()[0]
-print(proxieIp)
-cursor.close()
-cnxn.close()
-"""
 # Send a GET request to the URL
-#proxies = {'https': 'http://' + str(proxieIp)+ +}
 
-response = requests.get('https://arxiv.org/search/?query=a&searchtype=all&abstracts=show&order=-announced_date_first&size=50&start=0')
+        proxies = {'http': proxieProtocol.strip() + '://' + str(proxieIp).strip() + ':' + str(proxiePort),
+                   'https': proxieProtocol.strip() + '://' + str(proxieIp).strip() + ':' + str(proxiePort)}
 
+        print(proxies)
+        print(str(s) + ' ' + str(i) )
+        try:
+            response = requests.get('https://arxiv.org/search/?query='+s+'&searchtype=all&abstracts=show&order=-announced_date_first&size=50&start='+str(i), 
+                                    data=None, 
+                                    headers={
+                                        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/35.0.1916.47 Safari/537.36'
+                                        }, 
+                                    proxies=proxies, 
+                                    timeout=30)
+        except Exception as e:
+            print(e)
+            cnxn = pyodbc.connect("Driver={ODBC Driver 18 for SQL Server};"
+                                  "Server=LAPTOP-I91584GB\SQLEXPRESS;"
+                                  "Database=TextCorpuses;"
+                                  "Trusted_Connection=yes;"
+                                     "TrustServerCertificate=yes;")
+            cursor = cnxn.cursor()
+            cursor.execute("execute [dbo].[MarkProxyAsBroken] @ip = ?", (str(proxieIp).strip()))
+            cnxn.commit()
+            cursor.close()
+            cnxn.close()
+            continue
+            
+            
+        print(response.text)
+        soup = bs4.BeautifulSoup(response.text, "html.parser")
 
-#response = requests.get('https://ip.me/', proxies)
+        for url in soup.find_all("a"):
+            try:
+                if "pdf" in url["href"]:
+                    cnxn = pyodbc.connect("Driver={ODBC Driver 18 for SQL Server};"
+                                          "Server=LAPTOP-I91584GB\SQLEXPRESS;"
+                                          "Database=TextCorpuses;"
+                                          "Trusted_Connection=yes;"
+                                          "TrustServerCertificate=yes;")
+                    cursor = cnxn.cursor()
+                    cursor.execute("execute [dbo].[AddPdfUrl] @url = ?", (str(url["href"]).strip()))
+                    cursor.close()
+                    cnxn.commit()
+                    cnxn.close()
+            except Exception as e:
+                print(e)
+            finally:
+                print("Url discovered", url)
 
+        i+=1
+        if(i>5000):
+            i=0
+            break
 
-
-# Print the HTML content of the page
-
-print(response.text)
-soup = bs4.BeautifulSoup(response.text, "html.parser")
-# Creating a list to store results in.
-urlsContainingWord = []
-
-# Get all the URLs in the page containing the word.
-for url in soup.find_all("a"):
-    try:
-        if "pdf" in url["href"]:
-            urlsContainingWord.append(url["href"])
-    except Exception as e:
-        print(e)
-    finally:
-        print("Url discovered", url)
-# Print out the result.
-print(urlsContainingWord)
+cnxn.close()
