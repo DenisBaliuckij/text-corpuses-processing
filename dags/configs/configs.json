@@ -1,0 +1,7 @@
+{
+	"ConnectionString": "Driver={ODBC Driver 18 for SQL Server};Server=LAPTOP-I91584GB\\SQLEXPRESS;Database=TextCorpuses;Trusted_Connection=yes;TrustServerCertificate=yes;",
+	"FtpHost": "127.0.0.1",
+	"FtpPort": 21,
+	"FtpUser": "airflow",
+	"FtpPassword": "airflow"
+}

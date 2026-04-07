@@ -3,6 +3,8 @@
 import json,urllib.request
 import time
 import pyodbc 
+import dbConnector
+from dbConnector import databaseConnector
 
 page = 1
 limit = 500
@@ -16,18 +18,11 @@ while True:
         })
     data = urllib.request.urlopen(req).read()
     output = json.loads(data)
-    cnxn = pyodbc.connect("Driver={ODBC Driver 18 for SQL Server};"
-                      "Server=LAPTOP-I91584GB\SQLEXPRESS;"
-                      "Database=TextCorpuses;"
-                      "Trusted_Connection=yes;"
-                      "TrustServerCertificate=yes;")
+   
 
     for entry in output.get('data'):
-        cursor = cnxn.cursor()
-        cursor.execute("execute [dbo].[AddOrUpdateProxy] @ip = ?, @port = ?, @lastChecked = ?, @protocols = ?", (entry.get('ip'), entry.get('port'), entry.get('lastChecked'), ''.join(entry.get('protocols'))))
-        cursor.close()
-        cnxn.commit()
-    cnxn.close()
+        databaseConnector.addOrUpdateProxy(entry.get('ip'), entry.get('port'), entry.get('lastChecked'), ''.join(entry.get('protocols')))
+
     total = output.get('total')
     if(limit*page > total):
         break
