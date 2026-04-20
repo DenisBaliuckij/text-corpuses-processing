@@ -83,4 +83,21 @@ class databaseConnector:
         cnxn.commit()
         cursor.close()
         cnxn.close()
+    def getPdfToConvertToLatex():
+        cnxn = pyodbc.connect(getConfig()["ConnectionString"])
+        cursor = cnxn.cursor()
+        cursor.execute("execute [dbo].[GetPDFLocationForLatexConvertation]")
+        fetchResults = cursor.fetchone()
+        url = fetchResults[0]
+        cnxn.commit()
+        cursor.close()
+        cnxn.close()
+        return url
+    def saveLatexFileLocation(url, location):
+        cnxn = pyodbc.connect(getConfig()["ConnectionString"])
+        cursor = cnxn.cursor()
+        cursor.execute("execute [dbo].[SaveLatexDocumentLocation] @pdfUrl = ?, @latexLocation=?", (url, location))
+        cnxn.commit()
+        cursor.close()
+        cnxn.close()
 

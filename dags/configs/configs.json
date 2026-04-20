@@ -3,5 +3,9 @@
 	"FtpHost": "127.0.0.1",
 	"FtpPort": 21,
 	"FtpUser": "airflow",
-	"FtpPassword": "airflow"
+	"FtpPassword": "airflow",
+	"FtpHostTex": "127.0.0.1",
+	"FtpPortTex": 21,
+	"FtpUserTex": "latex",
+	"FtpPasswordTex": "latex"
 }
