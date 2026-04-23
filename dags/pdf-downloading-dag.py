@@ -15,7 +15,7 @@ with DAG(
 
     @task()
     def downloadPdfFiles():
-# -*- coding: utf-8 -*-
+        # -*- coding: utf-8 -*-
         from pathlib import Path
         import requests
         import pyodbc 
@@ -43,6 +43,8 @@ with DAG(
                 filename=""
                 if 'arxiv' in url:
                     filename = 'arxiv/'
+                if 'lenin' in url:
+                    filename = 'cyberleninka/'
                 if 'springer' in url:
                     filename = 'springer/'
                     url = url.replace('/article', 'content/pdf')
@@ -67,7 +69,7 @@ with DAG(
                     storeFile(initialUrl, filename, file)
         
                 else:
-                    url = url.replace('.pdf', '_reference.pdf')
+                    urdockl = url.replace('.pdf', '_reference.pdf')
                     response = requests.get(url,
                               data=None, 
                               headers={
