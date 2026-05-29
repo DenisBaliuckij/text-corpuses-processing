@@ -1,0 +1,61 @@
+{
+  "arxiv": [
+    {
+      "query": "graph neural networks",
+      "categories": ["cs.LG", "cs.AI"],
+      "date_from": "2022-01-01",
+      "date_to": "2025-12-31",
+      "open_access_only": true,
+      "max_results": 500,
+      "repeat": true
+    },
+    {
+      "query": "large language model",
+      "categories": ["cs.CL", "cs.AI"],
+      "date_from": "2023-01-01",
+      "date_to": "2025-12-31",
+      "max_results": 300,
+      "repeat": false
+    }
+  ],
+  "pubmed": [
+    {
+      "query": "CRISPR gene editing",
+      "date_from": "2020-01-01",
+      "date_to": "2025-12-31",
+      "open_access_only": true,
+      "max_results": 300,
+      "repeat": false
+    },
+    {
+      "query": "machine learning drug discovery",
+      "date_from": "2021-01-01",
+      "date_to": "2025-12-31",
+      "open_access_only": true,
+      "max_results": 200,
+      "repeat": true
+    }
+  ],
+  "semantic_scholar": [
+    {
+      "query": "knowledge graph reasoning",
+      "fields_of_study": ["Computer Science"],
+      "date_from": "2021-01-01",
+      "date_to": "2025-12-31",
+      "open_access_only": true,
+      "min_citations": 10,
+      "max_results": 400,
+      "repeat": true
+    },
+    {
+      "query": "protein structure prediction",
+      "fields_of_study": ["Biology", "Computer Science"],
+      "date_from": "2020-01-01",
+      "date_to": "2025-12-31",
+      "open_access_only": true,
+      "min_citations": 5,
+      "max_results": 200,
+      "repeat": false
+    }
+  ]
+}
