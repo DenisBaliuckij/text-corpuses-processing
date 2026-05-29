@@ -1,0 +1,43 @@
+llm:
+  model_name: "Qwen/Qwen2-1.5B-Instruct"
+  device: "cpu"
+  load_in_8bit: false
+  max_new_tokens: 256
+  temperature: 0.3
+
+embedding:
+  model_name: "all-mpnet-base-v2"
+  device: "cpu"
+
+coreference:
+  enabled: true
+  prompt_file: "prompts/coreference_ru.txt"
+  context_sentences: 3
+  window_sentences: 5
+
+extraction:
+  prompt_file: "prompts/extraction_ru.txt"
+  chunk_size: 3
+  overlap_size: 1
+
+normalization:
+  enabled: true
+  language: "ru"
+
+deduplication:
+  enabled: true
+  threshold: 0.92
+
+clustering:
+  method: "agglomerative"
+  threshold: 0.5
+  n_clusters: null
+  min_cluster_size: 5
+  min_samples: null
+  cluster_relations: true
+  include_embeddings: false
+  llm_naming: false
+
+paths:
+  input_text: "../benchmark/benchmark_texts/T1-RU.txt"
+  output_dir: "output"

@@ -1,0 +1,11 @@
+Rewrite the text, replacing all pronouns and demonstratives (he, she, it, they, this, that, which, his, her, its, their, him, them) with the full names of the entities they refer to.
+
+Do not change anything else. Preserve sentence structure.
+
+Context (previous sentences, for understanding only, do NOT rewrite):
+{context}
+
+Text to rewrite:
+{text}
+
+Rewritten text:

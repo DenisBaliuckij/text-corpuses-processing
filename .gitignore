@@ -6,3 +6,7 @@ __pycache__/
 dist/
 build/
 .env
+.DS_Store
+*.ipynb
+dags/llm_v2/output/
+dags/hierarchical_llm_version/output/

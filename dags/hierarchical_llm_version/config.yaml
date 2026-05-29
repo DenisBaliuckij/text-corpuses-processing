@@ -1,0 +1,81 @@
+llm:
+  api_key_env: "YANDEX_CLOUD_API_KEY"
+  api_key: ""
+  base_url: "https://ai.api.cloud.yandex.net/v1"
+  folder: "b1gpiug3vgbpe1cb4e5c"
+
+  cheap:
+    model_id: "deepseek-v32/latest"
+    temperature: 0.3
+    max_output_tokens: 1500
+  strong:
+    model_id: "deepseek-v32/latest"
+    temperature: 0.3
+    max_output_tokens: 3000
+  extraction:
+    model_id: "deepseek-v32/latest"
+    temperature: 0.3
+    max_output_tokens: 4000
+
+  max_concurrency: 4
+  max_retries: 3
+  retry_base_delay: 1.0
+
+embedding:
+  model_name: "intfloat/multilingual-e5-large"
+  device: "cpu"
+
+preprocessing:
+  language: "ru"
+  chunk_size: 5
+  overlap_size: 1
+
+pass1:
+  summary_prompt: "prompts/chunk_summary_ru.txt"
+  aggregation_prompt: "prompts/group_aggregation_ru.txt"
+  root_prompt: "prompts/root_aggregation_ru.txt"
+
+  grouping:
+    method: "sequential"
+    group_size: 5
+    min_cluster_size: 3
+    min_samples: 1
+
+  max_chars_per_aggregation: 12000
+  max_top_level_nodes: 20
+  max_levels: 10
+
+pass2:
+  extraction_prompt: "prompts/extraction_with_context_ru.txt"
+  include_neighbors: true
+  neighbor_window: 1
+  max_context_chars: 6000
+  max_concepts_in_context: 30
+
+entity_resolution:
+  enabled: true
+  similarity_threshold: 0.85
+  use_embeddings: true
+
+
+importance_filtering:
+  enabled: true
+  default_entity_threshold: 0.5
+  default_relation_threshold: 0.5
+  drop_orphan_nodes: true
+  multi:
+    enabled: true
+    entity_thresholds:   [0.2, 0.4, 0.6, 0.8]
+    relation_thresholds: [0.2, 0.4, 0.6, 0.8]
+    sweep_mode: "cross_product"
+    drop_orphan_nodes: true
+
+clustering:
+  enabled: false
+  threshold: 0.4
+  cluster_relations: true
+  cluster_naming_prompt: "prompts/cluster_naming_ru.txt"
+
+paths:
+  input_text: "../benchmark/final_bench/formated_fragment2.md"
+  output_dir: "output"

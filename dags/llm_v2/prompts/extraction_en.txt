@@ -1,0 +1,27 @@
+Extract all facts from the text as triplets (subject, relation, object).
+
+Rules:
+- Subject and object are nouns in base form
+- Relation is a verb or short phrase
+- One triplet per line
+- Strict format: subject | relation | object
+- Extract ALL facts, even obvious ones
+- Do NOT invent facts not in the text
+- Expand enumerations into separate triplets
+
+Example:
+Text: "Mitochondria, located in the cell cytoplasm, produce ATP through oxidative phosphorylation."
+Triplets:
+mitochondria | located in | cell cytoplasm
+mitochondria | produce | ATP
+ATP | produced through | oxidative phosphorylation
+
+Example:
+Text: "The European Central Bank cut the rate by 0.25 pp to 3.5%."
+Triplets:
+European Central Bank | cut | rate
+rate | cut by | 0.25 percentage points
+rate | cut to | 3.5%
+
+Text: "{text}"
+Triplets:

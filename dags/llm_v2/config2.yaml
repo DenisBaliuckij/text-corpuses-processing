@@ -1,0 +1,48 @@
+llm:
+  model_name: "Qwen/Qwen2.5-14B-Instruct"
+  device: "cuda"
+  load_in_8bit: false
+  max_new_tokens: 256
+  temperature: 0.3
+
+embedding:
+  model_name: "all-mpnet-base-v2"
+  device: "cuda"
+
+coreference:
+  enabled: true
+  prompt_file: "prompts/coreference_ru.txt"
+  context_sentences: 3
+  window_sentences: 5
+
+extraction:
+  prompt_file: "prompts/extraction_ru.txt"
+  chunk_size: 3
+  overlap_size: 1
+
+normalization:
+  enabled: true
+  language: "ru"
+
+deduplication:
+  enabled: true
+  threshold: 0.92
+
+clustering:
+  multi_method: true
+  cluster_relations: true
+  include_embeddings: false
+  threshold_min: 0.25
+  threshold_max: 0.9
+  threshold_steps: 10
+  k_min: 2
+  k_max: 10
+  k_step: 2
+  hdbscan_min_cluster_sizes: [3, 5, 10]
+  hdbscan_min_samples: [1, 3, 5]
+  cluster_naming_prompt: "prompts/cluster_naming_ru.txt"
+  llm_naming: false
+
+paths:
+  input_text: "../benchmark/benchmark_texts/T1-RU.txt"
+  output_dir: "output"

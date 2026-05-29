@@ -1,0 +1,6 @@
+Given a list of entities that belong to the same group:
+{entities}
+
+Provide one short generalizing name for this group (1-3 words, noun phrase).
+Answer ONLY with the name, no explanations.
+Name:
