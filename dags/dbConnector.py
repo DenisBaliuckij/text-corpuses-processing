@@ -100,4 +100,107 @@ class databaseConnector:
         cnxn.commit()
         cursor.close()
         cnxn.close()
+    def insertGraphCreationJob(config, paths):
+        cnxn = pyodbc.connect(getConfig()["ConnectionString"])
+        cursor = cnxn.cursor()
+        cursor.execute("execute [dbo].[AddGraphCreationJob] @config = ?, @paths=?", (config, paths))
+        cnxn.commit()
+        cursor.close()
+        cnxn.close()
+
+    def getJobForPreparation():
+        cnxn = pyodbc.connect(getConfig()["ConnectionString"])
+        cursor = cnxn.cursor()
+        cursor.execute("execute [dbo].[GetJobForPreparation]")
+        result = cursor.fetchone()
+        cnxn.commit()
+        cursor.close()
+        cnxn.close()
+        return result
+
+    def addFileSourceForGraphConstructionJob(location, jobId):
+        cnxn = pyodbc.connect(getConfig()["ConnectionString"])
+        cursor = cnxn.cursor()
+        cursor.execute("execute [dbo].[AddTextSourceForProcessing] @location = ?, @jobId = ?", (location, jobId))
+        cnxn.commit()
+        cursor.close()
+        cnxn.close()
+
+    def processGraphCreationJobToTextCopying(jobId):
+        cnxn = pyodbc.connect(getConfig()["ConnectionString"])
+        cursor = cnxn.cursor()
+        cursor.execute("execute [dbo].[ProcessGraphCreationJobToTextCopying] @jobId = ?", (jobId,))
+        cnxn.commit()
+        cursor.close()
+        cnxn.close()
+
+    def setErrorForPreparationJob(jobId, error):
+        cnxn = pyodbc.connect(getConfig()["ConnectionString"])
+        cursor = cnxn.cursor()
+        cursor.execute("execute [dbo].[SetErrorForGraphCreationJob] @id = ?, @error = ?", (jobId, str(error)))
+        cnxn.commit()
+        cursor.close()
+        cnxn.close()
+
+    def transitionJobToExecution(jobId):
+        cnxn = pyodbc.connect(getConfig()["ConnectionString"])
+        cursor = cnxn.cursor()
+        cursor.execute("execute [dbo].[TransitionJobToExecution] @jobId = ?", (jobId,))
+        cnxn.commit()
+        cursor.close()
+        cnxn.close()
+
+    def getFileForAnaphoraResolution():
+        cnxn = pyodbc.connect(getConfig()["ConnectionString"])
+        cursor = cnxn.cursor()
+        cursor.execute("execute [dbo].[GetFileForAnaphoraResolution]")
+        result = cursor.fetchone()
+        cnxn.commit()
+        cursor.close()
+        cnxn.close()
+        return result
+
+    def markFileAnaphoraDone(fileId, resolvedFilePath):
+        cnxn = pyodbc.connect(getConfig()["ConnectionString"])
+        cursor = cnxn.cursor()
+        cursor.execute("execute [dbo].[MarkFileAnaphoraDone] @fileId = ?, @resolvedFilePath = ?", (fileId, resolvedFilePath))
+        cnxn.commit()
+        cursor.close()
+        cnxn.close()
+
+    def setFileError(fileId, error):
+        cnxn = pyodbc.connect(getConfig()["ConnectionString"])
+        cursor = cnxn.cursor()
+        cursor.execute("execute [dbo].[SetFileError] @fileId = ?, @error = ?", (fileId, str(error)))
+        cnxn.commit()
+        cursor.close()
+        cnxn.close()
+
+    def getFileForGraphBuilding():
+        cnxn = pyodbc.connect(getConfig()["ConnectionString"])
+        cursor = cnxn.cursor()
+        cursor.execute("execute [dbo].[GetFileForGraphBuilding]")
+        result = cursor.fetchone()
+        cnxn.commit()
+        cursor.close()
+        cnxn.close()
+        return result
+
+    def markFileGraphDone(fileId):
+        cnxn = pyodbc.connect(getConfig()["ConnectionString"])
+        cursor = cnxn.cursor()
+        cursor.execute("execute [dbo].[MarkFileGraphDone] @fileId = ?", (fileId,))
+        cnxn.commit()
+        cursor.close()
+        cnxn.close()
+
+    def finalizeCompletedJobs():
+        cnxn = pyodbc.connect(getConfig()["ConnectionString"])
+        cursor = cnxn.cursor()
+        cursor.execute("execute [dbo].[FinalizeCompletedJobs]")
+        result = cursor.fetchone()
+        cnxn.commit()
+        cursor.close()
+        cnxn.close()
+        return result
 
