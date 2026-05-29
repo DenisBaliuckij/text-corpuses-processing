@@ -18,6 +18,14 @@ class ftpConnector:
         server.connect(config["FtpHost" + ftpPostfix], config["FtpPort" + ftpPostfix])
         server.login(config["FtpUser" + ftpPostfix],config["FtpPassword" + ftpPostfix])
         memfile = io.BytesIO()
-        server.retrbinary("RETR " + filePath ,memfile.write)
+        server.retrbinary("RETR " + filePath, memfile.write)
         server.quit()
         return memfile
+    def getFileList(path, ftpPostfix = ''):
+        config = getConfig()
+        server = ftplib.FTP()
+        server.connect(config["FtpHost" + ftpPostfix], config["FtpPort" + ftpPostfix])
+        server.login(config["FtpUser" + ftpPostfix],config["FtpPassword" + ftpPostfix])
+        files = server.nlst(path)
+        server.quit()
+        return files
