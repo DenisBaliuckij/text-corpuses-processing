@@ -1,6 +1,6 @@
 # Text Corpuses Processing Pipeline
 
-An Apache Airflow-based pipeline for crawling scientific text corpuses, downloading PDFs, converting them to text, and building semantic knowledge graphs from the extracted content. Three graph-building backends are available: a fast rule-based NLP engine, a local HuggingFace LLM pipeline, and a hierarchical Yandex Cloud LLM pipeline.
+An Apache Airflow-based pipeline for crawling scientific text corpuses, downloading PDFs, converting them to text, and building semantic knowledge graphs from the extracted content. Three targeted scientific paper downloaders (arXiv API, PubMed, Semantic Scholar) complement the existing web scrapers. Three graph-building backends are available: a fast rule-based NLP engine, a local HuggingFace LLM pipeline, and a hierarchical Yandex Cloud LLM pipeline.
 
 ---
 
@@ -9,7 +9,7 @@ An Apache Airflow-based pipeline for crawling scientific text corpuses, download
 The pipeline automates the full journey from raw web sources to a structured semantic graph:
 
 1. **Proxy management** — maintains a pool of HTTP proxies for scraping
-2. **URL crawling** — discovers PDF links from arXiv, Springer, and CyberLeninka
+2. **URL crawling** — discovers PDF links via web scrapers (arXiv, Springer, CyberLeninka) and official scientific APIs (arXiv API, PubMed, Semantic Scholar) with configurable search criteria
 3. **PDF downloading** — downloads discovered PDFs through proxies
 4. **PDF-to-text conversion** — extracts plain text from PDFs
 5. **Graph construction** — builds a semantic graph from text using one of three backends
@@ -25,10 +25,10 @@ Each stage is an independent Airflow DAG that does exactly one unit of work per 
 │                Apache Airflow Scheduler              │
 └──────────┬──────────────────────────────────────────┘
            │
-    ┌──────▼───────┐     ┌──────────────┐     ┌──────────────────┐
-    │  get_proxies │     │ get_*_urls   │     │  pdf_downloading │
-    │  (3 DAGs)    │     │ (3 DAGs)     │     │                  │
-    └──────────────┘     └──────┬───────┘     └────────┬─────────┘
+    ┌──────▼───────┐     ┌─────────────────────────┐     ┌──────────────────┐
+    │  get_proxies │     │ URL discovery (6 DAGs)  │     │  pdf_downloading │
+    │  (3 DAGs)    │     │ 3 scrapers + 3 API DAGs │     │                  │
+    └──────────────┘     └────────────┬────────────┘     └────────┬─────────┘
                                 │                      │
                          PdfDocuments             PdfDocuments
                          (DB table)               (FTP storage)
@@ -69,9 +69,12 @@ Each stage is an independent Airflow DAG that does exactly one unit of work per 
 | `get_proxies_for_calls` | `@continuous` | Fetches proxies from geonode.com |
 | `get_proxies_for_calls_2` | `@continuous` | Fetches proxies from proxydb.net |
 | `update-brightdata-proxy` | every 5 min | Keeps BrightData proxy entry current |
-| `get_arxiv_urls` | `@continuous` | Crawls arXiv for PDF URLs |
-| `get_springer_urls` | `@continuous` | Crawls Springer for PDF URLs |
-| `get_lenin_urls` | `@continuous` | Crawls CyberLeninka for PDF URLs |
+| `get_arxiv_urls` | `@continuous` | Scrapes arXiv search pages for PDF URLs |
+| `get_springer_urls` | `@continuous` | Scrapes Springer for open-access PDF URLs |
+| `get_lenin_urls` | `@continuous` | Scrapes CyberLeninka for PDF URLs |
+| `download_arxiv_scientific` | `@continuous` | arXiv API — keyword + category + date search |
+| `download_pubmed` | `@continuous` | PubMed E-utilities — keyword + date + open-access search |
+| `download_semantic_scholar` | `@continuous` | Semantic Scholar API — keyword + field + citation filter |
 | `pdf_downloading` | `@continuous` | Downloads PDFs from discovered URLs |
 | `pdf_conversion` | `@continuous` | Converts PDFs to plain text |
 | `start_tree_formation_job` | manual trigger | Creates a new graph construction job |
@@ -81,6 +84,69 @@ Each stage is an independent Airflow DAG that does exactly one unit of work per 
 | `build_graph_llm_v2` | `@continuous` | Local HuggingFace LLM pipeline |
 | `build_graph_hierarchical` | `@continuous` | Hierarchical Yandex Cloud LLM pipeline |
 | `finalize_job` | `@continuous` | Marks a job complete when all files are done |
+
+---
+
+## Scientific Paper Downloaders
+
+Three API-based DAGs download targeted scientific paper URLs using official APIs. Unlike the web scrapers (which crawl indiscriminately), these DAGs search by keyword, field, date range, and access type.
+
+### Configuration — `dags/configs/search_configs.json`
+
+Search criteria are defined in a JSON file with one key per source. Each criterion object may include:
+
+| Field | Sources | Description |
+|-------|---------|-------------|
+| `query` | all | Free-text keyword search |
+| `categories` | arXiv only | arXiv category codes, e.g. `["cs.AI", "cs.LG"]` |
+| `fields_of_study` | Semantic Scholar only | Field names, e.g. `["Computer Science", "Biology"]` |
+| `date_from` / `date_to` | all | `YYYY-MM-DD` (Semantic Scholar uses year only) |
+| `open_access_only` | all | Skip papers without a freely available PDF |
+| `min_citations` | Semantic Scholar only | Minimum citation count filter |
+| `max_results` | all | Cap on total URLs collected for this criterion |
+| `repeat` | all | `true` = restart from page 1 when done; `false` = run once then skip |
+
+Example:
+```json
+{
+  "arxiv": [
+    {"query": "graph neural networks", "categories": ["cs.LG", "cs.AI"],
+     "date_from": "2022-01-01", "date_to": "2025-12-31", "max_results": 500, "repeat": true}
+  ],
+  "pubmed": [
+    {"query": "CRISPR gene editing", "date_from": "2020-01-01",
+     "open_access_only": true, "max_results": 300, "repeat": false}
+  ],
+  "semantic_scholar": [
+    {"query": "knowledge graph reasoning", "fields_of_study": ["Computer Science"],
+     "min_citations": 10, "max_results": 400, "repeat": true}
+  ]
+}
+```
+
+Edit this file at any time — the DAG picks up changes on its next restart.
+
+### State management
+
+Crawl state (current criterion index, current page, exhausted criteria) is stored in the `ServiceState` DB table. `serviceID` assignments:
+
+| serviceID | DAG |
+|-----------|-----|
+| 4 | `download_arxiv_scientific` |
+| 5 | `download_pubmed` |
+| 6 | `download_semantic_scholar` |
+
+### API details
+
+| DAG | API endpoint | Page size | Key required |
+|-----|-------------|-----------|-------------|
+| `download_arxiv_scientific` | `export.arxiv.org/api/query` (Atom XML) | 50 | No |
+| `download_pubmed` | NCBI E-utilities `esearch` + `efetch` | 50 | No (≤3 req/s) |
+| `download_semantic_scholar` | `api.semanticscholar.org/graph/v1/paper/search` | 100 | Optional — set `SemanticScholarApiKey` in `configs.json` |
+
+PubMed returns PMC open-access PDF URLs: `https://www.ncbi.nlm.nih.gov/pmc/articles/{PMCID}/pdf/`. Papers without a PMC ID are skipped.
+
+Semantic Scholar returns `openAccessPdf.url` from the response. Papers filtered by `min_citations` or `open_access_only` are skipped silently.
 
 ---
 
@@ -306,7 +372,7 @@ ORDER BY j.ID DESC;
 
 # Конвейер обработки текстовых корпусов
 
-Конвейер на базе Apache Airflow для краулинга научных текстовых корпусов, загрузки PDF-файлов, их конвертации в текст и построения семантических графов знаний. Доступны три бэкенда построения графа: быстрый движок на основе правил NLP, конвейер с локальной LLM (HuggingFace) и иерархический конвейер с облачной LLM (Яндекс Облако).
+Конвейер на базе Apache Airflow для краулинга научных текстовых корпусов, загрузки PDF-файлов, их конвертации в текст и построения семантических графов знаний. Три специализированных загрузчика научных статей (API arXiv, PubMed, Semantic Scholar) дополняют существующие веб-скраперы. Доступны три бэкенда построения графа: быстрый движок на основе правил NLP, конвейер с локальной LLM (HuggingFace) и иерархический конвейер с облачной LLM (Яндекс Облако).
 
 ---
 
@@ -315,7 +381,7 @@ ORDER BY j.ID DESC;
 Конвейер автоматизирует полный цикл — от сырых веб-источников до структурированного семантического графа:
 
 1. **Управление прокси** — поддерживает пул HTTP-прокси для скрапинга
-2. **Краулинг URL** — обнаруживает ссылки на PDF с arXiv, Springer и КиберЛенинки
+2. **Краулинг URL** — обнаруживает ссылки на PDF через веб-скраперы (arXiv, Springer, КиберЛенинка) и официальные API научных публикаций (API arXiv, PubMed, Semantic Scholar) с настраиваемыми критериями поиска
 3. **Загрузка PDF** — скачивает найденные PDF через прокси
 4. **Конвертация PDF в текст** — извлекает текст из PDF-файлов
 5. **Построение графа** — строит семантический граф из текста одним из трёх бэкендов
@@ -326,14 +392,76 @@ ORDER BY j.ID DESC;
 
 ## Архитектура
 
-Конвейер состоит из **15 DAG**, разбитых на группы:
+Конвейер состоит из **18 DAG**, разбитых на группы:
 
 - **Прокси:** `get_proxies_for_calls`, `get_proxies_for_calls_2`, `update-brightdata-proxy`
-- **Краулинг URL:** `get_arxiv_urls`, `get_springer_urls`, `get_lenin_urls`
+- **Веб-скраперы:** `get_arxiv_urls`, `get_springer_urls`, `get_leiden_urls`
+- **API-загрузчики научных статей:** `download_arxiv_scientific`, `download_pubmed`, `download_semantic_scholar`
 - **Загрузка и конвертация:** `pdf_downloading`, `pdf_conversion`
 - **Построение графа:** `start_tree_formation_job` (ручной запуск), `prepare_graph_construction_job`, `resolve_anaphora`, **`build_graph`**, **`build_graph_llm_v2`**, **`build_graph_hierarchical`**, `finalize_job`
 
 > **Важно:** Единовременно должен быть включён только один DAG построения графа: `build_graph`, `build_graph_llm_v2` или `build_graph_hierarchical`. Все три конкурируют за одну очередь файлов (Status=10) и сохраняют результаты в разные подпапки FTP.
+
+---
+
+## Загрузчики научных статей
+
+Три DAG на базе официальных API скачивают ссылки на научные статьи по заданным критериям. В отличие от веб-скраперов, они выполняют целевой поиск по ключевым словам, областям, датам и типу доступа.
+
+### Конфигурация — `dags/configs/search_configs.json`
+
+Критерии поиска задаются в JSON-файле с одним ключом на источник. Каждый критерий может содержать:
+
+| Поле | Источники | Описание |
+|------|-----------|----------|
+| `query` | все | Поиск по ключевым словам |
+| `categories` | только arXiv | Коды категорий arXiv, например `["cs.AI", "cs.LG"]` |
+| `fields_of_study` | только Semantic Scholar | Названия областей, например `["Computer Science", "Biology"]` |
+| `date_from` / `date_to` | все | `YYYY-MM-DD` (Semantic Scholar использует только год) |
+| `open_access_only` | все | Пропустить статьи без свободного PDF |
+| `min_citations` | только Semantic Scholar | Минимальное число цитирований |
+| `max_results` | все | Ограничение на количество собираемых URL |
+| `repeat` | все | `true` — перезапускать с первой страницы; `false` — выполнить один раз |
+
+Пример:
+```json
+{
+  "arxiv": [
+    {"query": "graph neural networks", "categories": ["cs.LG", "cs.AI"],
+     "date_from": "2022-01-01", "date_to": "2025-12-31", "max_results": 500, "repeat": true}
+  ],
+  "pubmed": [
+    {"query": "CRISPR gene editing", "date_from": "2020-01-01",
+     "open_access_only": true, "max_results": 300, "repeat": false}
+  ],
+  "semantic_scholar": [
+    {"query": "knowledge graph reasoning", "fields_of_study": ["Computer Science"],
+     "min_citations": 10, "max_results": 400, "repeat": true}
+  ]
+}
+```
+
+Файл можно редактировать в любое время — DAG учитывает изменения при следующем запуске.
+
+### Управление состоянием
+
+Состояние обхода (индекс текущего критерия, номер страницы, исчерпанные критерии) хранится в таблице `ServiceState`. Назначения `serviceID`:
+
+| serviceID | DAG |
+|-----------|-----|
+| 4 | `download_arxiv_scientific` |
+| 5 | `download_pubmed` |
+| 6 | `download_semantic_scholar` |
+
+### Детали API
+
+| DAG | Конечная точка API | Размер страницы | Ключ |
+|-----|--------------------|-----------------|------|
+| `download_arxiv_scientific` | `export.arxiv.org/api/query` (Atom XML) | 50 | Нет |
+| `download_pubmed` | NCBI E-utilities `esearch` + `efetch` | 50 | Нет (≤3 зап/с) |
+| `download_semantic_scholar` | `api.semanticscholar.org/graph/v1/paper/search` | 100 | Опционально — задайте `SemanticScholarApiKey` в `configs.json` |
+
+PubMed возвращает URL PDF из PMC: `https://www.ncbi.nlm.nih.gov/pmc/articles/{PMCID}/pdf/`. Статьи без PMC ID пропускаются. Semantic Scholar возвращает `openAccessPdf.url`; статьи, не прошедшие фильтры `min_citations` или `open_access_only`, молча пропускаются.
 
 ---
 
