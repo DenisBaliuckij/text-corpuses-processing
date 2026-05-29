@@ -7,5 +7,6 @@
 	"FtpHostTex": "127.0.0.1",
 	"FtpPortTex": 21,
 	"FtpUserTex": "latex",
-	"FtpPasswordTex": "latex"
+	"FtpPasswordTex": "latex",
+	"SemanticScholarApiKey": ""
 }
