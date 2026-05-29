@@ -56,7 +56,7 @@ class databaseConnector:
     def removeServiceState(serviceId):
         cnxn = pyodbc.connect(getConfig()["ConnectionString"])
         cursor = cnxn.cursor()
-        cursor.execute("execute [dbo].[RemoveServiceState] @serviceID = ?", (str(proxieIp).strip()))
+        cursor.execute("execute [dbo].[RemoveServiceState] @serviceID = ?", (serviceId,))
         cnxn.commit()
         cursor.close()
         cnxn.close()
@@ -100,4 +100,53 @@ class databaseConnector:
         cnxn.commit()
         cursor.close()
         cnxn.close()
+    def insertGraphCreationJob(config, paths):
+        cnxn = pyodbc.connect(getConfig()["ConnectionString"])
+        cursor = cnxn.cursor()
+        cursor.execute("execute [dbo].[AddGraphCreationJob] @config = ?, @paths=?", (config, paths))
+        cnxn.commit()
+        cursor.close()
+        cnxn.close()
+    def getJobForPreparation():
+        cnxn = pyodbc.connect(getConfig()["ConnectionString"])
+        cursor = cnxn.cursor()
+        cursor.execute("execute [dbo].[GetJobForPreparation]")
+        fetchResults = cursor.fetchone()
+        cnxn.commit()
+        cursor.close()
+        cnxn.close()
+        return fetchResults
+    def setErrorForPreparationJob(jobId, error):
+        cnxn = pyodbc.connect(getConfig()["ConnectionString"])
+        cursor = cnxn.cursor()
+        cursor.execute("execute [dbo].[SetErrorForGraphCreationJob]  @id = ?, @error=?", (jobId, error))
+        fetchResults = cursor.fetchone()
+        cnxn.commit()
+        cursor.close()
+        cnxn.close()
+    def getJobForExecution():
+        cnxn = pyodbc.connect(getConfig()["ConnectionString"])
+        cursor = cnxn.cursor()
+        cursor.execute("execute [dbo].[GetJobForExecution]")
+        fetchResults = cursor.fetchone()
+        cnxn.commit()
+        cursor.close()
+        cnxn.close()
+        return fetchResults
+    def addFileSourceForGraphConstructionJob(fileLocation, jobId):
+        cnxn = pyodbc.connect(getConfig()["ConnectionString"])
+        cursor = cnxn.cursor()
+        cursor.execute("execute [dbo].[AddTextSourceForProcessing]  @location = ?, @jobId=?", (fileLocation, jobId))
+        cnxn.commit()
+        cursor.close()
+        cnxn.close()
+    def getTextSourceForProcessing(jobId):
+        cnxn = pyodbc.connect(getConfig()["ConnectionString"])
+        cursor = cnxn.cursor()
+        cursor.execute("execute [dbo].[GetTextSourceForProcessing]   @jobId=?", (jobId))
+        fetchResults = cursor.fetchone()
+        cnxn.commit()
+        cursor.close()
+        cnxn.close()
+        return fetchResults
 

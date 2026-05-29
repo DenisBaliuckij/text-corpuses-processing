@@ -17,8 +17,6 @@ with DAG(
     def getSpringerPdfUrls():
       import json
       import requests
-      import pyodbc 
-      import requests
       import bs4
       import dbConnector
       from dbConnector import databaseConnector

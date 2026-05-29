@@ -21,3 +21,12 @@ class ftpConnector:
         server.retrbinary("RETR " + filePath ,memfile.write)
         server.quit()
         return memfile
+    def getFileList(path,  ftpPostfix = ''):
+        files = []
+        config = getConfig()
+        server = ftplib.FTP()
+        server.connect(config["FtpHost" + ftpPostfix], config["FtpPort" + ftpPostfix])
+        server.login(config["FtpUser" + ftpPostfix],config["FtpPassword" + ftpPostfix])
+        files = server.nlst(path)
+        server.quit()
+        return files

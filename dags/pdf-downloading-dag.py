@@ -16,10 +16,7 @@ with DAG(
     @task()
     def downloadPdfFiles():
         # -*- coding: utf-8 -*-
-        from pathlib import Path
         import requests
-        import pyodbc 
-        import ftplib
         import uuid
         import io
         import dbConnector

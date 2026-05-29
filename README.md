@@ -1,25 +1,366 @@
-# Welcome to the text corpus processing solution
-This solution is aimed to set up an environment for text corpuses crawling and normalizing into latex or any other markup language
+# Text Corpuses Processing Pipeline
 
+An Apache Airflow-based pipeline for crawling scientific text corpuses, downloading PDFs, converting them to text, and building semantic knowledge graphs from the extracted content.
 
-> **Note:** At the moment the solution is being developed. Any contributions are welcome
+---
 
-## Current state
+## Overview
 
-Current scripts are able to actualize proxies list, download list of pdf urls and pdf itself
+The pipeline automates the full journey from raw web sources to a structured semantic graph:
 
+1. **Proxy management** — maintains a pool of HTTP proxies for scraping
+2. **URL crawling** — discovers PDF links from arXiv, Springer, and CyberLeninka
+3. **PDF downloading** — downloads discovered PDFs through proxies
+4. **PDF-to-text conversion** — extracts plain text from PDFs
+5. **Graph construction** — builds an incremental semantic graph from text using NLP
 
+Each stage is an independent Airflow DAG that does exactly one unit of work per run. All job and file state is tracked in SQL Server. File content (PDFs, text, graphs) is stored on an FTP server.
 
-# Proposed ecosystem design
-Finally, the solution should consis of Apache Airflow dags. The landscape is depicted below:
+---
 
-```mermaid
-graph LR
-A[Apache Airflow Orchestrator] -- Process logic in dags --> B[Text corp in non-normalized format] -- Converting various formats into LaTex --> C[Normalized text corpuses]
+## Architecture
+
+```
+┌─────────────────────────────────────────────────────┐
+│                Apache Airflow Scheduler              │
+└──────────┬──────────────────────────────────────────┘
+           │
+    ┌──────▼───────┐     ┌──────────────┐     ┌──────────────────┐
+    │  get_proxies │     │ get_*_urls   │     │  pdf_downloading │
+    │  (2 DAGs)    │     │ (3 DAGs)     │     │                  │
+    └──────────────┘     └──────┬───────┘     └────────┬─────────┘
+                                │                      │
+                         PdfDocuments             PdfDocuments
+                         (DB table)               (FTP storage)
+                                                       │
+                                              ┌────────▼─────────┐
+                                              │  pdf_conversion  │
+                                              └────────┬─────────┘
+                                                       │
+                                              LatexDocuments (FTP)
+                                                       │
+                         ┌─────────────────────────────▼──────────────────────────────┐
+                         │                  Graph Construction Pipeline                │
+                         │                                                             │
+                         │  start_tree_formation_job  →  prepare_graph_construction_job│
+                         │         ↓                                                   │
+                         │  resolve_anaphora  →  build_graph  →  finalize_job          │
+                         └─────────────────────────────────────────────────────────────┘
 ```
 
-# ToDos
-0. Convert downloaded pdfs to latex
-1. Add centralized config
-2. Convert workflows in Airflow dags with adding documentation
-3. Add other sources
+### DAGs
+
+| DAG | Schedule | Purpose |
+|-----|----------|---------|
+| `get_proxies_for_calls` | `@continuous` | Fetches proxies from geonode.com |
+| `get_proxies_for_calls_2` | `@continuous` | Fetches proxies from proxydb.net |
+| `update-brightdata-proxy` | every 5 min | Keeps BrightData proxy entry current |
+| `get_arxiv_urls` | `@continuous` | Crawls arXiv for PDF URLs |
+| `get_springer_urls` | `@continuous` | Crawls Springer for PDF URLs |
+| `get_lenin_urls` | `@continuous` | Crawls CyberLeninka for PDF URLs |
+| `pdf_downloading` | `@continuous` | Downloads PDFs from discovered URLs |
+| `pdf_conversion` | `@continuous` | Converts PDFs to plain text |
+| `start_tree_formation_job` | manual trigger | Creates a new graph construction job |
+| `prepare_graph_construction_job` | `@continuous` | Registers text files for a job |
+| `resolve_anaphora` | `@continuous` | Resolves anaphora in one text file |
+| `build_graph` | `@continuous` | Extracts NLP edges and merges into job graph |
+| `finalize_job` | `@continuous` | Marks a job complete when all files are done |
+
+---
+
+## Graph Construction Job Lifecycle
+
+```
+start_tree_formation_job (manual)
+        │
+        ▼ job status=0
+prepare_graph_construction_job
+        │ lists .tex files from FTP, registers in GraphConstructionFiles
+        ▼ job status=10, files status=0
+resolve_anaphora  (per file: 0→5→10)
+        │
+        ▼ files status=10
+build_graph  (per file: 10→15→20, incremental graph.json on FTP)
+        │
+        ▼ all files status=20
+finalize_job  →  job status=30 (completed)
+```
+
+### Job status codes (`GraphConstructionJob.Status`)
+
+| Code | Meaning |
+|------|---------|
+| 0 | Created, awaiting preparation |
+| 5 | Preparation in progress |
+| 10 | Files registered, awaiting processing |
+| 20 | Graph building in progress |
+| 30 | Completed |
+| 99 | Error |
+
+### File status codes (`GraphConstructionFiles.Status`)
+
+| Code | Meaning |
+|------|---------|
+| 0 | Pending anaphora resolution |
+| 5 | Anaphora resolution in progress |
+| 10 | Anaphora done, ready for graph building |
+| 15 | Graph building in progress |
+| 20 | Done |
+| 99 | Error |
+
+---
+
+## Graph Output Format
+
+The semantic graph is stored as `graphJobs/{jobId}/graph.json` on FTP:
+
+```json
+{
+  "nodes": ["concept a", "concept b"],
+  "edges": [
+    {"agent_1": "concept a", "agent_2": "concept b", "meaning": "verb", "weight": 3}
+  ]
+}
+```
+
+Edge weights are incremented each time the same relation is observed in a new document.
+
+---
+
+## Database
+
+SQL Server database `TextCorpuses` on `LAPTOP-I91584GB\SQLEXPRESS`.
+
+| Table | Purpose |
+|-------|---------|
+| `IPProxy` + `ProxyProtocols` | Proxy pool |
+| `PdfDocuments` | Discovered PDF URLs and download locations |
+| `LatexDocuments` | Converted text file locations |
+| `GraphConstructionJob` | Graph build jobs with status and config |
+| `GraphConstructionFiles` | Per-file tracking within a job |
+| `ServiceState` | Persistent state for crawling DAGs |
+
+Apply migrations in order using SSMS:
+- `Database/database-v0.1.sql`
+- `Database/database-v0.2-pdf-to-latex.sql`
+- `Database/database-v0.3.sql`
+- `Database/database-v0.4.sql`
+
+---
+
+## FTP Layout
+
+```
+/
+├── arxiv/          ← downloaded arXiv PDFs
+├── springer/       ← downloaded Springer PDFs
+├── cyberleninka/   ← downloaded CyberLeninka PDFs
+├── Tex/            ← converted plain text files
+└── graphJobs/
+    └── {jobId}/
+        ├── graph.json          ← incremental semantic graph
+        └── anaphora/
+            └── {fileId}.txt    ← anaphora-resolved text per file
+```
+
+---
+
+## Setup
+
+### Prerequisites
+
+- Python 3.10+
+- Apache Airflow 2 with `airflow.sdk`
+- SQL Server Express with `TextCorpuses` database
+- FTP server accessible at the address in `dags/configs/configs.json`
+
+### Install dependencies
+
+```bash
+pip install apache-airflow pyodbc requests beautifulsoup4 pypdf spacy nltk
+python -m spacy download en_core_web_sm
+python -m spacy download en_core_web_lg
+python -c "import nltk; nltk.download('wordnet')"
+```
+
+### Configuration
+
+Edit `dags/configs/configs.json`:
+
+```json
+{
+  "ConnectionString": "Driver={ODBC Driver 18 for SQL Server};Server=...;Database=TextCorpuses;...",
+  "FtpHost": "127.0.0.1",
+  "FtpPort": 21,
+  "FtpUser": "airflow",
+  "FtpPassword": "airflow",
+  "FtpHostGraph": "127.0.0.1",
+  "FtpPortGraph": 21,
+  "FtpUserGraph": "...",
+  "FtpPasswordGraph": "..."
+}
+```
+
+### Apply database migrations
+
+Run each `.sql` file in SSMS in order (see Database section above).
+
+### Deploy DAGs
+
+Copy the `dags/` folder to your Airflow DAGs directory (or configure `dags_folder` in `airflow.cfg` to point here).
+
+### Start a graph construction job
+
+In the Airflow UI, trigger `start_tree_formation_job` with:
+- **paths**: semicolon-separated FTP paths containing `.tex` files, e.g. `arxiv/;springer/`
+- **textProcessorName**: `RuleBased`
+
+---
+
+## Monitoring
+
+Track pipeline progress in SSMS:
+
+```sql
+SELECT j.ID, j.Status AS JobStatus, j.LastStatusChangeAt,
+       COUNT(f.ID) AS TotalFiles,
+       SUM(CASE WHEN f.Status = 0 THEN 1 ELSE 0 END) AS Pending,
+       SUM(CASE WHEN f.Status = 10 THEN 1 ELSE 0 END) AS AnaphDone,
+       SUM(CASE WHEN f.Status = 20 THEN 1 ELSE 0 END) AS GraphDone,
+       SUM(CASE WHEN f.Status = 99 THEN 1 ELSE 0 END) AS Errors
+FROM dbo.GraphConstructionJob j
+LEFT JOIN dbo.GraphConstructionFiles f ON f.GraphConstructionJobId = j.ID
+GROUP BY j.ID, j.Status, j.LastStatusChangeAt
+ORDER BY j.ID DESC;
+```
+
+---
+
+---
+
+# Конвейер обработки текстовых корпусов
+
+Конвейер на базе Apache Airflow для краулинга научных текстовых корпусов, загрузки PDF-файлов, их конвертации в текст и построения семантических графов знаний.
+
+---
+
+## Описание
+
+Конвейер автоматизирует полный цикл — от сырых веб-источников до структурированного семантического графа:
+
+1. **Управление прокси** — поддерживает пул HTTP-прокси для скрапинга
+2. **Краулинг URL** — обнаруживает ссылки на PDF с arXiv, Springer и КиберЛенинки
+3. **Загрузка PDF** — скачивает найденные PDF через прокси
+4. **Конвертация PDF в текст** — извлекает текст из PDF-файлов
+5. **Построение графа** — строит инкрементальный семантический граф из текста с помощью NLP
+
+Каждый этап — отдельный Airflow DAG, выполняющий ровно одну единицу работы за запуск. Состояние всех заданий и файлов хранится в SQL Server. Содержимое файлов (PDF, тексты, графы) хранится на FTP-сервере.
+
+---
+
+## Архитектура
+
+Конвейер состоит из 13 DAG, разбитых на группы:
+
+- **Прокси:** `get_proxies_for_calls`, `get_proxies_for_calls_2`, `update-brightdata-proxy`
+- **Краулинг URL:** `get_arxiv_urls`, `get_springer_urls`, `get_lenin_urls`
+- **Загрузка и конвертация:** `pdf_downloading`, `pdf_conversion`
+- **Построение графа:** `start_tree_formation_job` (ручной запуск), `prepare_graph_construction_job`, `resolve_anaphora`, `build_graph`, `finalize_job`
+
+---
+
+## Жизненный цикл задания построения графа
+
+```
+start_tree_formation_job (ручной запуск)
+        │
+        ▼ статус задания = 0
+prepare_graph_construction_job
+        │ перечисляет .tex-файлы с FTP, регистрирует в GraphConstructionFiles
+        ▼ статус задания = 10, статус файлов = 0
+resolve_anaphora  (для каждого файла: 0→5→10)
+        │
+        ▼ статус файлов = 10
+build_graph  (для каждого файла: 10→15→20, инкрементальный graph.json на FTP)
+        │
+        ▼ все файлы в статусе 20
+finalize_job  →  статус задания = 30 (завершено)
+```
+
+### Коды статусов задания (`GraphConstructionJob.Status`)
+
+| Код | Значение |
+|-----|----------|
+| 0 | Создано, ожидает подготовки |
+| 5 | Подготовка выполняется |
+| 10 | Файлы зарегистрированы, ожидают обработки |
+| 20 | Построение графа выполняется |
+| 30 | Завершено |
+| 99 | Ошибка |
+
+### Коды статусов файлов (`GraphConstructionFiles.Status`)
+
+| Код | Значение |
+|-----|----------|
+| 0 | Ожидает разрешения анафоры |
+| 5 | Разрешение анафоры выполняется |
+| 10 | Анафора разрешена, готов к построению графа |
+| 15 | Построение графа выполняется |
+| 20 | Завершено |
+| 99 | Ошибка |
+
+---
+
+## Формат выходного графа
+
+Семантический граф хранится как `graphJobs/{jobId}/graph.json` на FTP:
+
+```json
+{
+  "nodes": ["концепт a", "концепт b"],
+  "edges": [
+    {"agent_1": "концепт a", "agent_2": "концепт b", "meaning": "глагол", "weight": 3}
+  ]
+}
+```
+
+Вес рёбер инкрементируется при каждом новом появлении того же отношения в следующем документе.
+
+---
+
+## База данных
+
+SQL Server база данных `TextCorpuses` на `LAPTOP-I91584GB\SQLEXPRESS`.
+
+Применяйте миграции по порядку в SSMS:
+- `Database/database-v0.1.sql`
+- `Database/database-v0.2-pdf-to-latex.sql`
+- `Database/database-v0.3.sql`
+- `Database/database-v0.4.sql`
+
+---
+
+## Установка
+
+### Зависимости
+
+```bash
+pip install apache-airflow pyodbc requests beautifulsoup4 pypdf spacy nltk
+python -m spacy download en_core_web_sm
+python -m spacy download en_core_web_lg
+python -c "import nltk; nltk.download('wordnet')"
+```
+
+### Конфигурация
+
+Отредактируйте `dags/configs/configs.json`, указав строку подключения к SQL Server, адрес и учётные данные FTP-сервера.
+
+### Развёртывание DAG
+
+Скопируйте папку `dags/` в директорию DAG вашего Airflow (или настройте `dags_folder` в `airflow.cfg`).
+
+### Запуск построения графа
+
+В интерфейсе Airflow запустите DAG `start_tree_formation_job` с параметрами:
+- **paths**: пути на FTP через точку с запятой, например `arxiv/;springer/`
+- **textProcessorName**: `RuleBased`

@@ -7,8 +7,6 @@ Created on Wed Apr 22 20:59:05 2026
 
 import json
 import requests
-import pyodbc 
-import requests
 import bs4
 import dbConnector
 from dbConnector import databaseConnector

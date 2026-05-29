@@ -15,9 +15,6 @@ with DAG(
 
     @task()
     def download_proxy_list_2():
-       import json,urllib.request
-       import time
-       import pyodbc 
        import dbConnector
        from dbConnector import databaseConnector
        import requests

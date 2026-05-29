@@ -56,7 +56,7 @@ class databaseConnector:
     def removeServiceState(serviceId):
         cnxn = pyodbc.connect(getConfig()["ConnectionString"])
         cursor = cnxn.cursor()
-        cursor.execute("execute [dbo].[RemoveServiceState] @serviceID = ?", (str(proxieIp).strip()))
+        cursor.execute("execute [dbo].[RemoveServiceState] @serviceID = ?", (serviceId,))
         cnxn.commit()
         cursor.close()
         cnxn.close()
