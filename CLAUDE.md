@@ -36,6 +36,17 @@ pip install -r dags/llm_v2/requirements.txt                    # HuggingFace
 pip install -r dags/hierarchical_llm_version/requirements.txt  # Yandex Cloud
 ```
 
+Install graph analysis and visualization:
+```
+pip install networkx pyvis
+```
+
+Install spaCy neural anaphora resolver (requires Python 3.8–3.10 + spaCy 3.4–3.5):
+```
+pip install "spacy[transformers]"
+python -m spacy download en_coreference_web_trf
+```
+
 ### Configuration
 
 1. **dags/configs/configs.json** — SQL Server connection string, FTP credentials, API keys
@@ -55,6 +66,7 @@ Database/database-v0.4.sql
 
 ```
 pytest dags/tests/
+pytest dags/tests/ -k "not spacy_neural"   # skip if en_coreference_web_trf not installed
 pytest dags/tests/test_paper_downloader.py::test_advance_increments_page_when_has_more -v
 ```
 
@@ -106,10 +118,15 @@ TextCorpuses SQL Server tables: `IPProxy`, `PdfDocuments`, `LatexDocuments`, `Gr
 ```
 arxiv/, springer/, cyberleninka/ — downloaded PDFs
 Tex/                             — converted text files
-graphJobs/{jobId}/anaphora/{fileId}.txt     — resolved text
-graphJobs/{jobId}/graph.json               — rule-based output
-graphJobs/{jobId}/llm_v2/{fileId}/         — LLM v2 output
-graphJobs/{jobId}/hierarchical/{fileId}/   — hierarchical output
+graphJobs/{jobId}/anaphora/{fileId}.txt          — resolved text
+graphJobs/{jobId}/graph.json                     — rule-based graph
+graphJobs/{jobId}/metrics.json                   — rule-based metrics
+graphJobs/{jobId}/visualization.html             — rule-based visualization
+graphJobs/{jobId}/metrics_report.html            — on-demand rich report (all backends)
+graphJobs/{jobId}/llm_v2/{fileId}/               — LLM v2 output per file
+graphJobs/{jobId}/hierarchical/{fileId}/         — hierarchical output per file
+  (each per-file dir contains: raw_graph.json, clustered_graph.json,
+   metrics.json, visualization.html; hierarchical also has hierarchy_tree.json)
 ```
 
 ---
@@ -128,7 +145,30 @@ graphJobs/{jobId}/hierarchical/{fileId}/   — hierarchical output
 - `merge_graph(graph, new_edges)` — incremental with weights
 
 **`anaphoraResolverLapinLiass.py`**
-- `resolve_and_substitute(text) → (resolved_text, stats, debug)`
+- `resolve_and_substitute(text, mark=False) → (resolved_text, List[Substitution], List[Resolution])`
+- Rule-based salience scoring: recency + grammatical role + proper-noun bonus
+
+**`anaphoraResolverSpacyNeural.py`**
+- Same interface as Lapin-Liass. Uses `spacy.load("en_coreference_web_trf")` (singleton).
+- Requires Python 3.8–3.10 + spaCy 3.4–3.5 and `en_coreference_web_trf` model download.
+
+**`anaphoraResolver.py`**
+- Dispatcher: `resolve_and_substitute(text, resolver_name="LapinLiass", mark=False)`
+- `resolver_name` comes from job's `ProcessorConfig["anaphoraResolverName"]`; defaults to `"LapinLiass"` for backward compatibility.
+
+**`graphMetrics.py`**
+- `compute_metrics(graph_dict, backend) → dict`
+- Normalizes all three backend formats to `networkx.Graph` via `_to_networkx()`
+- Metrics: node/edge counts, density, degree stats, clustering coefficient, connected components, largest-component fraction, diameter, avg shortest path (both skipped if disconnected or N > 500), top-10 hubs, degree distribution
+
+**`graphVisualizer.py`**
+- `generate_visualization(graph_dict, backend) → str` (self-contained HTML)
+- Uses `pyvis.network.Network` with Barnes-Hut physics, dark theme (`#1a1a2e`)
+- Node size ∝ degree; edge width ∝ log(weight); Hierarchical backend maps `importance` to node color
+
+**`dags/tools/generate_metrics_report.py`**
+- CLI: `python dags/tools/generate_metrics_report.py <job_id>`
+- Fetches all `metrics.json` files for the job from FTP, produces `metrics_report.html` with Chart.js degree-distribution bar chart and top-hub tables, saves back to FTP
 
 **`dags/hierarchical_llm_version/`**
 - `pipeline.py` (orchestrator), `models/` (async LLMClient, Embedder), `schemas/` (Pydantic models), `stages/` (pipeline components)
@@ -167,8 +207,10 @@ Behavior:
 
 Only one active graph-building DAG at a time:
 - Enable exactly one of: `build_graph`, `build_graph_llm_v2`, `build_graph_hierarchical`
-- Selected via `start_tree_formation_job`: RuleBased / LLMv2 / Hierarchical
-- Each backend writes to a separate FTP path
+- Selected via `start_tree_formation_job`: `textProcessorName` = RuleBased / AIBased
+- Anaphora resolver selected via `anaphoraResolverName` = LapinLiass / SpacyNeural
+- Both params are stored in `GraphConstructionJob.ProcessorConfig` JSON and read at runtime by the relevant DAGs
+- After job finalization, `finalize_job` DAG automatically generates `metrics.json` and `visualization.html` per graph
 
 ---
 
@@ -178,7 +220,13 @@ Only one active graph-building DAG at a time:
 
 **`test_graph_builder.py`** — Merging, deduplication, weights, triple extraction
 
-Run all: `pytest dags/tests/`
+**`test_anaphora_resolver.py`** — Dispatcher routing, fallback behavior, SpacyNeural interface shape
+
+**`test_graph_metrics.py`** — All three backend formats, diameter guards (disconnected / N > 500), component stats
+
+**`test_graph_visualizer.py`** — HTML output for all three backends, vis.js presence, node label inclusion
+
+Run all: `pytest dags/tests/ -k "not spacy_neural"`
 
 ---
 
