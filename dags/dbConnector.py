@@ -204,3 +204,23 @@ class databaseConnector:
         cnxn.close()
         return result
 
+    def getProcessorConfig(jobId):
+        cnxn = pyodbc.connect(getConfig()["ConnectionString"])
+        cursor = cnxn.cursor()
+        cursor.execute("SELECT ProcessorConfig FROM [dbo].[GraphConstructionJob] WHERE ID = ?", (jobId,))
+        result = cursor.fetchone()
+        cursor.close()
+        cnxn.close()
+        return result[0] if result else None
+
+    def getFilesForJob(jobId):
+        cnxn = pyodbc.connect(getConfig()["ConnectionString"])
+        cursor = cnxn.cursor()
+        cursor.execute(
+            "SELECT ID FROM [dbo].[GraphConstructionFiles] WHERE GraphConstructionJobId = ? AND Status = 20",
+            (jobId,)
+        )
+        results = cursor.fetchall()
+        cursor.close()
+        cnxn.close()
+        return results

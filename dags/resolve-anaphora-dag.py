@@ -15,12 +15,12 @@ with DAG(
     @task()
     def resolve_anaphora():
         import io
+        import json
         import dbConnector
         from dbConnector import databaseConnector
         import ftpConnector
         from ftpConnector import ftpConnector
-        import anaphoraResolverLapinLiass
-        from anaphoraResolverLapinLiass import resolve_and_substitute
+        from anaphoraResolver import resolve_and_substitute
 
         file_row = databaseConnector.getFileForAnaphoraResolution()
         if file_row is None:
@@ -31,11 +31,15 @@ with DAG(
         job_id = file_row[2]
 
         try:
+            config_json = databaseConnector.getProcessorConfig(job_id)
+            config = json.loads(config_json) if config_json else {}
+            resolver_name = config.get("anaphoraResolverName", "LapinLiass")
+
             raw_file = ftpConnector.getFile(file_path, 'Tex')
             raw_file.seek(0)
             text = raw_file.read().decode('utf-8', errors='replace')
 
-            output, _, _ = resolve_and_substitute(text)
+            output, _, _ = resolve_and_substitute(text, resolver_name=resolver_name)
 
             resolved_path = f"graphJobs/{job_id}/anaphora/{file_id}.txt"
             ftpConnector.storeFile(
