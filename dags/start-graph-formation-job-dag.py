@@ -23,7 +23,12 @@ with DAG(
             enum=["RuleBased", "AIBased"],
             description="Name of text processor.",
             title="Text processor name",
-        ), 
+        ),
+       "anaphoraResolverName": Param("LapinLiass",
+            enum=["LapinLiass", "SpacyNeural"],
+            description="Anaphora resolver to use.",
+            title="Anaphora resolver",
+        ),
    },
 ) as dag:
     @task()
@@ -39,8 +44,9 @@ with DAG(
         ctx = get_current_context()
         params = ctx["dag"].params
         config = {
-            "processorName": params["textProcessorName"]
-            }
+            "processorName": params["textProcessorName"],
+            "anaphoraResolverName": params["anaphoraResolverName"],
+        }
         
         databaseConnector.insertGraphCreationJob(json.dumps(config), params["paths"])
         
