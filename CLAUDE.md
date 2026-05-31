@@ -19,6 +19,22 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ---
 
+## Commit Messages
+
+Always use [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) format:
+
+```
+<type>[optional scope]: <description>
+
+[optional body]
+
+[optional footer]
+```
+
+Common types: `feat`, `fix`, `docs`, `refactor`, `test`, `chore`. Breaking changes add `!` after the type or a `BREAKING CHANGE:` footer.
+
+---
+
 ## Build & Run Commands
 
 ### Prerequisites
