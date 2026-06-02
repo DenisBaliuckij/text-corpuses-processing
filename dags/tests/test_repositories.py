@@ -70,6 +70,23 @@ def test_pdf_get_next_to_download_returns_none_when_empty():
         assert result is None
 
 
+def test_pdf_add_urls_uses_single_connection_for_all():
+    with patch('repositories.pdf_repository.getConfig', return_value=_CFG), \
+         patch('repositories.pdf_repository.pyodbc.connect') as mock_conn:
+        mock_cur = mock_conn.return_value.cursor.return_value
+        PdfRepository.add_urls(['http://a.com/1.pdf', 'http://b.com/2.pdf'])
+        assert mock_conn.call_count == 1
+        assert mock_cur.execute.call_count == 2
+        mock_conn.return_value.commit.assert_called_once()
+
+
+def test_pdf_add_urls_empty_list_does_nothing():
+    with patch('repositories.pdf_repository.getConfig', return_value=_CFG), \
+         patch('repositories.pdf_repository.pyodbc.connect') as mock_conn:
+        PdfRepository.add_urls([])
+        mock_conn.assert_not_called()
+
+
 def test_pdf_save_location_calls_stored_proc():
     with patch('repositories.pdf_repository.getConfig', return_value=_CFG), \
          patch('repositories.pdf_repository.pyodbc.connect') as mock_conn:

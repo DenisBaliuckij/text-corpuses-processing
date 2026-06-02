@@ -13,6 +13,18 @@ class PdfRepository:
         cnxn.close()
 
     @staticmethod
+    def add_urls(urls: list) -> None:
+        if not urls:
+            return
+        cnxn = pyodbc.connect(getConfig()['ConnectionString'])
+        cursor = cnxn.cursor()
+        for url in urls:
+            cursor.execute("execute [dbo].[AddPdfUrl] @url = ?", (url,))
+        cnxn.commit()
+        cursor.close()
+        cnxn.close()
+
+    @staticmethod
     def get_next_to_download() -> str | None:
         cnxn = pyodbc.connect(getConfig()['ConnectionString'])
         cursor = cnxn.cursor()

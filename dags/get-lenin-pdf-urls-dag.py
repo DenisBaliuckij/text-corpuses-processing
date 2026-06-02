@@ -100,16 +100,14 @@ with DAG(
 
             print(response.text)
             soup = bs4.BeautifulSoup(response.text, "html.parser")
-            urlCounter = 0
+            urls_to_save = []
             for url in soup.find_all("a"):
-                try:
-                    if "article" in url["href"]:
-                        PdfRepository.add_url("https://cyberleninka.ru/"+str(url["href"]).strip() + "/pdf")
-                        urlCounter+=1
-                except Exception as e:
-                    print(e)
-                finally:
-                    print("Url discovered", url)
+                href = url.get("href")
+                if href and "article" in href:
+                    urls_to_save.append("https://cyberleninka.ru/" + href.strip() + "/pdf")
+                print("Url discovered", url)
+            PdfRepository.add_urls(urls_to_save)
+            urlCounter = len(urls_to_save)
             if urlCounter>0:
                 state["pageNumber"] =state["pageNumber"]+1
             else:
