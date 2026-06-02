@@ -106,3 +106,70 @@ def test_latex_save_location_calls_stored_proc():
             "execute [dbo].[SaveLatexDocumentLocation] @pdfUrl = ?, @latexLocation=?",
             ('arxiv/paper.pdf', 'Tex/paper.tex')
         )
+
+
+from repositories.graph_job_repository import GraphJobRepository
+
+
+def test_graph_job_insert_job_calls_stored_proc():
+    with patch('repositories.graph_job_repository.getConfig', return_value=_CFG), \
+         patch('repositories.graph_job_repository.pyodbc.connect') as mock_conn:
+        mock_cur = mock_conn.return_value.cursor.return_value
+        GraphJobRepository.insert_job('{"processorName":"RuleBased"}', 'arxiv/')
+        mock_cur.execute.assert_called_once_with(
+            "execute [dbo].[AddGraphCreationJob] @config = ?, @paths=?",
+            ('{"processorName":"RuleBased"}', 'arxiv/')
+        )
+
+
+def test_graph_job_get_for_preparation_returns_row():
+    with patch('repositories.graph_job_repository.getConfig', return_value=_CFG), \
+         patch('repositories.graph_job_repository.pyodbc.connect') as mock_conn:
+        mock_conn.return_value.cursor.return_value.fetchone.return_value = (1, 0, 'arxiv/')
+        result = GraphJobRepository.get_job_for_preparation()
+        assert result == (1, 0, 'arxiv/')
+
+
+def test_graph_job_get_for_preparation_returns_none_when_empty():
+    with patch('repositories.graph_job_repository.getConfig', return_value=_CFG), \
+         patch('repositories.graph_job_repository.pyodbc.connect') as mock_conn:
+        mock_conn.return_value.cursor.return_value.fetchone.return_value = None
+        result = GraphJobRepository.get_job_for_preparation()
+        assert result is None
+
+
+def test_graph_job_finalize_returns_job_row():
+    with patch('repositories.graph_job_repository.getConfig', return_value=_CFG), \
+         patch('repositories.graph_job_repository.pyodbc.connect') as mock_conn:
+        mock_conn.return_value.cursor.return_value.fetchone.return_value = (42,)
+        result = GraphJobRepository.finalize_completed_jobs()
+        assert result == (42,)
+        mock_conn.return_value.cursor.return_value.execute.assert_called_once_with(
+            "execute [dbo].[FinalizeCompletedJobs]"
+        )
+
+
+def test_graph_job_set_file_error_calls_stored_proc():
+    with patch('repositories.graph_job_repository.getConfig', return_value=_CFG), \
+         patch('repositories.graph_job_repository.pyodbc.connect') as mock_conn:
+        mock_cur = mock_conn.return_value.cursor.return_value
+        GraphJobRepository.set_file_error(5, 'oops')
+        mock_cur.execute.assert_called_once_with(
+            "execute [dbo].[SetFileError] @fileId = ?, @error = ?", (5, 'oops')
+        )
+
+
+def test_graph_job_get_processor_config_returns_string():
+    with patch('repositories.graph_job_repository.getConfig', return_value=_CFG), \
+         patch('repositories.graph_job_repository.pyodbc.connect') as mock_conn:
+        mock_conn.return_value.cursor.return_value.fetchone.return_value = ('{"processorName":"RuleBased"}',)
+        result = GraphJobRepository.get_processor_config(1)
+        assert result == '{"processorName":"RuleBased"}'
+
+
+def test_graph_job_get_files_for_job_returns_list():
+    with patch('repositories.graph_job_repository.getConfig', return_value=_CFG), \
+         patch('repositories.graph_job_repository.pyodbc.connect') as mock_conn:
+        mock_conn.return_value.cursor.return_value.fetchall.return_value = [(1,), (2,)]
+        result = GraphJobRepository.get_files_for_job(10)
+        assert result == [(1,), (2,)]
