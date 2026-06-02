@@ -70,6 +70,7 @@ with DAG(
         while True:
 
             rubric = state["links"][state["currentLink"]]
+            proxieIp = None
             try:
                 proxieResult = ProxyRepository.get_latest()
                 print(proxieResult)
@@ -92,7 +93,8 @@ with DAG(
                                         timeout=30)
             except Exception as e:
                 print(e)
-                ProxyRepository.mark_broken(str(proxieIp).strip())
+                if proxieIp is not None:
+                    ProxyRepository.mark_broken(str(proxieIp).strip())
                 continue
 
 
@@ -111,10 +113,11 @@ with DAG(
             if urlCounter>0:
                 state["pageNumber"] =state["pageNumber"]+1
             else:
-                if state["currentLink"] > len(state["links"]):
+                if state["currentLink"] >= len(state["links"]):
                     ServiceStateRepository.remove(serviceID)
                     break
-                state["currentLink"] +=1
+                state["currentLink"] += 1
+                state["pageNumber"] = 1
             ServiceStateRepository.update(serviceID, json.dumps(state))
         
     getLeninPdfUrls()
