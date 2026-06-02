@@ -5,7 +5,7 @@ import logging
 import pendulum
 from airflow.sdk import DAG
 from airflow.sdk import task
-from dbConnector import databaseConnector
+from repositories.graph_job_repository import GraphJobRepository
 from ftpConnector import ftpConnector
 from graphMetrics import compute_metrics
 from graphVisualizer import generate_visualization
@@ -64,14 +64,14 @@ with DAG(
 
     @task()
     def finalize_job():
-        result = databaseConnector.finalizeCompletedJobs()
+        result = GraphJobRepository.finalize_completed_jobs()
         if result is None:
             return
 
         job_id = result[0]
         print(f"Finalized job ID: {job_id}")
 
-        config_json = databaseConnector.getProcessorConfig(job_id)
+        config_json = GraphJobRepository.get_processor_config(job_id)
         config = json.loads(config_json) if config_json else {}
         processor = config.get("processorName", "RuleBased")
 
@@ -80,7 +80,7 @@ with DAG(
                 _process_rulebased(job_id)
             else:
                 backend = "Hierarchical" if processor == "Hierarchical" else "LLMv2"
-                file_rows = databaseConnector.getFilesForJob(job_id)
+                file_rows = GraphJobRepository.get_files_for_job(job_id)
                 for row in file_rows:
                     _process_per_file(job_id, row[0], backend)
         except Exception as e:

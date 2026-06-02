@@ -13,7 +13,7 @@ import io
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
-from dbConnector import databaseConnector
+from repositories.graph_job_repository import GraphJobRepository
 from ftpConnector import ftpConnector
 
 # Chart.js CDN (pinned version, small, works offline if cached; swap for inline bundle if needed)
@@ -21,7 +21,7 @@ _CHARTJS = "https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"
 
 
 def _fetch_metrics(job_id: int) -> list[dict]:
-    config_json = databaseConnector.getProcessorConfig(job_id)
+    config_json = GraphJobRepository.get_processor_config(job_id)
     config = json.loads(config_json) if config_json else {}
     processor = config.get("processorName", "RuleBased")
 
@@ -34,7 +34,7 @@ def _fetch_metrics(job_id: int) -> list[dict]:
         entries.append({"file_id": "job", "metrics": m})
     else:
         prefix = "llm_v2" if processor != "Hierarchical" else "hierarchical"
-        file_rows = databaseConnector.getFilesForJob(job_id)
+        file_rows = GraphJobRepository.get_files_for_job(job_id)
         for row in file_rows:
             file_id = row[0]
             path = f"graphJobs/{job_id}/{prefix}/{file_id}/metrics.json"
