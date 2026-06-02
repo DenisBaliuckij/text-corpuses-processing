@@ -2,6 +2,10 @@
 import json
 import os
 
+from repositories.service_state_repository import ServiceStateRepository
+from repositories.proxy_repository import ProxyRepository
+from repositories.pdf_repository import PdfRepository
+
 _DAG_FOLDER = os.path.dirname(os.path.abspath(__file__))
 _SEARCH_CONFIG_PATH = os.path.join(_DAG_FOLDER, 'configs', 'search_configs.json')
 
@@ -14,9 +18,7 @@ def load_search_config(source: str) -> list:
 
 def load_state(service_id: int) -> dict:
     """Reads crawl state from ServiceState. Returns a fresh default state if none exists."""
-    import dbConnector
-    from dbConnector import databaseConnector
-    result = databaseConnector.getServiceState(service_id)
+    result = ServiceStateRepository.get(service_id)
     if result is None:
         return {'criterion_index': 0, 'page': 1, 'done_criteria': []}
     return json.loads(result[0])
@@ -24,24 +26,18 @@ def load_state(service_id: int) -> dict:
 
 def save_state(service_id: int, state: dict) -> None:
     """Persists crawl state to ServiceState as a JSON string."""
-    import dbConnector
-    from dbConnector import databaseConnector
-    databaseConnector.updateServiceState(service_id, json.dumps(state))
+    ServiceStateRepository.update(service_id, json.dumps(state))
 
 
 def clear_state(service_id: int) -> None:
     """Deletes crawl state from ServiceState (all criteria exhausted)."""
-    import dbConnector
-    from dbConnector import databaseConnector
-    databaseConnector.removeServiceState(service_id)
+    ServiceStateRepository.remove(service_id)
 
 
 def get_proxy() -> dict:
     """Returns {'ip', 'port', 'protocol'} from the proxy pool.
     Raises RuntimeError if no proxy is available."""
-    import dbConnector
-    from dbConnector import databaseConnector
-    result = databaseConnector.getLatestProxy()
+    result = ProxyRepository.get_latest()
     if result is None:
         raise RuntimeError('No proxy available')
     return {
@@ -53,17 +49,13 @@ def get_proxy() -> dict:
 
 def mark_proxy_broken(ip: str) -> None:
     """Marks a proxy as broken in the DB."""
-    import dbConnector
-    from dbConnector import databaseConnector
-    databaseConnector.markProxyAsBroken(ip)
+    ProxyRepository.mark_broken(ip)
 
 
 def save_urls(urls: list) -> None:
-    """Calls databaseConnector.addPdfUrl() for each URL. Idempotent."""
-    import dbConnector
-    from dbConnector import databaseConnector
+    """Calls PdfRepository.add_url() for each URL. Idempotent."""
     for url in urls:
-        databaseConnector.addPdfUrl(url)
+        PdfRepository.add_url(url)
 
 
 def _next_active_index(current: int, criteria: list, done: set):
