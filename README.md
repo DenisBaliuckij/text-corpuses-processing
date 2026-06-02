@@ -60,6 +60,20 @@ Each stage is an independent Airflow DAG that does exactly one unit of work per 
 
 > **Note:** Enable exactly one graph-building DAG at a time (`build_graph`, `build_graph_llm_v2`, or `build_graph_hierarchical`). All three compete for the same file queue (Status=10 files) and produce output in different FTP sub-paths under `graphJobs/{jobId}/`.
 
+### Module structure
+
+| Module | Purpose |
+|--------|---------|
+| `configs.py` | Self-contained config loader (reads `dags/configs/configs.json` relative to `__file__`) |
+| `repositories/` | 5 domain DB repositories: `ProxyRepository`, `PdfRepository`, `LatexRepository`, `GraphJobRepository`, `ServiceStateRepository` |
+| `ftpConnector.py` | FTP upload / download / file listing |
+| `paperDownloader.py` | Crawl state machine, proxy and URL helpers |
+| `pdfConverter.py` | PDF → plain text extraction |
+| `graphBuilder.py` | Rule-based SVO triplet extraction |
+| `graphMetrics.py` | networkx graph statistics |
+| `graphVisualizer.py` | pyvis interactive HTML visualization |
+| `anaphoraResolver*.py` | Anaphora resolution dispatcher + LapinLiass + SpacyNeural backends |
+
 ---
 
 ## DAGs
@@ -330,19 +344,14 @@ Apply migrations in order using SSMS:
 - SQL Server Express with `TextCorpuses` database
 - FTP server accessible at the address in `dags/configs/configs.json`
 
-### Install base dependencies
+### Install dependencies
 
 ```bash
-pip install apache-airflow pyodbc requests beautifulsoup4 pypdf spacy nltk
+pip install -r requirements.txt
 python -m spacy download en_core_web_sm
 python -m spacy download en_core_web_lg
 python -c "import nltk; nltk.download('wordnet')"
-```
-
-### Install graph analysis and visualization dependencies
-
-```bash
-pip install networkx pyvis
+sh scripts/install-hooks.sh   # Windows: scripts\install-hooks.bat
 ```
 
 ### Install LLM pipeline dependencies (optional)
@@ -388,7 +397,7 @@ Run each `.sql` file in SSMS in order (see Database section above).
 
 ### Deploy DAGs
 
-Copy the `dags/` folder to your Airflow DAGs directory (or configure `dags_folder` in `airflow.cfg` to point here).
+Copy the `dags/` folder to your Airflow DAGs directory (or configure `dags_folder` in `airflow.cfg` to point here). `dags/` is fully self-contained — copy it to any Airflow installation without any files from the repo root.
 
 ### Start a graph construction job
 
@@ -398,6 +407,16 @@ In the Airflow UI, trigger `start_tree_formation_job` with:
 - **anaphoraResolverName**: `LapinLiass` (default, rule-based) or `SpacyNeural` (transformer-based)
 
 Enable only the graph-building DAG that matches your chosen processor. After the job completes, `finalize_job` automatically saves `metrics.json` and `visualization.html` alongside each graph on FTP.
+
+---
+
+## Testing
+
+```bash
+pytest dags/tests/ -k "not spacy_neural" -v
+```
+
+105 tests, 1 deselected (SpacyNeural — requires Python 3.8–3.10 + spaCy 3.4–3.5).
 
 ---
 
@@ -453,6 +472,20 @@ ORDER BY j.ID DESC;
 - **Построение графа:** `start_tree_formation_job` (ручной запуск), `prepare_graph_construction_job`, `resolve_anaphora`, **`build_graph`**, **`build_graph_llm_v2`**, **`build_graph_hierarchical`**, `finalize_job`
 
 > **Важно:** Единовременно должен быть включён только один DAG построения графа: `build_graph`, `build_graph_llm_v2` или `build_graph_hierarchical`. Все три конкурируют за одну очередь файлов (Status=10) и сохраняют результаты в разные подпапки FTP.
+
+### Структура модулей
+
+| Модуль | Назначение |
+|--------|------------|
+| `configs.py` | Самодостаточный загрузчик конфигурации (читает `dags/configs/configs.json` относительно `__file__`) |
+| `repositories/` | 5 доменных DB-репозиториев: `ProxyRepository`, `PdfRepository`, `LatexRepository`, `GraphJobRepository`, `ServiceStateRepository` |
+| `ftpConnector.py` | Загрузка, скачивание и листинг файлов на FTP |
+| `paperDownloader.py` | Машина состояний краулинга, вспомогательные функции прокси и URL |
+| `pdfConverter.py` | Извлечение текста из PDF |
+| `graphBuilder.py` | Извлечение триплетов SVO на основе правил |
+| `graphMetrics.py` | Статистика графа через networkx |
+| `graphVisualizer.py` | Интерактивная HTML-визуализация через pyvis |
+| `anaphoraResolver*.py` | Диспетчер разрешения анафоры + бэкенды LapinLiass и SpacyNeural |
 
 ---
 
@@ -676,19 +709,14 @@ SQL Server база данных `TextCorpuses` на `LAPTOP-I91584GB\SQLEXPRESS
 
 ## Установка
 
-### Базовые зависимости
+### Установка зависимостей
 
 ```bash
-pip install apache-airflow pyodbc requests beautifulsoup4 pypdf spacy nltk
+pip install -r requirements.txt
 python -m spacy download en_core_web_sm
 python -m spacy download en_core_web_lg
 python -c "import nltk; nltk.download('wordnet')"
-```
-
-### Зависимости для анализа и визуализации графов
-
-```bash
-pip install networkx pyvis
+sh scripts/install-hooks.sh   # Windows: scripts\install-hooks.bat
 ```
 
 ### Зависимости для LLM-конвейеров (по необходимости)
@@ -716,7 +744,7 @@ python -m spacy download en_coreference_web_trf
 
 ### Развёртывание DAG
 
-Скопируйте папку `dags/` в директорию DAG вашего Airflow (или настройте `dags_folder` в `airflow.cfg`).
+Скопируйте папку `dags/` в директорию DAG вашего Airflow (или настройте `dags_folder` в `airflow.cfg`). `dags/` полностью самодостаточна — её можно скопировать в любую установку Airflow без файлов из корня репозитория.
 
 ### Запуск построения графа
 
@@ -726,6 +754,16 @@ python -m spacy download en_coreference_web_trf
 - **anaphoraResolverName**: `LapinLiass` (по умолчанию, правиловый) или `SpacyNeural` (трансформерный)
 
 Включите в Airflow только тот DAG построения графа, который соответствует выбранному процессору. После завершения задания `finalize_job` автоматически сохранит `metrics.json` и `visualization.html` рядом с каждым графом на FTP.
+
+---
+
+## Тестирование
+
+```bash
+pytest dags/tests/ -k "not spacy_neural" -v
+```
+
+105 тестов, 1 исключён (SpacyNeural — требует Python 3.8–3.10 + spaCy 3.4–3.5).
 
 ---
 

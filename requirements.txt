@@ -1,0 +1,32 @@
+# ── Core pipeline ────────────────────────────────────────────────────
+apache-airflow
+pyodbc
+requests
+beautifulsoup4
+pypdf
+spacy
+nltk
+networkx
+pyvis
+pendulum
+
+# ── Testing ──────────────────────────────────────────────────────────
+pytest
+
+# ── LLM v2 (local HuggingFace — build_graph_llm_v2 DAG) ─────────────
+torch>=2.0.0
+transformers>=4.35.0
+sentence-transformers>=2.2.0
+pydantic>=2.0.0
+pyyaml>=6.0
+pymorphy3>=1.0.0
+razdel>=0.5.0
+numpy>=1.21.0
+scikit-learn>=1.0.0
+hdbscan>=0.8.33
+tqdm>=4.62.0
+
+# ── Hierarchical LLM (Yandex Cloud — build_graph_hierarchical DAG) ───
+openai>=1.40.0
+# (sentence-transformers, pydantic, pyyaml, numpy, scikit-learn,
+#  hdbscan, razdel, nltk, tqdm listed above)

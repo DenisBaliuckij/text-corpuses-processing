@@ -1,0 +1,7 @@
+#!/bin/sh
+echo "Running tests before push..."
+pytest dags/tests/ -k "not spacy_neural" -q
+if [ $? -ne 0 ]; then
+  echo "Tests failed. Push blocked."
+  exit 1
+fi
