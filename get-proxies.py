@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
+import sys, os
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), 'dags'))
 
-import json,urllib.request
+import json, urllib.request
 import time
-import pyodbc 
-import dbConnector
-from dbConnector import databaseConnector
+from repositories.proxy_repository import ProxyRepository
 
 page = 1
 limit = 500
@@ -21,7 +21,7 @@ while True:
    
 
     for entry in output.get('data'):
-        databaseConnector.addOrUpdateProxy(entry.get('ip'), entry.get('port'), entry.get('lastChecked'), ''.join(entry.get('protocols')))
+        ProxyRepository.add_or_update(entry.get('ip'), entry.get('port'), entry.get('lastChecked'), ''.join(entry.get('protocols')))
 
     total = output.get('total')
     if(limit*page > total):

@@ -12,11 +12,15 @@ Created on Sun Jan 25 13:11:31 2026
 @author: denis
 """
 
+import sys, os
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), 'dags'))
+
 import json
 import requests
 import bs4
-import dbConnector
-from dbConnector import databaseConnector
+from repositories.proxy_repository import ProxyRepository
+from repositories.pdf_repository import PdfRepository
+from repositories.service_state_repository import ServiceStateRepository
 
 
 while True:
@@ -28,12 +32,12 @@ while True:
         "pageNumber" : 1
         }
 
-    fetchResults = databaseConnector.getServiceState(serviceID)
+    fetchResults = ServiceStateRepository.get(serviceID)
     if fetchResults is not None:
         state = json.loads(fetchResults[0])
 #print(str(proxieIp) + str(proxiePort) + str(proxieProtocol))
     
-    proxieResult = databaseConnector.getLatestProxy()
+    proxieResult = ProxyRepository.get_latest()
     print(proxieResult)
     proxieIp = proxieResult["proxieIp"]
     proxiePort = proxieResult["proxiePort"]
@@ -56,7 +60,7 @@ while True:
                                 timeout=30)
     except Exception as e:
         print(e)
-        databaseConnector.markProxyAsBroken(str(proxieIp).strip())
+        ProxyRepository.mark_broken(str(proxieIp).strip())
         continue
             
             
@@ -66,7 +70,7 @@ while True:
     for url in soup.find_all("a"):
         try:
             if "article" in url["href"]:
-                databaseConnector.addPdfUrl("https://link.springer.com/"+str(url["href"]).strip() + ".pdf")
+                PdfRepository.add_url("https://link.springer.com/"+str(url["href"]).strip() + ".pdf")
                 
         except Exception as e:
             print(e)
@@ -77,6 +81,6 @@ while True:
     if(state["pageNumber"]>1000000):
         break
         
-    databaseConnector.updateServiceState(serviceID, json.dumps(state))
-databaseConnector.removeServiceState(serviceID)
+    ServiceStateRepository.update(serviceID, json.dumps(state))
+ServiceStateRepository.remove(serviceID)
 

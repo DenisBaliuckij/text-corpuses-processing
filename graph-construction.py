@@ -5,14 +5,14 @@ Created on Mon May  4 11:18:48 2026
 @author: denis
 """
 
-import sys
-import dbConnector
-from dbConnector import databaseConnector
-import ftpConnector
-from ftpConnector import ftpConnector
-import io
+import sys, os
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), 'dags'))
 
-job = databaseConnector.getJobForExecution()
+import io
+from repositories.graph_job_repository import GraphJobRepository
+from ftpConnector import ftpConnector
+
+job = GraphJobRepository.get_job_for_execution()
 if not job:
     print("No job available")
     sys.exit(0)

@@ -1,27 +1,27 @@
 # -*- coding: utf-8 -*-
+import sys, os
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), 'dags'))
+
 from pathlib import Path
 import requests
-import pyodbc 
-import ftplib
 import uuid
 import io
-import dbConnector
-from dbConnector import databaseConnector
-import ftpConnector
+from repositories.pdf_repository import PdfRepository
+from repositories.proxy_repository import ProxyRepository
 from ftpConnector import ftpConnector
 i = 0
 def storeFile(initialUrl,filename, file):
     ftpConnector.storeFile(filename, file)
-    databaseConnector.savePdfFileLocation(initialUrl, filename)
+    PdfRepository.save_location(initialUrl, filename)
 
 
 while i<500:
     try:
-        url = databaseConnector.getPdfToDownload()
+        url = PdfRepository.get_next_to_download()
         initialUrl = url
 
         if 'support' in url:
-            databaseConnector.savePdfFileLocation(initialUrl, "NA")
+            PdfRepository.save_location(initialUrl, "NA")
             continue
         filename=""
         if 'arxiv' in url:
@@ -33,7 +33,7 @@ while i<500:
             url = url.replace('/article', 'content/pdf')
         filename+=str(uuid.uuid4())
         filename+='.pdf'
-        proxieResult = databaseConnector.getLatestProxy()
+        proxieResult = ProxyRepository.get_latest()
         proxieIp = proxieResult["proxieIp"]
         proxiePort = proxieResult["proxiePort"]
         proxieProtocol = proxieResult["proxieProtocol"]
@@ -64,10 +64,10 @@ while i<500:
                 file = io.BytesIO(response.content)
                 storeFile(initialUrl, filename, file)
             else:
-                databaseConnector.savePdfFileLocation(initialUrl, "NA")
+                PdfRepository.save_location(initialUrl, "NA")
     except Exception as e:
         print(e)
-        databaseConnector.markProxyAsBroken(str(proxieIp).strip())
+        ProxyRepository.mark_broken(str(proxieIp).strip())
         continue
     i+=1
 

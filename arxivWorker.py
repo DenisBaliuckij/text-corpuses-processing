@@ -4,11 +4,15 @@ Created on Sun Jan 25 13:11:31 2026
 
 @author: denis
 """
+import sys, os
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), 'dags'))
+
 import json
 import requests
 import bs4
-import dbConnector
-from dbConnector import databaseConnector
+from repositories.proxy_repository import ProxyRepository
+from repositories.pdf_repository import PdfRepository
+from repositories.service_state_repository import ServiceStateRepository
 
 serviceID = 1
 
@@ -19,13 +23,13 @@ state = {
     "letter" : 'a'
     }
 
-fetchResults = databaseConnector.getServiceState(serviceID)
+fetchResults = ServiceStateRepository.get(serviceID)
 if fetchResults is not None:
     state = json.loads(fetchResults[0])
 
 
 while letters.find(state["letter"]) < len(letters)-1:
-    proxieResult = databaseConnector.getLatestProxy()
+    proxieResult = ProxyRepository.get_latest()
     print(proxieResult)
     proxieIp = proxieResult["proxieIp"]
     proxiePort = proxieResult["proxiePort"]
@@ -46,7 +50,7 @@ while letters.find(state["letter"]) < len(letters)-1:
                                 timeout=30)
     except Exception as e:
         print(e)
-        databaseConnector.markProxyAsBroken(str(proxieIp).strip())
+        ProxyRepository.mark_broken(str(proxieIp).strip())
         continue
         
         
@@ -56,7 +60,7 @@ while letters.find(state["letter"]) < len(letters)-1:
     for url in soup.find_all("a"):
         try:
             if "pdf" in url["href"]:
-                databaseConnector.addPdfUrl(str(url["href"]).strip())
+                PdfRepository.add_url(str(url["href"]).strip())
         except Exception as e:
             print(e)
         finally:
@@ -66,5 +70,5 @@ while letters.find(state["letter"]) < len(letters)-1:
     if(state["pageNumber"]>5000):
         state["pageNumber"]=1
         state["letter"] = letters[letters.find(state["letter"])+1]
-    databaseConnector.updateServiceState(serviceID, json.dumps(state))
-databaseConnector.removeServiceState(serviceID)
+    ServiceStateRepository.update(serviceID, json.dumps(state))
+ServiceStateRepository.remove(serviceID)

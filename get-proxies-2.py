@@ -6,15 +6,14 @@ Created on Wed Apr  8 10:29:21 2026
 """
 
 # -*- coding: utf-8 -*-
+import sys, os
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), 'dags'))
 
-import json,urllib.request
-import time
-import pyodbc 
-import dbConnector
-from dbConnector import databaseConnector
+import json, urllib.request
 import requests
 import bs4
 import pendulum
+from repositories.proxy_repository import ProxyRepository
 
 offset = 0
 while True:
@@ -46,5 +45,5 @@ while True:
         print(portValue.text)
         timestamp = int(pendulum.now('UTC').timestamp())
         print(timestamp)
-        databaseConnector.addOrUpdateProxy(str(ipValue.text), int(portValue.text), timestamp, 'http')
+        ProxyRepository.add_or_update(str(ipValue.text), int(portValue.text), timestamp, 'http')
    
