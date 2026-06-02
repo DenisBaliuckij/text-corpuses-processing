@@ -7,7 +7,7 @@ import pdfConverter
 
 
 def test_empty_queue_returns_zero():
-    with patch('pdfConverter.databaseConnector.getPdfToConvertToLatex', return_value=None):
+    with patch('pdfConverter.LatexRepository.get_next_to_convert', return_value=None):
         result = pdfConverter.run_conversion()
     assert result == 0
 
@@ -25,11 +25,11 @@ def test_converts_pdf_and_returns_count():
         call_order.append('PdfReader')
         return mock_reader
 
-    with patch('pdfConverter.databaseConnector.getPdfToConvertToLatex', side_effect=['arxiv/paper.pdf', None]), \
+    with patch('pdfConverter.LatexRepository.get_next_to_convert', side_effect=['arxiv/paper.pdf', None]), \
          patch('pdfConverter.ftpConnector.getFile', return_value=mock_file), \
          patch('pdfConverter.PdfReader', side_effect=mock_pdf_reader), \
          patch('pdfConverter.ftpConnector.storeFile') as mock_store, \
-         patch('pdfConverter.databaseConnector.saveLatexFileLocation') as mock_save:
+         patch('pdfConverter.LatexRepository.save_location') as mock_save:
         result = pdfConverter.run_conversion()
 
     assert result == 1
@@ -48,11 +48,11 @@ def test_failed_conversion_saves_na_and_loop_continues():
     mock_reader = MagicMock()
     mock_reader.pages = [mock_page]
 
-    with patch('pdfConverter.databaseConnector.getPdfToConvertToLatex', side_effect=['bad/file.pdf', 'good/file.pdf', None]), \
+    with patch('pdfConverter.LatexRepository.get_next_to_convert', side_effect=['bad/file.pdf', 'good/file.pdf', None]), \
          patch('pdfConverter.ftpConnector.getFile', side_effect=[mock_bad_file, mock_good_file]), \
          patch('pdfConverter.PdfReader', return_value=mock_reader), \
          patch('pdfConverter.ftpConnector.storeFile'), \
-         patch('pdfConverter.databaseConnector.saveLatexFileLocation') as mock_save:
+         patch('pdfConverter.LatexRepository.save_location') as mock_save:
         result = pdfConverter.run_conversion()
 
     assert result == 1
@@ -67,11 +67,11 @@ def test_none_page_text_handled():
     mock_reader = MagicMock()
     mock_reader.pages = [mock_page]
 
-    with patch('pdfConverter.databaseConnector.getPdfToConvertToLatex', side_effect=['arxiv/paper.pdf', None]), \
+    with patch('pdfConverter.LatexRepository.get_next_to_convert', side_effect=['arxiv/paper.pdf', None]), \
          patch('pdfConverter.ftpConnector.getFile', return_value=mock_file), \
          patch('pdfConverter.PdfReader', return_value=mock_reader), \
          patch('pdfConverter.ftpConnector.storeFile'), \
-         patch('pdfConverter.databaseConnector.saveLatexFileLocation'):
+         patch('pdfConverter.LatexRepository.save_location'):
         result = pdfConverter.run_conversion()
 
     assert result == 1
