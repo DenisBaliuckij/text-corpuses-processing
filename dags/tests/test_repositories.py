@@ -173,3 +173,35 @@ def test_graph_job_get_files_for_job_returns_list():
         mock_conn.return_value.cursor.return_value.fetchall.return_value = [(1,), (2,)]
         result = GraphJobRepository.get_files_for_job(10)
         assert result == [(1,), (2,)]
+
+
+from repositories.service_state_repository import ServiceStateRepository
+
+
+def test_service_state_get_returns_row():
+    with patch('repositories.service_state_repository.getConfig', return_value=_CFG), \
+         patch('repositories.service_state_repository.pyodbc.connect') as mock_conn:
+        mock_conn.return_value.cursor.return_value.fetchone.return_value = ('{"page": 1}',)
+        result = ServiceStateRepository.get(4)
+        assert result == ('{"page": 1}',)
+
+
+def test_service_state_update_calls_stored_proc():
+    with patch('repositories.service_state_repository.getConfig', return_value=_CFG), \
+         patch('repositories.service_state_repository.pyodbc.connect') as mock_conn:
+        mock_cur = mock_conn.return_value.cursor.return_value
+        ServiceStateRepository.update(4, '{"page": 2}')
+        mock_cur.execute.assert_called_once_with(
+            "execute [dbo].[UpdateState] @serviceID = ?, @state = ?", (4, '{"page": 2}')
+        )
+        mock_conn.return_value.commit.assert_called_once()
+
+
+def test_service_state_remove_calls_stored_proc():
+    with patch('repositories.service_state_repository.getConfig', return_value=_CFG), \
+         patch('repositories.service_state_repository.pyodbc.connect') as mock_conn:
+        mock_cur = mock_conn.return_value.cursor.return_value
+        ServiceStateRepository.remove(4)
+        mock_cur.execute.assert_called_once_with(
+            "execute [dbo].[RemoveServiceState] @serviceID = ?", (4,)
+        )
