@@ -16,14 +16,13 @@ with DAG(
     def build_graph():
         import io
         import json
-        import dbConnector
-        from dbConnector import databaseConnector
+        from repositories.graph_job_repository import GraphJobRepository
         import ftpConnector
         from ftpConnector import ftpConnector
         import graphBuilder
         from graphBuilder import extract_graph_edges, merge_graph
 
-        file_row = databaseConnector.getFileForGraphBuilding()
+        file_row = GraphJobRepository.get_file_for_graph_building()
         if file_row is None:
             return
 
@@ -32,7 +31,7 @@ with DAG(
         job_id = file_row[2]
 
         try:
-            databaseConnector.transitionJobToExecution(job_id)
+            GraphJobRepository.transition_to_execution(job_id)
 
             resolved_file = ftpConnector.getFile(resolved_path, 'Graph')
             resolved_file.seek(0)
@@ -53,8 +52,8 @@ with DAG(
             graph_bytes = json.dumps(graph, ensure_ascii=False).encode('utf-8')
             ftpConnector.storeFile(graph_path, io.BytesIO(graph_bytes), 'Graph')
 
-            databaseConnector.markFileGraphDone(file_id)
+            GraphJobRepository.mark_graph_done(file_id)
         except Exception as e:
-            databaseConnector.setFileError(file_id, str(e))
+            GraphJobRepository.set_file_error(file_id, str(e))
 
     build_graph()

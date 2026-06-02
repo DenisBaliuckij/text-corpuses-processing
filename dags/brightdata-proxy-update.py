@@ -22,12 +22,8 @@ with DAG(
 
     @task()
     def update_brightdata_proxy():
-        import json,urllib.request
-        import time
-        import pyodbc 
-        import dbConnector
-        from dbConnector import databaseConnector
+        from repositories.proxy_repository import ProxyRepository
 
-        databaseConnector.addOrUpdateProxy('brd-customer-hl_68e14c58-zone-isp_proxy1:sgpoqre858ru@brd.superproxy.io', 33335, 2094097452, 'http')
+        ProxyRepository.add_or_update('brd-customer-hl_68e14c58-zone-isp_proxy1:sgpoqre858ru@brd.superproxy.io', 33335, 2094097452, 'http')
         
     update_brightdata_proxy()

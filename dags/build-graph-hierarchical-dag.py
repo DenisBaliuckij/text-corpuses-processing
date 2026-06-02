@@ -40,12 +40,11 @@ with DAG(
         if dag_folder not in sys.path:
             sys.path.insert(0, dag_folder)
 
-        import dbConnector
-        from dbConnector import databaseConnector
+        from repositories.graph_job_repository import GraphJobRepository
         import ftpConnector
         from ftpConnector import ftpConnector
 
-        file_row = databaseConnector.getFileForGraphBuilding()
+        file_row = GraphJobRepository.get_file_for_graph_building()
         if file_row is None:
             return
 
@@ -54,7 +53,7 @@ with DAG(
         job_id = file_row[2]
 
         try:
-            databaseConnector.transitionJobToExecution(job_id)
+            GraphJobRepository.transition_to_execution(job_id)
 
             resolved_file = ftpConnector.getFile(resolved_path, 'Graph')
             resolved_file.seek(0)
@@ -89,9 +88,9 @@ with DAG(
                 ).encode('utf-8')
                 ftpConnector.storeFile(f"{base_path}/hierarchy_tree.json", io.BytesIO(hierarchy_bytes), 'Graph')
 
-            databaseConnector.markFileGraphDone(file_id)
+            GraphJobRepository.mark_graph_done(file_id)
 
         except Exception as e:
-            databaseConnector.setFileError(file_id, str(e))
+            GraphJobRepository.set_file_error(file_id, str(e))
 
     build_graph_hierarchical()

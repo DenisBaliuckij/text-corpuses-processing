@@ -16,13 +16,12 @@ with DAG(
     def resolve_anaphora():
         import io
         import json
-        import dbConnector
-        from dbConnector import databaseConnector
+        from repositories.graph_job_repository import GraphJobRepository
         import ftpConnector
         from ftpConnector import ftpConnector
         from anaphoraResolver import resolve_and_substitute
 
-        file_row = databaseConnector.getFileForAnaphoraResolution()
+        file_row = GraphJobRepository.get_file_for_anaphora()
         if file_row is None:
             return
 
@@ -31,7 +30,7 @@ with DAG(
         job_id = file_row[2]
 
         try:
-            config_json = databaseConnector.getProcessorConfig(job_id)
+            config_json = GraphJobRepository.get_processor_config(job_id)
             config = json.loads(config_json) if config_json else {}
             resolver_name = config.get("anaphoraResolverName", "LapinLiass")
 
@@ -48,8 +47,8 @@ with DAG(
                 'Graph'
             )
 
-            databaseConnector.markFileAnaphoraDone(file_id, resolved_path)
+            GraphJobRepository.mark_anaphora_done(file_id, resolved_path)
         except Exception as e:
-            databaseConnector.setFileError(file_id, str(e))
+            GraphJobRepository.set_file_error(file_id, str(e))
 
     resolve_anaphora()

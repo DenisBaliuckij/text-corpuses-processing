@@ -14,12 +14,11 @@ with DAG(
 
     @task()
     def prepare_job():
-        import dbConnector
-        from dbConnector import databaseConnector
+        from repositories.graph_job_repository import GraphJobRepository
         import ftpConnector
         from ftpConnector import ftpConnector
 
-        job = databaseConnector.getJobForPreparation()
+        job = GraphJobRepository.get_job_for_preparation()
         if job is None:
             return
 
@@ -31,10 +30,10 @@ with DAG(
             for path in paths:
                 file_list = ftpConnector.getFileList(path, 'Tex')
                 for file_path in file_list:
-                    databaseConnector.addFileSourceForGraphConstructionJob(file_path, job_id)
+                    GraphJobRepository.add_file_source(file_path, job_id)
 
-            databaseConnector.processGraphCreationJobToTextCopying(job_id)
+            GraphJobRepository.process_to_text_copying(job_id)
         except Exception as e:
-            databaseConnector.setErrorForPreparationJob(job_id, str(e))
+            GraphJobRepository.set_job_error(job_id, str(e))
 
     prepare_job()

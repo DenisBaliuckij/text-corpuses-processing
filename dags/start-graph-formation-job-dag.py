@@ -35,19 +35,14 @@ with DAG(
     def insertGraphProcessingJob():
 
         import json
-        import requests
-        import pyodbc 
-        import requests
-        import bs4
-        import dbConnector
-        from dbConnector import databaseConnector
+        from repositories.graph_job_repository import GraphJobRepository
         ctx = get_current_context()
         params = ctx["dag"].params
         config = {
             "processorName": params["textProcessorName"],
             "anaphoraResolverName": params["anaphoraResolverName"],
         }
-        
-        databaseConnector.insertGraphCreationJob(json.dumps(config), params["paths"])
+
+        GraphJobRepository.insert_job(json.dumps(config), params["paths"])
         
     insertGraphProcessingJob()
