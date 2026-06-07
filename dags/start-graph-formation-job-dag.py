@@ -15,6 +15,7 @@ with DAG(
     dag_id="start_tree_formation_job",
     start_date=pendulum.datetime(2021, 1, 1, tz="UTC"),
     catchup=False,
+    is_paused_upon_creation=False,
     max_active_runs = 1,
     tags=["treeFormation"],
     params={
