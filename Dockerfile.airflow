@@ -1,0 +1,53 @@
+FROM apache/airflow:3.0.0-python3.10
+
+USER root
+
+# Microsoft ODBC Driver 18 for SQL Server (required by pyodbc on Linux)
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        curl \
+        gnupg2 \
+        apt-transport-https \
+        unixodbc-dev \
+        build-essential \
+    && curl -fsSL https://packages.microsoft.com/keys/microsoft.asc \
+        | gpg --dearmor -o /usr/share/keyrings/microsoft-prod.gpg \
+    && echo "deb [arch=amd64 signed-by=/usr/share/keyrings/microsoft-prod.gpg] \
+https://packages.microsoft.com/debian/12/prod bookworm main" \
+        > /etc/apt/sources.list.d/mssql-release.list \
+    && apt-get update \
+    && ACCEPT_EULA=Y apt-get install -y --no-install-recommends msodbcsql18 \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+USER airflow
+
+# Install PyTorch CPU-only before COPY so requirements file changes don't bust this layer
+RUN pip install --no-cache-dir \
+        torch \
+        --index-url https://download.pytorch.org/whl/cpu
+
+COPY requirements.txt /tmp/requirements-core.txt
+COPY dags/llm_v2/requirements.txt /tmp/requirements-llm-v2.txt
+COPY dags/hierarchical_llm_version/requirements.txt /tmp/requirements-hierarchical.txt
+
+# Strip apache-airflow from core requirements (base image already has it pinned)
+RUN grep -v "^apache-airflow" /tmp/requirements-core.txt > /tmp/requirements-core-docker.txt
+
+# Install all remaining dependencies; --extra-index-url keeps CPU torch when resolving torch>=2.0.0
+RUN pip install --no-cache-dir \
+        --extra-index-url https://download.pytorch.org/whl/cpu \
+        -r /tmp/requirements-core-docker.txt \
+        -r /tmp/requirements-llm-v2.txt \
+        -r /tmp/requirements-hierarchical.txt \
+        "requests[socks]" \
+        dash \
+        "dash-cytoscape"
+
+# Download spaCy models and NLTK data
+RUN python -m spacy download en_core_web_sm \
+    && python -m spacy download en_core_web_lg \
+    && python -c "import nltk; nltk.download('wordnet', quiet=True)"
+
+# Make dags/ importable at process startup (scheduler, webserver)
+ENV PYTHONPATH=/opt/airflow/dags
