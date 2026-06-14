@@ -1,11 +1,11 @@
 {
 	
 	"ConnectionString": "Driver={ODBC Driver 18 for SQL Server};Server=host.docker.internal,1433;Database=TextCorpuses;UID=airflow;PWD=airflow;TrustServerCertificate=yes;Encrypt=yes;",
-	"FtpHost": "127.0.0.1",
+	"FtpHost": "host.docker.internal",
 	"FtpPort": 21,
 	"FtpUser": "airflow",
 	"FtpPassword": "airflow",
-	"FtpHostTex": "127.0.0.1",
+	"FtpHostTex": "host.docker.internal",
 	"FtpPortTex": 21,
 	"FtpUserTex": "latex",
 	"FtpPasswordTex": "latex",
