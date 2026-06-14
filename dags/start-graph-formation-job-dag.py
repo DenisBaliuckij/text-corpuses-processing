@@ -38,7 +38,7 @@ with DAG(
         import json
         from repositories.graph_job_repository import GraphJobRepository
         ctx = get_current_context()
-        params = ctx["dag"].params
+        params = ctx["params"]
         config = {
             "processorName": params["textProcessorName"],
             "anaphoraResolverName": params["anaphoraResolverName"],
