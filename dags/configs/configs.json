@@ -1,5 +1,6 @@
 {
-	"ConnectionString": "Driver={ODBC Driver 18 for SQL Server};Server=LAPTOP-I91584GB\\SQLEXPRESS;Database=TextCorpuses;Trusted_Connection=yes;TrustServerCertificate=yes;",
+	
+	"ConnectionString": "Driver={ODBC Driver 18 for SQL Server};Server=host.docker.internal,1433;Database=TextCorpuses;UID=airflow;PWD=airflow;TrustServerCertificate=yes;Encrypt=yes;",
 	"FtpHost": "127.0.0.1",
 	"FtpPort": 21,
 	"FtpUser": "airflow",
