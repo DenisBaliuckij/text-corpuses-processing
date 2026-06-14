@@ -40,7 +40,7 @@ with DAG(
             proxies = {
                 'http': f"{proxy['protocol']}://{proxy['ip']}:{proxy['port']}",
                 'https': f"{proxy['protocol']}://{proxy['ip']}:{proxy['port']}",
-            }
+            } if proxy else None
 
             resp = requests.get(
                 'http://export.arxiv.org/api/query',
@@ -78,6 +78,6 @@ with DAG(
             has_more = (page * PAGE_SIZE) < min(total, max_results)
             return urls, has_more
 
-        run_search(service_id=4, source='arxiv', adapter_fn=fetch_page)
+        run_search(service_id=4, source='arxiv', adapter_fn=fetch_page, use_proxy=False)
 
     download_arxiv_scientific()

@@ -43,7 +43,7 @@ with DAG(
             proxies = {
                 'http': f"{proxy['protocol']}://{proxy['ip']}:{proxy['port']}",
                 'https': f"{proxy['protocol']}://{proxy['ip']}:{proxy['port']}",
-            }
+            } if proxy else None
 
             headers = {'User-Agent': 'Mozilla/5.0'}
             api_key = getConfig().get('SemanticScholarApiKey', '')
@@ -80,6 +80,6 @@ with DAG(
             has_more = bool(next_token) and (page * PAGE_SIZE) < max_results
             return urls, has_more
 
-        run_search(service_id=6, source='semantic_scholar', adapter_fn=fetch_page)
+        run_search(service_id=6, source='semantic_scholar', adapter_fn=fetch_page, use_proxy=False)
 
     download_semantic_scholar()

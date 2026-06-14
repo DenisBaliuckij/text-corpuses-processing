@@ -97,7 +97,7 @@ def advance_state(state: dict, criteria: list, has_more: bool):
         return {'criterion_index': next_idx, 'page': 1, 'done_criteria': list(done)}
 
 
-def run_search(service_id: int, source: str, adapter_fn) -> None:
+def run_search(service_id: int, source: str, adapter_fn, use_proxy: bool = True) -> None:
     """Main entry point called by each DAG task.
 
     Loads criteria and state, picks the current criterion, calls adapter_fn
@@ -106,8 +106,11 @@ def run_search(service_id: int, source: str, adapter_fn) -> None:
     adapter_fn(criterion, page, proxy) -> (list[str], bool)
       criterion — one dict from search_configs.json
       page      — current 1-based page number
-      proxy     — {'ip': str, 'port': int, 'protocol': str}
+      proxy     — {'ip': str, 'port': int, 'protocol': str}, or None when use_proxy=False
       returns   — (list of URL strings, has_more bool)
+
+    use_proxy=False skips proxy lookup entirely (suitable for public APIs that
+    don't require IP rotation, e.g. arXiv, PubMed, Semantic Scholar).
     """
     criteria = load_search_config(source)
     if not criteria:
@@ -125,16 +128,18 @@ def run_search(service_id: int, source: str, adapter_fn) -> None:
             return
         state = {'criterion_index': current, 'page': 1, 'done_criteria': list(done)}
 
-    try:
-        proxy = get_proxy()
-    except RuntimeError:
-        return  # no proxy; exit without changing state
+    proxy = None
+    if use_proxy:
+        try:
+            proxy = get_proxy()
+        except RuntimeError:
+            return  # no proxy; exit without changing state
 
     try:
         urls, has_more = adapter_fn(criteria[state['criterion_index']], state['page'], proxy)
     except Exception as e:
         print(f'[paperDownloader] adapter error: {e}')
-        if any(w in str(e).lower() for w in ('proxy', 'connect', 'timeout', 'ssl')):
+        if proxy and any(w in str(e).lower() for w in ('proxy', 'connect', 'timeout', 'ssl')):
             mark_proxy_broken(proxy['ip'])
         return  # state NOT advanced; Airflow retries on next run
 
