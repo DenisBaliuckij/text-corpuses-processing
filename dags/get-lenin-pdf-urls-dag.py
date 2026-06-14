@@ -70,6 +70,10 @@ with DAG(
 
         while True:
 
+            if state["currentLink"] >= len(state["links"]):
+                ServiceStateRepository.remove(serviceID)
+                break
+
             rubric = state["links"][state["currentLink"]]
             proxieIp = None
             try:
@@ -109,12 +113,9 @@ with DAG(
                 print("Url discovered", url)
             PdfRepository.add_urls(urls_to_save)
             urlCounter = len(urls_to_save)
-            if urlCounter>0:
-                state["pageNumber"] =state["pageNumber"]+1
+            if urlCounter > 0:
+                state["pageNumber"] = state["pageNumber"] + 1
             else:
-                if state["currentLink"] >= len(state["links"]):
-                    ServiceStateRepository.remove(serviceID)
-                    break
                 state["currentLink"] += 1
                 state["pageNumber"] = 1
             ServiceStateRepository.update(serviceID, json.dumps(state))
