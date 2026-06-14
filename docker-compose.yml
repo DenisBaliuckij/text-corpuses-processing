@@ -35,17 +35,7 @@ services:
     volumes:
       - ./dags:/opt/airflow/dags
       - airflow_logs:/opt/airflow/logs
-    command: >
-      bash -c "
-        airflow db migrate &&
-        (airflow fab create-admin
-          --username admin
-          --password admin
-          --firstname Admin
-          --lastname Admin
-          --email admin@example.com
-        || true)
-      "
+    command: bash -c "airflow db migrate && (airflow users create --username admin --password admin --firstname Admin --lastname Admin --role Admin --email admin@example.com || true)"
     depends_on:
       postgres:
         condition: service_healthy
@@ -58,7 +48,7 @@ services:
       - airflow_logs:/opt/airflow/logs
     ports:
       - "8080:8080"
-    command: webserver
+    command: api-server
     depends_on:
       postgres:
         condition: service_healthy
@@ -69,6 +59,18 @@ services:
       interval: 10s
       timeout: 10s
       retries: 10
+
+  airflow-dag-processor:
+    <<: *airflow-common
+    volumes:
+      - ./dags:/opt/airflow/dags
+      - airflow_logs:/opt/airflow/logs
+    command: dag-processor
+    depends_on:
+      postgres:
+        condition: service_healthy
+      airflow-init:
+        condition: service_completed_successfully
 
   airflow-scheduler:
     <<: *airflow-common
