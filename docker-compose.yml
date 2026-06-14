@@ -8,9 +8,11 @@ x-airflow-common:
     AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
     AIRFLOW__CORE__EXECUTOR: LocalExecutor
     AIRFLOW__CORE__AUTH_MANAGER: airflow.providers.fab.auth_manager.fab_auth_manager.FabAuthManager
-    AIRFLOW__CORE__FERNET_KEY: ''
+    AIRFLOW__CORE__FERNET_KEY: 'xkDkjAkSjCgmL2jQbxReSFWdbjH2egYneaxhSa38JGs='
     AIRFLOW__WEBSERVER__SECRET_KEY: 'local-dev-secret-change-for-production'
+    AIRFLOW__API_AUTH__JWT_SECRET: 'nbxHYZ5XxyuYpbYdANnvsnL6QymJUs4_bA74w64kfWU='
     AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
+    AIRFLOW__CORE__EXECUTION_API_SERVER_URL: 'http://airflow-webserver:8080/execution/'
     PYTHONPATH: /opt/airflow/dags
 
 services:
