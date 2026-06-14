@@ -170,3 +170,27 @@ BEGIN
     SELECT @jobId AS ID WHERE @jobId IS NOT NULL;
 END
 GO
+
+-- ============================================================
+-- Fix AddTextSourceForProcessing
+-- The original SP used a columnless INSERT that breaks once
+-- ResolvedFilePath and Error were added above. Explicit column
+-- names make the INSERT resilient to future schema additions.
+-- ============================================================
+ALTER PROCEDURE [dbo].[AddTextSourceForProcessing]
+    @location AS nvarchar(max),
+    @jobId    AS int
+AS
+BEGIN
+    SET NOCOUNT ON;
+    IF NOT EXISTS (SELECT 1 FROM dbo.GraphConstructionJob WHERE ID = @jobId AND Status = 5)
+    BEGIN
+        RETURN
+    END
+    IF NOT EXISTS (SELECT 1 FROM dbo.GraphConstructionFiles WHERE FilePath = @location AND GraphConstructionJobId = @jobId)
+    BEGIN
+        INSERT INTO dbo.GraphConstructionFiles (FilePath, Status, GraphConstructionJobId)
+        VALUES (@location, 0, @jobId)
+    END
+END
+GO
