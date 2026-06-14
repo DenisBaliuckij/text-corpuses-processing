@@ -27,13 +27,14 @@ BEGIN
     WHERE f.Status = 0
     AND j.Status IN (10, 20);
 
-    IF @fileId IS NULL
-        RETURN;
+    IF @fileId IS NOT NULL
+    BEGIN
+        UPDATE dbo.GraphConstructionFiles
+        SET Status = 5
+        WHERE ID = @fileId;
+    END
 
-    UPDATE dbo.GraphConstructionFiles
-    SET Status = 5
-    WHERE ID = @fileId;
-
+    -- Always SELECT so pyodbc fetchone() returns None (not raise) when no file available
     SELECT f.ID, f.FilePath, f.GraphConstructionJobId
     FROM dbo.GraphConstructionFiles f
     WHERE f.ID = @fileId;
@@ -89,13 +90,14 @@ BEGIN
     WHERE f.Status = 10
     AND j.Status IN (10, 20);
 
-    IF @fileId IS NULL
-        RETURN;
+    IF @fileId IS NOT NULL
+    BEGIN
+        UPDATE dbo.GraphConstructionFiles
+        SET Status = 15
+        WHERE ID = @fileId;
+    END
 
-    UPDATE dbo.GraphConstructionFiles
-    SET Status = 15
-    WHERE ID = @fileId;
-
+    -- Always SELECT so pyodbc fetchone() returns None (not raise) when no file available
     SELECT f.ID, f.ResolvedFilePath, f.GraphConstructionJobId
     FROM dbo.GraphConstructionFiles f
     WHERE f.ID = @fileId;
@@ -157,13 +159,14 @@ BEGIN
         AND f.Status != 20
     );
 
-    IF @jobId IS NULL
-        RETURN;
+    IF @jobId IS NOT NULL
+    BEGIN
+        UPDATE dbo.GraphConstructionJob
+        SET Status = 30, LastStatusChangeAt = GETDATE()
+        WHERE ID = @jobId;
+    END
 
-    UPDATE dbo.GraphConstructionJob
-    SET Status = 30, LastStatusChangeAt = GETDATE()
-    WHERE ID = @jobId;
-
-    SELECT @jobId AS ID;
+    -- WHERE clause returns 0 rows (fetchone → None) when no job found
+    SELECT @jobId AS ID WHERE @jobId IS NOT NULL;
 END
 GO
