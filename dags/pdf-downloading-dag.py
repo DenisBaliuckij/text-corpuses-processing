@@ -27,7 +27,13 @@ with DAG(
         from ftpConnector import ftpConnector
 
         TOTAL_URLS = 500
-        CONCURRENCY = 15
+        # Every worker independently calls ProxyRepository.get_latest(), which
+        # always returns the single shared paid proxy (BrightData) while its
+        # row exists. Too much concurrency here means many workers open
+        # simultaneous tunnels through that one proxy at once, which exceeds
+        # its plan's concurrent-connection limit and causes real ProxyErrors
+        # that get the proxy marked broken (and deleted) for everyone.
+        CONCURRENCY = 3
 
         def storeFile(initialUrl, filename, file):
             ftpConnector.storeFile(filename, file)
