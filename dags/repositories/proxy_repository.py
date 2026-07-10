@@ -44,3 +44,16 @@ class ProxyRepository:
         cursor.close()
         cnxn.close()
         return {'proxieIp': row[0], 'proxiePort': row[1], 'proxieProtocol': row[2]}
+
+    @staticmethod
+    def get_latest_free() -> dict:
+        """Same as get_latest() but excludes the shared paid (BrightData)
+        proxy, for callers that need a free-pool proxy specifically
+        (e.g. file downloads, where BrightData has proven unreliable)."""
+        cnxn = pyodbc.connect(getConfig()['ConnectionString'])
+        cursor = cnxn.cursor()
+        cursor.execute("execute [dbo].[GetLatestFreeProxy]")
+        row = cursor.fetchone()
+        cursor.close()
+        cnxn.close()
+        return {'proxieIp': row[0], 'proxiePort': row[1], 'proxieProtocol': row[2]}

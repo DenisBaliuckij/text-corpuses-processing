@@ -50,6 +50,11 @@ with DAG(
                 if 'support' in url:
                     PdfRepository.save_location(initialUrl, "NA")
                     return
+                if 'springer' in url:
+                    # Excluded for now due to a known Springer-specific issue.
+                    # Left pending (not marked NA) so it resumes automatically
+                    # once re-enabled.
+                    return
                 filename = ""
                 if 'arxiv' in url:
                     filename = 'arxiv/'
@@ -72,15 +77,12 @@ with DAG(
                     url = url.split('#')[0]
                 filename += str(uuid.uuid4())
                 filename += '.pdf'
-                is_arxiv = 'arxiv' in url
-                proxies = None
-                if not is_arxiv:
-                    proxieResult = ProxyRepository.get_latest()
-                    proxieIp = proxieResult["proxieIp"]
-                    proxiePort = proxieResult["proxiePort"]
-                    proxieProtocol = proxieResult["proxieProtocol"]
-                    proxies = {'http': proxieProtocol.strip() + '://' + str(proxieIp).strip() + ':' + str(proxiePort),
-                               'https': proxieProtocol.strip() + '://' + str(proxieIp).strip() + ':' + str(proxiePort)}
+                proxieResult = ProxyRepository.get_latest()
+                proxieIp = proxieResult["proxieIp"]
+                proxiePort = proxieResult["proxiePort"]
+                proxieProtocol = proxieResult["proxieProtocol"]
+                proxies = {'http': proxieProtocol.strip() + '://' + str(proxieIp).strip() + ':' + str(proxiePort),
+                           'https': proxieProtocol.strip() + '://' + str(proxieIp).strip() + ':' + str(proxiePort)}
                 print(proxies)
                 response = requests.get(url,
                                     data=None,
