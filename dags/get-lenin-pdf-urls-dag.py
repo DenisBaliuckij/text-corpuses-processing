@@ -65,7 +65,8 @@ with DAG(
                      break
                 except Exception as e:
                     print(e)
-                    ProxyRepository.mark_broken(str(proxieIp).strip())
+                    if isinstance(e, requests.exceptions.ProxyError):
+                        ProxyRepository.mark_broken(str(proxieIp).strip())
                     continue
 
         while True:
@@ -98,7 +99,7 @@ with DAG(
                                         timeout=30)
             except Exception as e:
                 print(e)
-                if proxieIp is not None:
+                if proxieIp is not None and isinstance(e, requests.exceptions.ProxyError):
                     ProxyRepository.mark_broken(str(proxieIp).strip())
                 continue
 

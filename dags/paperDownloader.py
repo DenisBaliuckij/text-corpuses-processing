@@ -2,6 +2,8 @@
 import json
 import os
 
+import requests
+
 from repositories.service_state_repository import ServiceStateRepository
 from repositories.proxy_repository import ProxyRepository
 from repositories.pdf_repository import PdfRepository
@@ -139,7 +141,7 @@ def run_search(service_id: int, source: str, adapter_fn, use_proxy: bool = True)
         urls, has_more = adapter_fn(criteria[state['criterion_index']], state['page'], proxy)
     except Exception as e:
         print(f'[paperDownloader] adapter error: {e}')
-        if proxy and any(w in str(e).lower() for w in ('proxy', 'connect', 'timeout', 'ssl')):
+        if proxy and isinstance(e, requests.exceptions.ProxyError):
             mark_proxy_broken(proxy['ip'])
         return  # state NOT advanced; Airflow retries on next run
 

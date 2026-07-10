@@ -16,10 +16,13 @@ def _ftp_mkdirs(server, path):
                 raise
 
 
+FTP_TIMEOUT = 30
+
+
 class ftpConnector:
     def storeFile(filename, file, ftpPostfix = ''):
         config = getConfig()
-        server = ftplib.FTP()
+        server = ftplib.FTP(timeout=FTP_TIMEOUT)
         server.connect(config["FtpHost" + ftpPostfix], config["FtpPort" + ftpPostfix])
         server.login(config["FtpUser" + ftpPostfix],config["FtpPassword" + ftpPostfix])
         parent = '/'.join(filename.split('/')[:-1])
@@ -29,7 +32,7 @@ class ftpConnector:
         server.quit()
     def getFile(filePath, ftpPostfix = ''):
         config = getConfig()
-        server = ftplib.FTP()
+        server = ftplib.FTP(timeout=FTP_TIMEOUT)
         server.connect(config["FtpHost" + ftpPostfix], config["FtpPort" + ftpPostfix])
         server.login(config["FtpUser" + ftpPostfix],config["FtpPassword" + ftpPostfix])
         memfile = io.BytesIO()
@@ -38,7 +41,7 @@ class ftpConnector:
         return memfile
     def getFileList(path, ftpPostfix = ''):
         config = getConfig()
-        server = ftplib.FTP()
+        server = ftplib.FTP(timeout=FTP_TIMEOUT)
         server.connect(config["FtpHost" + ftpPostfix], config["FtpPort" + ftpPostfix])
         server.login(config["FtpUser" + ftpPostfix],config["FtpPassword" + ftpPostfix])
         files = server.nlst(path)

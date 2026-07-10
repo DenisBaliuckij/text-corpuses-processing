@@ -78,6 +78,6 @@ with DAG(
             has_more = (page * PAGE_SIZE) < min(total, max_results)
             return urls, has_more
 
-        run_search(service_id=4, source='arxiv', adapter_fn=fetch_page, use_proxy=False)
+        run_search(service_id=4, source='arxiv', adapter_fn=fetch_page, use_proxy=True)
 
     download_arxiv_scientific()

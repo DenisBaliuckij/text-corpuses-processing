@@ -31,7 +31,7 @@ with DAG(
                 d_to = criterion.get('date_to', '2099/12/31').replace('-', '/')
                 query_parts.append(f'"{d_from}"[dp]:"{d_to}"[dp]')
             if criterion.get('open_access_only', False):
-                query_parts.append('"pmc open access"[filter]')
+                query_parts.append('free full text[filter]')
 
             query = ' AND '.join(query_parts)
 

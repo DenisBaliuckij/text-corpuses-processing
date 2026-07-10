@@ -20,25 +20,31 @@ with DAG(
         import requests
         import uuid
         import io
+        from concurrent.futures import ThreadPoolExecutor
         from repositories.pdf_repository import PdfRepository
         from repositories.proxy_repository import ProxyRepository
         import ftpConnector
         from ftpConnector import ftpConnector
-        i = 0
-        def storeFile(initialUrl,filename, file):
+
+        TOTAL_URLS = 500
+        CONCURRENCY = 15
+
+        def storeFile(initialUrl, filename, file):
             ftpConnector.storeFile(filename, file)
             PdfRepository.save_location(initialUrl, filename)
 
-
-        while i<500:
+        def downloadOne():
+            proxieIp = None
             try:
                 url = PdfRepository.get_next_to_download()
+                if url is None:
+                    return
                 initialUrl = url
 
                 if 'support' in url:
                     PdfRepository.save_location(initialUrl, "NA")
-                    continue
-                filename=""
+                    return
+                filename = ""
                 if 'arxiv' in url:
                     filename = 'arxiv/'
                 if 'lenin' in url:
@@ -46,8 +52,20 @@ with DAG(
                 if 'springer' in url:
                     filename = 'springer/'
                     url = url.replace('/article', 'content/pdf')
-                filename+=str(uuid.uuid4())
-                filename+='.pdf'
+                if '#gujarati_literature' in url:
+                    filename = 'gujarati/literature/'
+                    url = url.split('#')[0]
+                if '#gujarati_news' in url:
+                    filename = 'gujarati/news/'
+                    url = url.split('#')[0]
+                if '#gujarati_science_natural' in url:
+                    filename = 'gujarati/science_natural/'
+                    url = url.split('#')[0]
+                if '#gujarati_science_social' in url:
+                    filename = 'gujarati/science_social/'
+                    url = url.split('#')[0]
+                filename += str(uuid.uuid4())
+                filename += '.pdf'
                 proxieResult = ProxyRepository.get_latest()
                 proxieIp = proxieResult["proxieIp"]
                 proxiePort = proxieResult["proxiePort"]
@@ -67,8 +85,7 @@ with DAG(
                     storeFile(initialUrl, filename, file)
 
                 else:
-                    urdockl = url.replace('.pdf', '_reference.pdf')
-                    response = requests.get(url,
+                    response = requests.get(url.replace('.pdf', '_reference.pdf'),
                               data=None,
                               headers={
                                   'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/35.0.1916.47 Safari/537.36'
@@ -82,10 +99,12 @@ with DAG(
                         PdfRepository.save_location(initialUrl, "NA")
             except Exception as e:
                 print(e)
-                ProxyRepository.mark_broken(str(proxieIp).strip())
-                continue
-            i+=1
+                if proxieIp and isinstance(e, requests.exceptions.ProxyError):
+                    ProxyRepository.mark_broken(str(proxieIp).strip())
 
+        with ThreadPoolExecutor(max_workers=CONCURRENCY) as executor:
+            futures = [executor.submit(downloadOne) for _ in range(TOTAL_URLS)]
+            for future in futures:
+                future.result()
 
-        
     downloadPdfFiles()
