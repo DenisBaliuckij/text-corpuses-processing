@@ -57,5 +57,47 @@
       "max_results": 200,
       "repeat": false
     }
+  ],
+  "gujarati_literature": [
+    {
+      "query": "mediatype:(texts) AND language:(guj) AND NOT subject:(newspaper) AND NOT subject:(magazine)",
+      "max_results": 5000,
+      "repeat": true
+    }
+  ],
+  "gujarati_news": [
+    {
+      "query": "mediatype:(texts) AND language:(guj) AND (subject:(newspaper) OR subject:(magazine))",
+      "max_results": 2000,
+      "repeat": true
+    }
+  ],
+  "gujarati_science_natural": [
+    {
+      "subject": "Science",
+      "repeat": true
+    },
+    {
+      "subject": "Physics",
+      "repeat": true
+    },
+    {
+      "subject": "Chemistry",
+      "repeat": true
+    }
+  ],
+  "gujarati_science_social": [
+    {
+      "subject": "Social Science",
+      "repeat": true
+    },
+    {
+      "subject": "Economics",
+      "repeat": true
+    },
+    {
+      "subject": "Sociology",
+      "repeat": true
+    }
   ]
 }
