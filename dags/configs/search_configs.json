@@ -99,5 +99,12 @@
       "subject": "Sociology",
       "repeat": true
     }
+  ],
+  "gujarati_science_archive": [
+    {
+      "query": "mediatype:(texts) AND language:(guj) AND (subject:(chemistry) OR subject:(physics) OR subject:(mathematics) OR title:(chemistry) OR title:(physics) OR title:(mathematics))",
+      "max_results": 1000,
+      "repeat": true
+    }
   ]
 }
