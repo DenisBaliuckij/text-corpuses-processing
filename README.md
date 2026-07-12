@@ -1,6 +1,6 @@
 # Text Corpuses Processing Pipeline
 
-An Apache Airflow-based pipeline for crawling scientific text corpuses, downloading PDFs, converting them to text, and building semantic knowledge graphs from the extracted content. Three targeted scientific paper downloaders (arXiv API, PubMed, Semantic Scholar) complement the existing web scrapers. Three graph-building backends are available: a fast rule-based NLP engine, a local HuggingFace LLM pipeline, and a hierarchical Yandex Cloud LLM pipeline.
+An Apache Airflow-based pipeline for crawling scientific text corpuses, downloading PDFs, converting them to text, and building semantic knowledge graphs from the extracted content. Three targeted scientific paper downloaders (arXiv API, PubMed, Semantic Scholar) complement the existing web scrapers, alongside a dedicated Gujarati-language corpus pipeline (literature, news/periodicals, and natural/social science theses). Three graph-building backends are available: a fast rule-based NLP engine, a local HuggingFace LLM pipeline, and a hierarchical Yandex Cloud LLM pipeline.
 
 ---
 
@@ -8,9 +8,9 @@ An Apache Airflow-based pipeline for crawling scientific text corpuses, download
 
 The pipeline automates the full journey from raw web sources to a structured semantic graph:
 
-1. **Proxy management** — maintains a pool of HTTP proxies for scraping
-2. **URL crawling** — discovers PDF links via web scrapers (arXiv, Springer, CyberLeninka) and official scientific APIs (arXiv API, PubMed, Semantic Scholar) with configurable search criteria
-3. **PDF downloading** — downloads discovered PDFs through proxies
+1. **Proxy management** — maintains a validated pool of HTTP proxies for scraping and downloading, plus an optional shared paid proxy
+2. **URL crawling** — discovers PDF links via web scrapers (arXiv, Springer, CyberLeninka), official scientific APIs (arXiv API, PubMed, Semantic Scholar), and Gujarati-language sources (Internet Archive, Shodhganga)
+3. **PDF downloading** — downloads discovered PDFs, optionally through proxies
 4. **PDF-to-text conversion** — extracts plain text from PDFs
 5. **Graph construction** — resolves anaphora, builds a semantic graph using one of three backends, then automatically computes graph metrics and generates an interactive visualization
 
@@ -66,9 +66,12 @@ Each stage is an independent Airflow DAG that does exactly one unit of work per 
 |--------|---------|
 | `configs.py` | Self-contained config loader (reads `dags/configs/configs.json` relative to `__file__`) |
 | `repositories/` | 5 domain DB repositories: `ProxyRepository`, `PdfRepository`, `LatexRepository`, `GraphJobRepository`, `ServiceStateRepository` |
-| `ftpConnector.py` | FTP upload / download / file listing |
+| `ftpConnector.py` | FTP upload / download / file listing (30s socket timeout on every connection) |
 | `paperDownloader.py` | Crawl state machine, proxy and URL helpers |
-| `pdfConverter.py` | PDF → plain text extraction |
+| `proxyValidator.py` | Shared free-proxy validator: tests each candidate against a real HTTPS target (arxiv.org) with a latency cutoff and content check before importing it |
+| `archiveOrgDownloader.py` | Internet Archive `advancedsearch` API adapter (Gujarati literature + news) |
+| `shodhgangaDownloader.py` | Shodhganga (INFLIBNET) thesis repository adapter (Gujarati science) |
+| `pdfConverter.py` | PDF → plain text extraction (parallelized, `ThreadPoolExecutor`) |
 | `graphBuilder.py` | Rule-based SVO triplet extraction |
 | `graphMetrics.py` | networkx graph statistics |
 | `graphVisualizer.py` | pyvis interactive HTML visualization |
@@ -80,15 +83,21 @@ Each stage is an independent Airflow DAG that does exactly one unit of work per 
 
 | DAG | Schedule | Purpose |
 |-----|----------|---------|
-| `get_proxies_for_calls` | `@continuous` | Fetches proxies from geonode.com |
-| `get_proxies_for_calls_2` | `@continuous` | Fetches proxies from proxydb.net |
-| `update-brightdata-proxy` | every 5 min | Keeps BrightData proxy entry current |
+| `get_proxies_for_calls` | `@continuous` | Fetches and validates proxies from geonode.com |
+| `get_proxies_for_calls_2` | `@continuous` | Fetches and validates proxies from proxydb.net |
+| `get_proxies_for_calls_3` | `@continuous` | Fetches and validates proxies from the ProxyScrape API |
+| `get_proxies_for_calls_4` | `@continuous` | Fetches and validates proxies from free-proxy-list.net |
+| `update-brightdata-proxy` | every 5 min | Keeps the shared paid (BrightData) proxy entry current — pause this DAG to exclude it entirely |
 | `get_arxiv_urls` | `@continuous` | Scrapes arXiv search pages for PDF URLs |
 | `get_springer_urls` | `@continuous` | Scrapes Springer for open-access PDF URLs |
 | `get_lenin_urls` | `@continuous` | Scrapes CyberLeninka for PDF URLs |
 | `download_arxiv_scientific` | `@continuous` | arXiv API — keyword + category + date search |
 | `download_pubmed` | `@continuous` | PubMed E-utilities — keyword + date + open-access search |
 | `download_semantic_scholar` | `@continuous` | Semantic Scholar API — keyword + field + citation filter |
+| `download_gujarati_literature` | `@continuous` | Internet Archive — Gujarati-language books, excluding periodicals |
+| `download_gujarati_news` | `@continuous` | Internet Archive — Gujarati-language newspapers/magazines |
+| `download_gujarati_science_natural` | `@continuous` | Shodhganga — Gujarati-language theses in Science/Physics/Chemistry |
+| `download_gujarati_science_social` | `@continuous` | Shodhganga — Gujarati-language theses in Social Science/Economics/Sociology |
 | `pdf_downloading` | `@continuous` | Downloads PDFs from discovered URLs |
 | `pdf_conversion` | `@continuous` | Converts PDFs to plain text |
 | `start_tree_formation_job` | manual trigger | Creates a new graph construction job |
@@ -161,6 +170,55 @@ Crawl state (current criterion index, current page, exhausted criteria) is store
 PubMed returns PMC open-access PDF URLs: `https://www.ncbi.nlm.nih.gov/pmc/articles/{PMCID}/pdf/`. Papers without a PMC ID are skipped.
 
 Semantic Scholar returns `openAccessPdf.url` from the response. Papers filtered by `min_citations` or `open_access_only` are skipped silently.
+
+---
+
+## Proxy Pool & Validation
+
+`IPProxy` (+ `ProxyProtocols` / `relIpProxyProxyProtocols`) holds the shared proxy pool used by every scraper and by `pdf_downloading`.
+
+### Sources
+
+Four DAGs continuously import free proxies, each running candidates through `proxyValidator.validate_and_import()` before trusting them:
+
+1. Fetch a candidate list from the source (geonode.com, proxydb.net, the ProxyScrape API, or free-proxy-list.net)
+2. Test each candidate concurrently with a real HTTPS request to **arxiv.org itself** (the actual target the pipeline needs) — reject if the response is slow (>5s), non-200, or doesn't contain the expected page content
+3. Only proxies that pass are written to `IPProxy` via `AddOrUpdateProxy`
+
+Testing against a real target with certificate verification (the `requests` default) also naturally rejects proxies that intercept/MITM traffic with a self-signed certificate, rather than a generic reachability check.
+
+A fifth DAG, `update-brightdata-proxy`, keeps a single shared **paid** proxy current by re-upserting it with an artificial far-future `lastChecked` timestamp every 5 minutes — this is optional infrastructure; **pause the DAG to exclude it from selection entirely** (its row will age out via the normal broken-proxy path and won't be reinserted while paused).
+
+### Selection
+
+- `ProxyRepository.get_latest()` → `GetLatestProxy`: the single non-broken proxy with the highest `SuccessCount`, falling back to `lastChecked` for ties. Used by every URL-discovery DAG and by `pdf_downloading` for all sources.
+- `ProxyRepository.get_latest_free()` → `GetLatestFreeProxy`: identical, but excludes any proxy whose `IP` contains `@` (the paid proxy is stored as a `user:pass@host` string, unlike free proxies' plain dotted IPs). Available for callers that need to bypass the paid proxy specifically; not currently wired into any DAG.
+
+### Success tracking & broken-proxy handling
+
+- `ProxyRepository.mark_success(ip)` → `MarkProxySuccess`: called after every real successful download. Increments `IPProxy.SuccessCount`, so proxies with a proven track record are preferred over untested ones — a working proxy naturally becomes the "champion" and gets reused.
+- `ProxyRepository.mark_broken(ip)` → `MarkProxyAsBroken`: **deletes** the proxy row outright (not a soft flag). Only called on an actual `requests.exceptions.ProxyError` (a real proxy-connection failure) — not on generic timeouts, SSL errors, or connection resets, which are usually the *target site's* fault, not the proxy's.
+
+### Known-excluded sources
+
+`pdf_downloading` currently skips Springer URLs entirely (returned to the queue, not marked failed) due to a known Springer-specific issue — `GetPdfToDownload` also filters them out at the query level, since otherwise a stuck Springer URL sitting at the head of its unordered `SELECT TOP 1` scan silently blocks every other download behind it. Re-enable both together once the issue is resolved.
+
+---
+
+## Gujarati Corpus Pipeline
+
+Four DAGs build a categorized Gujarati-language text corpus, feeding the same `PdfDocuments` queue and `pdf_downloading`/`pdf_conversion` DAGs as every other source — no separate tables. Since `PdfDocuments` has no category column, each discovered URL carries its category as a URL fragment (e.g. `#gujarati_literature`, never sent over the wire) so `pdf_downloading` can route it to a dedicated FTP subfolder.
+
+| Category | Source | Query strategy |
+|----------|--------|-----------------|
+| Literature | Internet Archive | `language:(guj)`, excluding newspaper/magazine subjects |
+| News / periodicals | Internet Archive | `language:(guj)` with newspaper or magazine subjects (e.g. the long-running *Kumar* periodical) |
+| Natural sciences | Shodhganga | `language=Gujarati`, subject contains Science / Physics / Chemistry |
+| Social sciences | Shodhganga | `language=Gujarati`, subject contains Social Science / Economics / Sociology |
+
+Shodhganga splits each thesis into one PDF per chapter (title page, declaration, chapter01, ... bibliography) rather than a single combined file — `shodhgangaDownloader.py` collects every bitstream PDF for a thesis, not just the first.
+
+Both science DAGs bypass the proxy pool entirely (`use_proxy=False`) — Shodhganga and Internet Archive are public, non-paywalled repositories that don't need IP rotation, and a direct connection avoids adding proxy-pool load for no benefit.
 
 ---
 
@@ -286,8 +344,13 @@ This fetches all `metrics.json` files for the job, produces `metrics_report.html
 ```
 /
 ├── arxiv/              ← downloaded arXiv PDFs
-├── springer/           ← downloaded Springer PDFs
+├── springer/           ← downloaded Springer PDFs (currently excluded from downloading)
 ├── cyberleninka/       ← downloaded CyberLeninka PDFs
+├── gujarati/
+│   ├── literature/     ← Gujarati books (Internet Archive)
+│   ├── news/           ← Gujarati newspapers/magazines (Internet Archive)
+│   ├── science_natural/  ← Gujarati natural-science theses (Shodhganga)
+│   └── science_social/   ← Gujarati social-science theses (Shodhganga)
 ├── Tex/                ← converted plain text files
 └── graphJobs/
     └── {jobId}/
@@ -328,10 +391,23 @@ SQL Server database `TextCorpuses` on `LAPTOP-I91584GB\SQLEXPRESS`.
 | `ServiceState` | Persistent state for crawling DAGs |
 
 Apply migrations in order using SSMS:
-- `Database/database-v0.1.sql`
-- `Database/database-v0.2-pdf-to-latex.sql`
-- `Database/database-v0.3.sql`
-- `Database/database-v0.4.sql`
+
+| Migration | Change |
+|-----------|--------|
+| `database-v0.1.sql` | Initial schema |
+| `database-v0.2-pdf-to-latex.sql` | Adds `LatexDocuments` (PDF → text tracking) |
+| `database-v0.3.sql` | Schema updates |
+| `database-v0.4.sql` | Schema updates |
+| `database-v0.5.sql` | `GetPDFLocationForLatexConvertation`: guard against inserting NULL when the conversion queue is empty |
+| `database-v0.6.sql` | Adds a cross-process arXiv rate limiter (superseded, see v0.8) |
+| `database-v0.7.sql` | `MarkProxyAsBroken`: fixes a race between concurrent deletes/inserts via explicit transaction + `UPDLOCK`/`HOLDLOCK` |
+| `database-v0.8.sql` | Removes the v0.6 rate limiter after reverting to proxy-based arXiv access |
+| `database-v0.9.sql` | Adds `GetLatestFreeProxy` — same as `GetLatestProxy` but excludes the shared paid proxy |
+| `database-v0.10.sql` | Dedupes `relIpProxyProxyProtocols` (351K → ~6.5K rows), adds a unique index, fixes `AddOrUpdateProxy`'s missing existence check |
+| `database-v0.11.sql` | Adds `IPProxy.SuccessCount` + `MarkProxySuccess`; `GetLatestProxy`/`GetLatestFreeProxy` now rank by proven track record first |
+| `database-v0.12.sql` | Fixes a v0.11 regression: `AddOrUpdateProxy`'s bare `INSERT ... VALUES` broke for every new proxy after `SuccessCount` was added |
+| `database-v0.13.sql` | `GetPdfToDownload`: excludes Springer URLs at the query level (temporary, paired with the Springer exclusion in `pdf-downloading-dag.py`) so a stuck Springer row can't head-of-line-block the whole queue |
+| `database-v0.14.sql` | `AddOrUpdateProxy`: rewritten with a single explicit transaction and `UPDLOCK`/`HOLDLOCK` (matching `MarkProxyAsBroken`'s pattern) to fix deadlocks under concurrent proxy-DAG load |
 
 ---
 
@@ -443,7 +519,7 @@ ORDER BY j.ID DESC;
 
 # Конвейер обработки текстовых корпусов
 
-Конвейер на базе Apache Airflow для краулинга научных текстовых корпусов, загрузки PDF-файлов, их конвертации в текст и построения семантических графов знаний. Три специализированных загрузчика научных статей (API arXiv, PubMed, Semantic Scholar) дополняют существующие веб-скраперы. Доступны три бэкенда построения графа: быстрый движок на основе правил NLP, конвейер с локальной LLM (HuggingFace) и иерархический конвейер с облачной LLM (Яндекс Облако).
+Конвейер на базе Apache Airflow для краулинга научных текстовых корпусов, загрузки PDF-файлов, их конвертации в текст и построения семантических графов знаний. Три специализированных загрузчика научных статей (API arXiv, PubMed, Semantic Scholar) дополняют существующие веб-скраперы, наряду с отдельным конвейером для гуджаратиязычного корпуса (художественная литература, новости/периодика, диссертации по естественным и общественным наукам). Доступны три бэкенда построения графа: быстрый движок на основе правил NLP, конвейер с локальной LLM (HuggingFace) и иерархический конвейер с облачной LLM (Яндекс Облако).
 
 ---
 
@@ -451,9 +527,9 @@ ORDER BY j.ID DESC;
 
 Конвейер автоматизирует полный цикл — от сырых веб-источников до структурированного семантического графа:
 
-1. **Управление прокси** — поддерживает пул HTTP-прокси для скрапинга
-2. **Краулинг URL** — обнаруживает ссылки на PDF через веб-скраперы (arXiv, Springer, КиберЛенинка) и официальные API научных публикаций (API arXiv, PubMed, Semantic Scholar) с настраиваемыми критериями поиска
-3. **Загрузка PDF** — скачивает найденные PDF через прокси
+1. **Управление прокси** — поддерживает провалидированный пул HTTP-прокси для скрапинга и загрузки, плюс опциональный общий платный прокси
+2. **Краулинг URL** — обнаруживает ссылки на PDF через веб-скраперы (arXiv, Springer, КиберЛенинка), официальные API научных публикаций (API arXiv, PubMed, Semantic Scholar) и гуджаратиязычные источники (Internet Archive, Shodhganga)
+3. **Загрузка PDF** — скачивает найденные PDF, опционально через прокси
 4. **Конвертация PDF в текст** — извлекает текст из PDF-файлов
 5. **Построение графа** — разрешает анафору, строит семантический граф одним из трёх бэкендов, затем автоматически вычисляет метрики графа и генерирует интерактивную визуализацию
 
@@ -463,11 +539,12 @@ ORDER BY j.ID DESC;
 
 ## Архитектура
 
-Конвейер состоит из **18 DAG**, разбитых на группы:
+Конвейер состоит из **24 DAG**, разбитых на группы:
 
-- **Прокси:** `get_proxies_for_calls`, `get_proxies_for_calls_2`, `update-brightdata-proxy`
-- **Веб-скраперы:** `get_arxiv_urls`, `get_springer_urls`, `get_leiden_urls`
+- **Прокси:** `get_proxies_for_calls`, `get_proxies_for_calls_2`, `get_proxies_for_calls_3`, `get_proxies_for_calls_4`, `update-brightdata-proxy`
+- **Веб-скраперы:** `get_arxiv_urls`, `get_springer_urls`, `get_lenin_urls`
 - **API-загрузчики научных статей:** `download_arxiv_scientific`, `download_pubmed`, `download_semantic_scholar`
+- **Гуджаратиязычный корпус:** `download_gujarati_literature`, `download_gujarati_news`, `download_gujarati_science_natural`, `download_gujarati_science_social`
 - **Загрузка и конвертация:** `pdf_downloading`, `pdf_conversion`
 - **Построение графа:** `start_tree_formation_job` (ручной запуск), `prepare_graph_construction_job`, `resolve_anaphora`, **`build_graph`**, **`build_graph_llm_v2`**, **`build_graph_hierarchical`**, `finalize_job`
 
@@ -479,9 +556,12 @@ ORDER BY j.ID DESC;
 |--------|------------|
 | `configs.py` | Самодостаточный загрузчик конфигурации (читает `dags/configs/configs.json` относительно `__file__`) |
 | `repositories/` | 5 доменных DB-репозиториев: `ProxyRepository`, `PdfRepository`, `LatexRepository`, `GraphJobRepository`, `ServiceStateRepository` |
-| `ftpConnector.py` | Загрузка, скачивание и листинг файлов на FTP |
+| `ftpConnector.py` | Загрузка, скачивание и листинг файлов на FTP (таймаут сокета 30с на каждое соединение) |
 | `paperDownloader.py` | Машина состояний краулинга, вспомогательные функции прокси и URL |
-| `pdfConverter.py` | Извлечение текста из PDF |
+| `proxyValidator.py` | Общий валидатор бесплатных прокси: проверяет каждого кандидата реальным HTTPS-запросом (arxiv.org) с ограничением по задержке и проверкой содержимого перед импортом |
+| `archiveOrgDownloader.py` | Адаптер API `advancedsearch` Internet Archive (гуджаратская литература и новости) |
+| `shodhgangaDownloader.py` | Адаптер репозитория диссертаций Shodhganga (INFLIBNET) (гуджаратская наука) |
+| `pdfConverter.py` | Извлечение текста из PDF (распараллелено через `ThreadPoolExecutor`) |
 | `graphBuilder.py` | Извлечение триплетов SVO на основе правил |
 | `graphMetrics.py` | Статистика графа через networkx |
 | `graphVisualizer.py` | Интерактивная HTML-визуализация через pyvis |
@@ -547,6 +627,55 @@ ORDER BY j.ID DESC;
 | `download_semantic_scholar` | `api.semanticscholar.org/graph/v1/paper/search` | 100 | Опционально — задайте `SemanticScholarApiKey` в `configs.json` |
 
 PubMed возвращает URL PDF из PMC: `https://www.ncbi.nlm.nih.gov/pmc/articles/{PMCID}/pdf/`. Статьи без PMC ID пропускаются. Semantic Scholar возвращает `openAccessPdf.url`; статьи, не прошедшие фильтры `min_citations` или `open_access_only`, молча пропускаются.
+
+---
+
+## Пул прокси и валидация
+
+Таблицы `IPProxy` (+ `ProxyProtocols` / `relIpProxyProxyProtocols`) хранят общий пул прокси, используемый всеми скраперами и DAG `pdf_downloading`.
+
+### Источники
+
+Четыре DAG непрерывно импортируют бесплатные прокси, пропуская каждого кандидата через `proxyValidator.validate_and_import()` перед тем, как ему довериться:
+
+1. Получить список кандидатов из источника (geonode.com, proxydb.net, API ProxyScrape или free-proxy-list.net)
+2. Параллельно проверить каждого кандидата реальным HTTPS-запросом к **самому arxiv.org** (реальной цели, нужной конвейеру) — отклонить, если ответ медленный (>5с), не 200 или не содержит ожидаемого содержимого страницы
+3. Только прошедшие проверку прокси записываются в `IPProxy` через `AddOrUpdateProxy`
+
+Проверка на реальной цели с верификацией сертификата (поведение `requests` по умолчанию) также естественным образом отклоняет прокси, перехватывающие трафик через самоподписанный сертификат (MITM), в отличие от простой проверки доступности.
+
+Пятый DAG, `update-brightdata-proxy`, поддерживает актуальность записи единственного общего **платного** прокси, обновляя её каждые 5 минут с искусственно далёкой временной меткой `lastChecked` — это опциональная инфраструктура; **чтобы полностью исключить его из выбора, поставьте DAG на паузу** (его запись устареет через обычный механизм пометки сломанных прокси и не будет пересоздана, пока DAG на паузе).
+
+### Выбор прокси
+
+- `ProxyRepository.get_latest()` → `GetLatestProxy`: единственный неисправный прокси с наивысшим `SuccessCount`, при равенстве — по `lastChecked`. Используется всеми DAG обнаружения URL и `pdf_downloading` для всех источников.
+- `ProxyRepository.get_latest_free()` → `GetLatestFreeProxy`: то же самое, но исключает любой прокси, чей `IP` содержит `@` (платный прокси хранится в виде строки `user:pass@host`, в отличие от обычных IP-адресов бесплатных прокси). Доступен для вызывающих, которым нужно обойти платный прокси; пока не подключён ни к одному DAG.
+
+### Учёт успешности и обработка сломанных прокси
+
+- `ProxyRepository.mark_success(ip)` → `MarkProxySuccess`: вызывается после каждой реально успешной загрузки. Увеличивает `IPProxy.SuccessCount`, поэтому прокси с доказанной репутацией предпочитаются непроверенным — рабочий прокси естественным образом становится «чемпионом» и переиспользуется.
+- `ProxyRepository.mark_broken(ip)` → `MarkProxyAsBroken`: **удаляет** запись прокси полностью (не мягкий флаг). Вызывается только при настоящей ошибке `requests.exceptions.ProxyError` (реальный сбой соединения с прокси) — не при обычных таймаутах, ошибках SSL или сбросах соединения, которые обычно являются виной *целевого сайта*, а не прокси.
+
+### Временно исключённые источники
+
+`pdf_downloading` сейчас полностью пропускает URL Springer (возвращаются в очередь, не помечаются как ошибочные) из-за известной проблемы, специфичной для Springer — `GetPdfToDownload` также фильтрует их на уровне запроса, поскольку иначе застрявший URL Springer в начале неупорядоченного скана `SELECT TOP 1` молча блокирует все загрузки за ним. Верните оба изменения вместе, когда проблема будет решена.
+
+---
+
+## Гуджаратиязычный корпус
+
+Четыре DAG строят категоризированный гуджаратиязычный текстовый корпус, используя ту же очередь `PdfDocuments` и DAG `pdf_downloading`/`pdf_conversion`, что и все остальные источники — без отдельных таблиц. Поскольку в `PdfDocuments` нет столбца категории, каждый найденный URL несёт свою категорию в виде фрагмента URL (например, `#gujarati_literature`, никогда не передаётся по сети), чтобы `pdf_downloading` мог направить его в соответствующую подпапку FTP.
+
+| Категория | Источник | Стратегия запроса |
+|-----------|----------|---------------------|
+| Литература | Internet Archive | `language:(guj)`, исключая темы «газета»/«журнал» |
+| Новости / периодика | Internet Archive | `language:(guj)` с темами «газета» или «журнал» (например, многолетний журнал *Kumar*) |
+| Естественные науки | Shodhganga | `language=Gujarati`, тема содержит Science / Physics / Chemistry |
+| Общественные науки | Shodhganga | `language=Gujarati`, тема содержит Social Science / Economics / Sociology |
+
+Shodhganga разбивает каждую диссертацию на отдельный PDF по главам (титульный лист, декларация, глава 1, ... библиография), а не единый файл — `shodhgangaDownloader.py` собирает все PDF-файлы диссертации, а не только первый.
+
+Оба DAG для наук полностью обходят пул прокси (`use_proxy=False`) — Shodhganga и Internet Archive являются публичными репозиториями без платного доступа, не требующими ротации IP, а прямое соединение избегает лишней нагрузки на пул прокси без какой-либо пользы.
 
 ---
 
@@ -667,8 +796,13 @@ python dags/tools/generate_metrics_report.py <job_id>
 ```
 /
 ├── arxiv/              ← загруженные PDF с arXiv
-├── springer/           ← загруженные PDF со Springer
+├── springer/           ← загруженные PDF со Springer (сейчас исключены из загрузки)
 ├── cyberleninka/       ← загруженные PDF с КиберЛенинки
+├── gujarati/
+│   ├── literature/     ← гуджаратские книги (Internet Archive)
+│   ├── news/           ← гуджаратские газеты/журналы (Internet Archive)
+│   ├── science_natural/  ← гуджаратские диссертации по естественным наукам (Shodhganga)
+│   └── science_social/   ← гуджаратские диссертации по общественным наукам (Shodhganga)
 ├── Tex/                ← конвертированные текстовые файлы
 └── graphJobs/
     └── {jobId}/
@@ -700,10 +834,23 @@ python dags/tools/generate_metrics_report.py <job_id>
 SQL Server база данных `TextCorpuses` на `LAPTOP-I91584GB\SQLEXPRESS`.
 
 Применяйте миграции по порядку в SSMS:
-- `Database/database-v0.1.sql`
-- `Database/database-v0.2-pdf-to-latex.sql`
-- `Database/database-v0.3.sql`
-- `Database/database-v0.4.sql`
+
+| Миграция | Изменение |
+|----------|-----------|
+| `database-v0.1.sql` | Исходная схема |
+| `database-v0.2-pdf-to-latex.sql` | Добавляет `LatexDocuments` (отслеживание PDF → текст) |
+| `database-v0.3.sql` | Обновления схемы |
+| `database-v0.4.sql` | Обновления схемы |
+| `database-v0.5.sql` | `GetPDFLocationForLatexConvertation`: защита от вставки NULL, когда очередь конвертации пуста |
+| `database-v0.6.sql` | Добавляет межпроцессный ограничитель частоты запросов к arXiv (заменён, см. v0.8) |
+| `database-v0.7.sql` | `MarkProxyAsBroken`: устраняет гонку между конкурентными удалениями/вставками через явную транзакцию + `UPDLOCK`/`HOLDLOCK` |
+| `database-v0.8.sql` | Удаляет ограничитель из v0.6 после возврата к доступу к arXiv через прокси |
+| `database-v0.9.sql` | Добавляет `GetLatestFreeProxy` — аналог `GetLatestProxy`, но исключает общий платный прокси |
+| `database-v0.10.sql` | Устраняет дубликаты в `relIpProxyProxyProtocols` (351 тыс. → ~6,5 тыс. строк), добавляет уникальный индекс, исправляет отсутствующую проверку существования в `AddOrUpdateProxy` |
+| `database-v0.11.sql` | Добавляет `IPProxy.SuccessCount` + `MarkProxySuccess`; `GetLatestProxy`/`GetLatestFreeProxy` теперь в первую очередь ранжируют по доказанной репутации |
+| `database-v0.12.sql` | Исправляет регрессию из v0.11: голый `INSERT ... VALUES` в `AddOrUpdateProxy` ломался для каждого нового прокси после добавления `SuccessCount` |
+| `database-v0.13.sql` | `GetPdfToDownload`: исключает URL Springer на уровне запроса (временно, в паре с исключением Springer в `pdf-downloading-dag.py`), чтобы застрявшая строка Springer не блокировала всю очередь |
+| `database-v0.14.sql` | `AddOrUpdateProxy`: переписан с единой явной транзакцией и `UPDLOCK`/`HOLDLOCK` (по образцу `MarkProxyAsBroken`) для устранения взаимоблокировок при конкурентной работе DAG прокси |
 
 ---
 
