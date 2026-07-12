@@ -17,7 +17,7 @@ _TEST_URL = "https://arxiv.org/"
 _TEST_TIMEOUT = 8
 _MAX_LATENCY_SECONDS = 5
 _EXPECTED_CONTENT = "arXiv"
-_VALIDATION_CONCURRENCY = 50
+_VALIDATION_CONCURRENCY = 15
 
 
 def validate_and_import(candidates, timestamp):
