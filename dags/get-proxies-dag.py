@@ -18,10 +18,12 @@ with DAG(
     def download_proxy_list():
         import json
         import urllib.request
-        from repositories.proxy_repository import ProxyRepository
+        import pendulum
+        from proxyValidator import validate_and_import
 
         page = 1
         limit = 500
+        candidates = []
         while True:
             url = (
                 "https://proxylist.geonode.com/api/proxy-list"
@@ -40,16 +42,23 @@ with DAG(
             output = json.loads(data)
 
             for entry in output.get('data', []):
-                ProxyRepository.add_or_update(
-                    entry.get('ip'),
-                    entry.get('port'),
-                    entry.get('lastChecked'),
-                    ''.join(entry.get('protocols', []))
-                )
+                ip = entry.get('ip')
+                port = entry.get('port')
+                protocols = entry.get('protocols', [])
+                if not ip or not port or not protocols:
+                    continue
+                try:
+                    candidates.append((ip, int(port), protocols[0]))
+                except (TypeError, ValueError):
+                    continue
 
             total = output.get('total', 0)
             if limit * page > total:
                 break
             page += 1
+
+        timestamp = int(pendulum.now('UTC').timestamp())
+        imported = validate_and_import(candidates, timestamp)
+        print(f"Imported {imported}/{len(candidates)} validated proxies")
 
     download_proxy_list()

@@ -36,6 +36,13 @@ class ProxyRepository:
         _exec_write("execute [dbo].[MarkProxyAsBroken] @ip = ?", (ip,))
 
     @staticmethod
+    def mark_success(ip):
+        """Records that a proxy actually completed a real transfer, so
+        GetLatestProxy/GetLatestFreeProxy can prefer proxies with a proven
+        track record over freshly-imported, untested ones."""
+        _exec_write("execute [dbo].[MarkProxySuccess] @ip = ?", (ip,))
+
+    @staticmethod
     def get_latest() -> dict:
         cnxn = pyodbc.connect(getConfig()['ConnectionString'])
         cursor = cnxn.cursor()

@@ -94,6 +94,7 @@ with DAG(
                 if response.status_code == 200:
                     file = io.BytesIO(response.content)
                     storeFile(initialUrl, filename, file)
+                    ProxyRepository.mark_success(str(proxieIp).strip())
 
                 else:
                     response = requests.get(url.replace('.pdf', '_reference.pdf'),
@@ -106,6 +107,7 @@ with DAG(
                     if response.status_code == 200:
                         file = io.BytesIO(response.content)
                         storeFile(initialUrl, filename, file)
+                        ProxyRepository.mark_success(str(proxieIp).strip())
                     else:
                         PdfRepository.save_location(initialUrl, "NA")
             except Exception as e:
