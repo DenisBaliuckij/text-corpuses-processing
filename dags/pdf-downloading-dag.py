@@ -28,12 +28,13 @@ with DAG(
 
         TOTAL_URLS = 500
         # Every worker independently calls ProxyRepository.get_latest(), which
-        # always returns the single shared paid proxy (BrightData) while its
-        # row exists. Too much concurrency here means many workers open
-        # simultaneous tunnels through that one proxy at once, which exceeds
-        # its plan's concurrent-connection limit and causes real ProxyErrors
-        # that get the proxy marked broken (and deleted) for everyone.
-        CONCURRENCY = 3
+        # deterministically returns the single highest-SuccessCount proxy -
+        # so many workers can still concentrate load on one "champion" free
+        # proxy at once. Raised from the original 3 (tuned around BrightData's
+        # concurrent-connection limit) now that a healthy, validated free
+        # pool exists; keep an eye on whether the current champion proxy
+        # starts failing under this load before raising further.
+        CONCURRENCY = 8
 
         def storeFile(initialUrl, filename, file):
             ftpConnector.storeFile(filename, file)
