@@ -127,5 +127,47 @@
       "max_results": 500,
       "repeat": true
     }
+  ],
+  "russian_science": [
+    {
+      "query": "mediatype:(texts) AND language:(rus) AND (subject:(science) OR subject:(physics) OR subject:(chemistry) OR subject:(biology) OR subject:(mathematics))",
+      "max_results": 3000,
+      "repeat": true
+    }
+  ],
+  "russian_literature_modern": [
+    {
+      "query": "mediatype:(texts) AND language:(rus) AND subject:(fiction) AND year:[1950 TO 2026]",
+      "max_results": 3000,
+      "repeat": true
+    }
+  ],
+  "russian_literature_classic": [
+    {
+      "query": "mediatype:(texts) AND language:(rus) AND subject:(fiction) AND year:[1000 TO 1949]",
+      "max_results": 500,
+      "repeat": true
+    }
+  ],
+  "russian_news": [
+    {
+      "query": "mediatype:(texts) AND language:(rus) AND (subject:(newspaper) OR subject:(periodical) OR subject:(magazine))",
+      "max_results": 2000,
+      "repeat": true
+    }
+  ],
+  "russian_law": [
+    {
+      "query": "mediatype:(texts) AND language:(rus) AND (subject:(law) OR subject:(legislation))",
+      "max_results": 700,
+      "repeat": true
+    }
+  ],
+  "russian_social_science": [
+    {
+      "query": "mediatype:(texts) AND language:(rus) AND (subject:(sociology) OR subject:(economics) OR subject:(\"political science\") OR subject:(\"social science\"))",
+      "max_results": 500,
+      "repeat": true
+    }
   ]
 }

@@ -85,6 +85,24 @@ with DAG(
                 if '#gujarati_dictionary' in url:
                     filename = 'gujarati/dictionary/'
                     url = url.split('#')[0]
+                if '#russian_science' in url:
+                    filename = 'russian/science/'
+                    url = url.split('#')[0]
+                if '#russian_literature_modern' in url:
+                    filename = 'russian/literature_modern/'
+                    url = url.split('#')[0]
+                if '#russian_literature_classic' in url:
+                    filename = 'russian/literature_classic/'
+                    url = url.split('#')[0]
+                if '#russian_news' in url:
+                    filename = 'russian/news/'
+                    url = url.split('#')[0]
+                if '#russian_law' in url:
+                    filename = 'russian/law/'
+                    url = url.split('#')[0]
+                if '#russian_social_science' in url:
+                    filename = 'russian/social_science/'
+                    url = url.split('#')[0]
                 if '#customquery_' in url:
                     tag = url.split('#customquery_')[1]
                     filename = f'custom/{tag}/'
