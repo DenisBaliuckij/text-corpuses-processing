@@ -4,7 +4,7 @@
 Runs directly on the deployment host (not inside a container) so it can
 shell out to `docker exec` against the mssql/postgres containers and
 connect to the host-published FTP port directly. Intended to be invoked
-by cron every 24h; see the accompanying crontab entry.
+by cron every 30 minutes; see the accompanying crontab entry.
 
 Output is written to REPORT_OUTPUT_PATH, which nginx (the nginx-5335
 service in docker-compose.yaml) serves as a static file at /report/.
@@ -422,8 +422,8 @@ def render(sources, grand_total, dag_runs, ftp_stats, host, containers,
   <header class="masthead">
     <span class="eyebrow">Text Corpuses Processing — Infrastructure</span>
     <h1>Pipeline Operations Report</h1>
-    <p class="subtitle">Auto-generated every 24 hours from live PdfDocuments, FTP, Airflow, and host metrics.</p>
-    <span class="timestamp">Captured {generated_at} UTC · host 172.21.128.103 · regenerates daily via cron</span>
+    <p class="subtitle">Auto-generated every 30 minutes from live PdfDocuments, FTP, Airflow, and host metrics.</p>
+    <span class="timestamp">Captured {generated_at} UTC · host 172.21.128.103 · regenerates every 30 min via cron</span>
   </header>
 
   <section>
@@ -490,7 +490,7 @@ def render(sources, grand_total, dag_runs, ftp_stats, host, containers,
 
   <footer>
     <span>Text Corpuses Processing Pipeline — internal ops snapshot, not for external distribution.</span>
-    <span>Regenerated automatically every 24 hours by generate_ops_report.py. Figures are a point-in-time snapshot.</span>
+    <span>Regenerated automatically every 30 minutes by generate_ops_report.py. Figures are a point-in-time snapshot.</span>
   </footer>
 </div>
 """
