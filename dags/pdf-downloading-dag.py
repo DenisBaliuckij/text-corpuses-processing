@@ -76,6 +76,15 @@ with DAG(
                 if '#gujarati_science_social' in url:
                     filename = 'gujarati/science_social/'
                     url = url.split('#')[0]
+                if '#gujarati_law' in url:
+                    filename = 'gujarati/law/'
+                    url = url.split('#')[0]
+                if '#gujarati_official' in url:
+                    filename = 'gujarati/official/'
+                    url = url.split('#')[0]
+                if '#gujarati_dictionary' in url:
+                    filename = 'gujarati/dictionary/'
+                    url = url.split('#')[0]
                 if '#customquery_' in url:
                     tag = url.split('#customquery_')[1]
                     filename = f'custom/{tag}/'

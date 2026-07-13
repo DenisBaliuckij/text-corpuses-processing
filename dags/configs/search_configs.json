@@ -106,5 +106,26 @@
       "max_results": 1000,
       "repeat": true
     }
+  ],
+  "gujarati_law": [
+    {
+      "query": "mediatype:(texts) AND language:(guj) AND (subject:(law) OR subject:(legislation) OR subject:(act) OR title:(act) OR title:(law) OR subject:(constitution))",
+      "max_results": 500,
+      "repeat": true
+    }
+  ],
+  "gujarati_official": [
+    {
+      "query": "mediatype:(texts) AND language:(guj) AND (subject:(government) OR subject:(gazette) OR subject:(official) OR title:(gazette) OR subject:(administration report))",
+      "max_results": 5000,
+      "repeat": true
+    }
+  ],
+  "gujarati_dictionary": [
+    {
+      "query": "mediatype:(texts) AND language:(guj) AND (subject:(dictionary) OR subject:(dictionaries) OR title:(dictionary) OR title:(kosh) OR subject:(lexicon))",
+      "max_results": 500,
+      "repeat": true
+    }
   ]
 }
