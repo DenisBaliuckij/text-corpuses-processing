@@ -103,6 +103,24 @@ with DAG(
                 if '#russian_social_science' in url:
                     filename = 'russian/social_science/'
                     url = url.split('#')[0]
+                if '#english_science' in url:
+                    filename = 'english/science/'
+                    url = url.split('#')[0]
+                if '#english_literature_modern' in url:
+                    filename = 'english/literature_modern/'
+                    url = url.split('#')[0]
+                if '#english_literature_classic' in url:
+                    filename = 'english/literature_classic/'
+                    url = url.split('#')[0]
+                if '#english_news' in url:
+                    filename = 'english/news/'
+                    url = url.split('#')[0]
+                if '#english_law' in url:
+                    filename = 'english/law/'
+                    url = url.split('#')[0]
+                if '#english_social_science' in url:
+                    filename = 'english/social_science/'
+                    url = url.split('#')[0]
                 if '#customquery_' in url:
                     tag = url.split('#customquery_')[1]
                     filename = f'custom/{tag}/'

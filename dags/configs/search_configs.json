@@ -169,5 +169,47 @@
       "max_results": 500,
       "repeat": true
     }
+  ],
+  "english_science": [
+    {
+      "query": "mediatype:(texts) AND language:(eng) AND (subject:(science) OR subject:(physics) OR subject:(chemistry) OR subject:(biology) OR subject:(mathematics))",
+      "max_results": 5000,
+      "repeat": true
+    }
+  ],
+  "english_literature_modern": [
+    {
+      "query": "mediatype:(texts) AND language:(eng) AND subject:(fiction) AND year:[1950 TO 2026]",
+      "max_results": 5000,
+      "repeat": true
+    }
+  ],
+  "english_literature_classic": [
+    {
+      "query": "mediatype:(texts) AND language:(eng) AND subject:(fiction) AND year:[1000 TO 1949]",
+      "max_results": 5000,
+      "repeat": true
+    }
+  ],
+  "english_news": [
+    {
+      "query": "mediatype:(texts) AND language:(eng) AND (subject:(newspaper) OR subject:(periodical) OR subject:(magazine))",
+      "max_results": 5000,
+      "repeat": true
+    }
+  ],
+  "english_law": [
+    {
+      "query": "mediatype:(texts) AND language:(eng) AND (subject:(law) OR subject:(legislation))",
+      "max_results": 5000,
+      "repeat": true
+    }
+  ],
+  "english_social_science": [
+    {
+      "query": "mediatype:(texts) AND language:(eng) AND (subject:(sociology) OR subject:(economics) OR subject:(\"political science\") OR subject:(\"social science\"))",
+      "max_results": 5000,
+      "repeat": true
+    }
   ]
 }
