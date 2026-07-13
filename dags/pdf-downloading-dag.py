@@ -76,6 +76,10 @@ with DAG(
                 if '#gujarati_science_social' in url:
                     filename = 'gujarati/science_social/'
                     url = url.split('#')[0]
+                if '#customquery_' in url:
+                    tag = url.split('#customquery_')[1]
+                    filename = f'custom/{tag}/'
+                    url = url.split('#')[0]
                 filename += str(uuid.uuid4())
                 filename += '.pdf'
                 proxieResult = ProxyRepository.get_latest()

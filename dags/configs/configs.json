@@ -13,5 +13,6 @@
 	"FtpPortGraph": 21,
 	"FtpUserGraph": "airflow",
 	"FtpPasswordGraph": "airflow",
-	"SemanticScholarApiKey": ""
+	"SemanticScholarApiKey": "",
+	"CustomQueryUiPasswordHash": ""
 }

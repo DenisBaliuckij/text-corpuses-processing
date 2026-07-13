@@ -1,0 +1,112 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Custom Query - PDF Corpus</title>
+<style>
+  body { font-family: sans-serif; max-width: 720px; margin: 2em auto; }
+  label { display: block; margin-top: 0.8em; }
+  input[type=text], input[type=number] { width: 100%; box-sizing: border-box; padding: 0.3em; }
+  fieldset { margin-top: 1.5em; }
+  .field-group { display: none; }
+  .field-group.active { display: block; }
+  table { border-collapse: collapse; width: 100%; margin-top: 1em; }
+  td, th { border: 1px solid #ccc; padding: 0.3em 0.6em; text-align: left; }
+  button { margin-top: 1em; padding: 0.5em 1.5em; }
+</style>
+</head>
+<body>
+<h1>Custom PDF Query</h1>
+
+<form method="post" action="{{ url_for('submit') }}">
+  <label>Source
+    <select name="source_name" id="source_name">
+      {% for s in sources %}
+      <option value="{{ s }}">{{ s }}</option>
+      {% endfor %}
+    </select>
+  </label>
+
+  <label>Folder name (results are collected under custom/&lt;name&gt;_&lt;id&gt;/)
+    <input type="text" name="folder_name" required>
+  </label>
+
+  <fieldset>
+    <div class="field-group" data-sources="arxiv,pubmed,semantic_scholar,archive_org">
+      <label>Query
+        <input type="text" name="query">
+      </label>
+    </div>
+
+    <div class="field-group" data-sources="shodhganga">
+      <label>Subject
+        <input type="text" name="subject">
+      </label>
+      <label>Language (default: Gujarati)
+        <input type="text" name="language">
+      </label>
+    </div>
+
+    <div class="field-group" data-sources="arxiv">
+      <label>Categories (comma-separated, e.g. cs.LG,cs.AI)
+        <input type="text" name="categories">
+      </label>
+    </div>
+
+    <div class="field-group" data-sources="semantic_scholar">
+      <label>Fields of study (comma-separated)
+        <input type="text" name="fields_of_study">
+      </label>
+      <label>Minimum citations
+        <input type="number" name="min_citations" min="0">
+      </label>
+    </div>
+
+    <div class="field-group" data-sources="arxiv,pubmed,semantic_scholar">
+      <label>Date from (YYYY-MM-DD)
+        <input type="text" name="date_from">
+      </label>
+      <label>Date to (YYYY-MM-DD)
+        <input type="text" name="date_to">
+      </label>
+    </div>
+
+    <div class="field-group" data-sources="pubmed,semantic_scholar">
+      <label><input type="checkbox" name="open_access_only"> Open access only</label>
+    </div>
+
+    <label>Max results
+      <input type="number" name="max_results" value="200" min="1" max="2000">
+    </label>
+  </fieldset>
+
+  <button type="submit">Start query</button>
+</form>
+
+<h2>Recent queries</h2>
+<table>
+  <tr><th>ID</th><th>Source</th><th>Folder</th><th>Status</th><th>Created</th></tr>
+  {% for r in recent %}
+  <tr>
+    <td><a href="{{ url_for('query_status', query_id=r[0]) }}">{{ r[0] }}</a></td>
+    <td>{{ r[1] }}</td>
+    <td>{{ r[2] }}</td>
+    <td>{{ query_status_labels.get(r[3], r[3]) }}</td>
+    <td>{{ r[4] }}</td>
+  </tr>
+  {% endfor %}
+</table>
+
+<script>
+function updateFieldGroups() {
+  var source = document.getElementById('source_name').value;
+  document.querySelectorAll('.field-group').forEach(function(el) {
+    var sources = el.dataset.sources.split(',');
+    el.classList.toggle('active', sources.indexOf(source) !== -1);
+  });
+}
+document.getElementById('source_name').addEventListener('change', updateFieldGroups);
+updateFieldGroups();
+</script>
+</body>
+</html>

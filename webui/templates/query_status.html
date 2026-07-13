@@ -1,0 +1,40 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Query {{ row[0] }} - Custom Query</title>
+<style>
+  body { font-family: sans-serif; max-width: 900px; margin: 2em auto; }
+  table { border-collapse: collapse; width: 100%; margin-top: 1em; }
+  td, th { border: 1px solid #ccc; padding: 0.3em 0.6em; text-align: left; word-break: break-all; }
+  .error { color: #b00; }
+</style>
+</head>
+<body>
+<p><a href="{{ url_for('index') }}">&larr; back</a></p>
+<h1>Query #{{ row[0] }}</h1>
+<p>
+  Source: <b>{{ row[1] }}</b><br>
+  Folder: <b>{{ row[3] }}</b><br>
+  Status: <b>{{ query_status_labels.get(row[4], row[4]) }}</b><br>
+  Created: {{ row[6] }}<br>
+  Last update: {{ row[7] }}
+  {% if row[5] %}<br><span class="error">Error: {{ row[5] }}</span>{% endif %}
+</p>
+
+<h2>Criterion</h2>
+<pre>{{ row[2] }}</pre>
+
+<h2>PDFs ({{ pdfs|length }})</h2>
+<table>
+  <tr><th>URL</th><th>Status</th><th>Destination</th></tr>
+  {% for p in pdfs %}
+  <tr>
+    <td>{{ p[1] }}</td>
+    <td>{{ pdf_status_labels.get(p[2], p[2]) }}</td>
+    <td>{{ p[3] or '' }}</td>
+  </tr>
+  {% endfor %}
+</table>
+</body>
+</html>
