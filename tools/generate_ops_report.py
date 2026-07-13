@@ -359,13 +359,13 @@ def render(sources, grand_total, dag_runs, ftp_stats, host, containers,
         pct = (s['downloaded'] / s['total'] * 100) if s['total'] else 0
         is_paused = paused_states.get(f"download_{s['source']}", None)
         if s['total'] == 0:
-            status = '<span class="pill bad">no data</span>'
+            status = '<span class="pill bad">нет данных</span>'
         elif is_paused:
-            status = '<span class="pill neutral">paused</span>'
+            status = '<span class="pill neutral">приостановлено</span>'
         elif pct >= 95:
-            status = '<span class="pill good">complete</span>'
+            status = '<span class="pill good">завершено</span>'
         else:
-            status = '<span class="pill good">healthy</span>'
+            status = '<span class="pill good">в норме</span>'
         source_rows.append(
             f'<tr><td class="name">{html.escape(s["source"])}</td>'
             f'<td class="num">{s["total"]:,}</td><td class="num">{s["downloaded"]:,}</td>'
@@ -398,17 +398,17 @@ def render(sources, grand_total, dag_runs, ftp_stats, host, containers,
 
     issues = []
     if paused_states.get('download_semantic_scholar'):
-        issues.append(('warn', 'Semantic Scholar paused',
-                        'API rejects key requests from free/personal email domains; DAG paused and dropped from round-robin rotation until an institutional email is available.'))
+        issues.append(('warn', 'Semantic Scholar приостановлен',
+                        'API отклоняет запросы ключа с бесплатных/личных почтовых доменов; DAG приостановлен и исключён из round-robin ротации до появления корпоративной почты.'))
     if not shodhganga_up:
-        issues.append(('bad', 'Shodhganga unreachable',
-                        'shodhganga.inflibnet.ac.in is not accepting connections right now, blocking gujarati_science_social discovery.'))
+        issues.append(('bad', 'Shodhganga недоступна',
+                        'shodhganga.inflibnet.ac.in не принимает соединения сейчас, что блокирует поиск для gujarati_science_social.'))
     swap_pct = (host['swap_used_gb'] / host['swap_total_gb'] * 100) if host['swap_total_gb'] else 0
     if swap_pct >= 50:
-        issues.append(('warn', f'Swap usage elevated ({swap_pct:.0f}%)',
-                        'Correlated with slower container cold-starts on this host due to shared disk I/O contention. Not urgent, worth monitoring.'))
+        issues.append(('warn', f'Повышенное использование подкачки (swap) ({swap_pct:.0f}%)',
+                        'Коррелирует с более медленным холодным стартом контейнеров на этом сервере из-за конкуренции за дисковый ввод-вывод. Не срочно, но стоит наблюдать.'))
     if not issues:
-        issues.append(('good', 'No active issues detected', 'All monitored signals are within normal range.'))
+        issues.append(('good', 'Активных проблем не обнаружено', 'Все отслеживаемые показатели в норме.'))
 
     issue_html = ''.join(
         f'<div class="issue {level}"><div class="issue-head"><span class="issue-title">{html.escape(title)}</span></div>'
@@ -416,81 +416,81 @@ def render(sources, grand_total, dag_runs, ftp_stats, host, containers,
         for level, title, body in issues
     )
 
-    return f"""<title>Corpus Pipeline — Ops Report</title>
+    return f"""<title>Конвейер обработки корпусов — Отчёт</title>
 <style>{CSS}</style>
 <div class="page">
   <header class="masthead">
-    <span class="eyebrow">Text Corpuses Processing — Infrastructure</span>
-    <h1>Pipeline Operations Report</h1>
-    <p class="subtitle">Auto-generated every 30 minutes from live PdfDocuments, FTP, Airflow, and host metrics.</p>
-    <span class="timestamp">Captured {generated_at} UTC · host 172.21.128.103 · regenerates every 30 min via cron</span>
+    <span class="eyebrow">Обработка текстовых корпусов — Инфраструктура</span>
+    <h1>Отчёт о работе конвейера</h1>
+    <p class="subtitle">Формируется автоматически каждые 30 минут на основе данных PdfDocuments, FTP, Airflow и метрик сервера.</p>
+    <span class="timestamp">Сформирован {generated_at} UTC · сервер 172.21.128.103 · обновляется каждые 30 минут через cron</span>
   </header>
 
   <section>
     <div class="stat-grid">
-      <div class="stat-card"><span class="stat-label">PDF URLs tracked</span><span class="stat-value">{grand_total['total']:,}</span><span class="stat-sub">across {len(sources)} sources</span></div>
-      <div class="stat-card"><span class="stat-label">Downloaded</span><span class="stat-value accent">{grand_total['downloaded']:,}</span><span class="stat-sub">{downloaded_pct:.1f}% of tracked queue</span></div>
-      <div class="stat-card"><span class="stat-label">FTP storage used</span><span class="stat-value">{total_ftp_size_gb:.1f} GB</span><span class="stat-sub">~{total_ftp_files:,} files</span></div>
-      <div class="stat-card"><span class="stat-label">Host load ({host['nproc']} cores)</span><span class="stat-value">{'/'.join(host['load'])}</span><span class="stat-sub">1m / 5m / 15m average</span></div>
+      <div class="stat-card"><span class="stat-label">Отслеживается URL PDF</span><span class="stat-value">{grand_total['total']:,}</span><span class="stat-sub">источников: {len(sources)}</span></div>
+      <div class="stat-card"><span class="stat-label">Загружено</span><span class="stat-value accent">{grand_total['downloaded']:,}</span><span class="stat-sub">{downloaded_pct:.1f}% от общей очереди</span></div>
+      <div class="stat-card"><span class="stat-label">Занято места на FTP</span><span class="stat-value">{total_ftp_size_gb:.1f} ГБ</span><span class="stat-sub">~{total_ftp_files:,} файлов</span></div>
+      <div class="stat-card"><span class="stat-label">Загрузка сервера ({host['nproc']} ядер)</span><span class="stat-value">{'/'.join(host['load'])}</span><span class="stat-sub">среднее за 1/5/15 мин</span></div>
     </div>
   </section>
 
   <section>
-    <h2>Download throughput by source <span class="section-note">PdfDocuments, grouped by URL pattern</span></h2>
+    <h2>Скорость загрузки по источникам <span class="section-note">PdfDocuments, группировка по шаблону URL</span></h2>
     <div class="table-wrap"><table>
-      <thead><tr><th>Source</th><th class="num">Total</th><th class="num">Downloaded</th><th>Progress</th><th class="num">Pending</th><th class="num">N/A</th><th>Status</th></tr></thead>
+      <thead><tr><th>Источник</th><th class="num">Всего</th><th class="num">Загружено</th><th>Прогресс</th><th class="num">В очереди</th><th class="num">Недоступно</th><th>Статус</th></tr></thead>
       <tbody>{''.join(source_rows)}</tbody>
     </table></div>
   </section>
 
   <section>
-    <h2>Last 24 hours</h2>
+    <h2>Последние 24 часа</h2>
     <div class="stat-grid">
-      <div class="stat-card"><span class="stat-label">PDFs downloaded</span><span class="stat-value accent">{total_24h_downloads:,}</span><span class="stat-sub">by file mtime on FTP</span></div>
-      <div class="stat-card"><span class="stat-label">Discovery DAG runs</span><span class="stat-value">{total_dag_success + total_dag_failed:,}</span><span class="stat-sub">{total_dag_failed:,} failed</span></div>
+      <div class="stat-card"><span class="stat-label">PDF загружено</span><span class="stat-value accent">{total_24h_downloads:,}</span><span class="stat-sub">по времени изменения файла на FTP</span></div>
+      <div class="stat-card"><span class="stat-label">Запусков DAG обнаружения</span><span class="stat-value">{total_dag_success + total_dag_failed:,}</span><span class="stat-sub">с ошибкой: {total_dag_failed:,}</span></div>
     </div>
     <div class="table-wrap"><table>
-      <thead><tr><th>Source</th><th class="num">Discovery runs — success</th><th class="num">Discovery runs — failed</th></tr></thead>
+      <thead><tr><th>Источник</th><th class="num">Запуски обнаружения — успешно</th><th class="num">Запуски обнаружения — с ошибкой</th></tr></thead>
       <tbody>{''.join(dag_rows)}</tbody>
     </table></div>
     <p style="font-size:0.82rem;color:var(--text-dim);max-width:70ch;">
-      <code>PdfDocuments</code> has no acquisition timestamp, so discovery-DAG run counts are the closest available proxy for URL-acquisition activity, not a direct URL count — a "success" run can still find zero new URLs.
+      В таблице <code>PdfDocuments</code> нет метки времени поступления URL, поэтому число запусков DAG обнаружения — ближайший доступный показатель активности сбора URL, а не точное их количество: успешный запуск может не найти ни одного нового URL.
     </p>
   </section>
 
   <section>
-    <h2>Storage on FTP</h2>
+    <h2>Хранилище на FTP</h2>
     <div class="table-wrap"><table>
-      <thead><tr><th>Folder</th><th class="num">Files</th><th class="num">Size</th><th class="num">Added (24h)</th></tr></thead>
+      <thead><tr><th>Папка</th><th class="num">Файлов</th><th class="num">Размер</th><th class="num">Добавлено (24ч)</th></tr></thead>
       <tbody>{''.join(ftp_rows)}</tbody>
     </table></div>
   </section>
 
   <section>
-    <h2>Host resources <span class="section-note">172.21.128.103 — {host['nproc']} cores</span></h2>
+    <h2>Ресурсы сервера <span class="section-note">172.21.128.103 — {host['nproc']} ядер</span></h2>
     <div class="meter-grid">
-      {meter(f"Memory ({host['mem_used_gb']:.0f} / {host['mem_total_gb']:.0f} GiB)", host['mem_used_gb'], host['mem_total_gb'], 'GiB')}
-      {meter(f"Swap ({host['swap_used_gb']:.1f} / {host['swap_total_gb']:.0f} GiB)", host['swap_used_gb'], host['swap_total_gb'], 'GiB', warn_pct=60)}
-      {meter(f"Disk ({host['disk_used_gb']:.0f} GB / {host['disk_total_tb']:.1f} TB)", host['disk_used_gb'], host['disk_total_tb'] * 1024, 'GB')}
+      {meter(f"Память ({host['mem_used_gb']:.0f} / {host['mem_total_gb']:.0f} ГиБ)", host['mem_used_gb'], host['mem_total_gb'], 'GiB')}
+      {meter(f"Подкачка ({host['swap_used_gb']:.1f} / {host['swap_total_gb']:.0f} ГиБ)", host['swap_used_gb'], host['swap_total_gb'], 'GiB', warn_pct=60)}
+      {meter(f"Диск ({host['disk_used_gb']:.0f} ГБ / {host['disk_total_tb']:.1f} ТБ)", host['disk_used_gb'], host['disk_total_tb'] * 1024, 'GB')}
     </div>
   </section>
 
   <section>
-    <h2>Container resource usage <span class="section-note">docker stats, current snapshot</span></h2>
+    <h2>Использование ресурсов контейнерами <span class="section-note">docker stats, текущий снимок</span></h2>
     <div class="table-wrap"><table>
-      <thead><tr><th>Container</th><th class="num">CPU</th><th class="num">Memory</th><th class="num">Mem %</th></tr></thead>
+      <thead><tr><th>Контейнер</th><th class="num">CPU</th><th class="num">Память</th><th class="num">Память %</th></tr></thead>
       <tbody>{''.join(container_rows)}</tbody>
     </table></div>
   </section>
 
   <section>
-    <h2>Needs attention</h2>
+    <h2>Требует внимания</h2>
     <div class="issue-list">{issue_html}</div>
   </section>
 
   <footer>
-    <span>Text Corpuses Processing Pipeline — internal ops snapshot, not for external distribution.</span>
-    <span>Regenerated automatically every 30 minutes by generate_ops_report.py. Figures are a point-in-time snapshot.</span>
+    <span>Конвейер обработки текстовых корпусов — внутренний отчёт о работе системы, не для внешнего распространения.</span>
+    <span>Формируется автоматически каждые 30 минут скриптом generate_ops_report.py. Данные приведены на момент формирования отчёта.</span>
   </footer>
 </div>
 """
