@@ -44,6 +44,12 @@ RUN pip install --no-cache-dir \
         dash \
         "dash-cytoscape"
 
+# requirements.txt's resolver leaves fastapi/pydantic/starlette below what
+# Airflow 3.0's API server needs; force the newer versions after the main
+# install so nothing upstream re-pins them back down.
+RUN pip install --no-cache-dir --upgrade pip setuptools wheel \
+    && pip install --no-cache-dir --force-reinstall "fastapi>=0.100.0" "pydantic>=2.0.0" starlette
+
 # Download spaCy models and NLTK data
 RUN python -m spacy download en_core_web_sm \
     && python -m spacy download en_core_web_lg \
