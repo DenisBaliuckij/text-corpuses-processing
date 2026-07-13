@@ -1,6 +1,10 @@
 # Text Corpuses Processing Pipeline
 
-An Apache Airflow-based pipeline for crawling scientific text corpuses, downloading PDFs, converting them to text, and building semantic knowledge graphs from the extracted content. Three targeted scientific paper downloaders (arXiv API, PubMed, Semantic Scholar) complement the existing web scrapers, alongside a dedicated Gujarati-language corpus pipeline (literature, news/periodicals, and natural/social science theses). Three graph-building backends are available: a fast rule-based NLP engine, a local HuggingFace LLM pipeline, and a hierarchical Yandex Cloud LLM pipeline.
+An Apache Airflow-based pipeline for crawling scientific text corpuses, downloading PDFs, converting them to text, and building semantic knowledge graphs from the extracted content. Three targeted scientific paper downloaders (arXiv API, PubMed, Semantic Scholar — Semantic Scholar currently paused, see below) complement the existing web scrapers, alongside dedicated Gujarati/Russian/English corpus pipelines (literature — modern and classic where applicable, news/periodicals, science, law, official publications, dictionaries, and social science). Three graph-building backends are available: a fast rule-based NLP engine, a local HuggingFace LLM pipeline, and a hierarchical Yandex Cloud LLM pipeline. A standalone web UI (`webui/`) lets an authenticated user submit ad hoc structured queries against any of these sources, reusing already-downloaded PDFs where possible. An auto-generated operations report (`tools/generate_ops_report.py`) tracks pipeline health and throughput.
+
+> **Deployment note:** the actual production deployment runs from a separate, hand-maintained directory on the host and is **not** driven directly by this git repo's `docker-compose.yml` (which is a local-dev template). See [Deployment Topology](#deployment-topology) before assuming a `git push` alone puts a change into production.
+
+**Repository:** https://github.com/DenisBaliuckij/text-corpuses-processing (`main` branch)
 
 ---
 
@@ -93,11 +97,28 @@ Each stage is an independent Airflow DAG that does exactly one unit of work per 
 | `get_lenin_urls` | `@continuous` | Scrapes CyberLeninka for PDF URLs |
 | `download_arxiv_scientific` | `@continuous` | arXiv API — keyword + category + date search |
 | `download_pubmed` | `@continuous` | PubMed E-utilities — keyword + date + open-access search |
-| `download_semantic_scholar` | `@continuous` | Semantic Scholar API — keyword + field + citation filter |
+| `download_semantic_scholar` | `@continuous` | **Paused** — Semantic Scholar API — keyword + field + citation filter (rejects key requests from free/personal email domains; needs an institutional email) |
 | `download_gujarati_literature` | `@continuous` | Internet Archive — Gujarati-language books, excluding periodicals |
 | `download_gujarati_news` | `@continuous` | Internet Archive — Gujarati-language newspapers/magazines |
 | `download_gujarati_science_natural` | `@continuous` | Shodhganga — Gujarati-language theses in Science/Physics/Chemistry |
 | `download_gujarati_science_social` | `@continuous` | Shodhganga — Gujarati-language theses in Social Science/Economics/Sociology |
+| `download_gujarati_science_archive` | `@continuous` | Internet Archive — Gujarati-language Chemistry/Physics/Mathematics texts |
+| `download_gujarati_law` | `@continuous` | Internet Archive — Gujarati-language acts/legislation |
+| `download_gujarati_official` | `@continuous` | Internet Archive — Gujarati-language government gazettes/official publications |
+| `download_gujarati_dictionary` | `@continuous` | Internet Archive — Gujarati-language dictionaries/lexicons |
+| `download_russian_science` | `@continuous` | Internet Archive — Russian-language science texts |
+| `download_russian_literature_modern` | `@continuous` | Internet Archive — Russian-language fiction, `year:[1950 TO 2026]` |
+| `download_russian_literature_classic` | `@continuous` | Internet Archive — Russian-language fiction, `year:[1000 TO 1949]` |
+| `download_russian_news` | `@continuous` | Internet Archive — Russian-language newspapers/periodicals/magazines |
+| `download_russian_law` | `@continuous` | Internet Archive — Russian-language law/legislation |
+| `download_russian_social_science` | `@continuous` | Internet Archive — Russian-language sociology/economics/political science |
+| `download_english_science` | `@continuous` | Internet Archive — English-language science texts |
+| `download_english_literature_modern` | `@continuous` | Internet Archive — English-language fiction, `year:[1950 TO 2026]` |
+| `download_english_literature_classic` | `@continuous` | Internet Archive — English-language fiction, `year:[1000 TO 1949]` |
+| `download_english_news` | `@continuous` | Internet Archive — English-language newspapers/periodicals/magazines |
+| `download_english_law` | `@continuous` | Internet Archive — English-language law/legislation |
+| `download_english_social_science` | `@continuous` | Internet Archive — English-language sociology/economics/political science |
+| `custom_query_processor` | `@continuous` | Fulfills ad hoc queries submitted via the custom-query web UI (`webui/`) |
 | `pdf_downloading` | `@continuous` | Downloads PDFs from discovered URLs |
 | `pdf_conversion` | `@continuous` | Converts PDFs to plain text |
 | `start_tree_formation_job` | manual trigger | Creates a new graph construction job |
@@ -205,20 +226,73 @@ A fifth DAG, `update-brightdata-proxy`, keeps a single shared **paid** proxy cur
 
 ---
 
-## Gujarati Corpus Pipeline
+## Multi-Language Corpus Expansion (Gujarati, Russian, English)
 
-Four DAGs build a categorized Gujarati-language text corpus, feeding the same `PdfDocuments` queue and `pdf_downloading`/`pdf_conversion` DAGs as every other source — no separate tables. Since `PdfDocuments` has no category column, each discovered URL carries its category as a URL fragment (e.g. `#gujarati_literature`, never sent over the wire) so `pdf_downloading` can route it to a dedicated FTP subfolder.
+Every category below feeds the same `PdfDocuments` queue and `pdf_downloading`/`pdf_conversion` DAGs as every other source — no separate tables. Since `PdfDocuments` has no category column, each discovered URL carries its category as a URL fragment (e.g. `#gujarati_literature`, `#russian_law`, never sent over the wire) so `pdf_downloading` can route it to a dedicated FTP subfolder.
+
+### Gujarati
 
 | Category | Source | Query strategy |
 |----------|--------|-----------------|
 | Literature | Internet Archive | `language:(guj)`, excluding newspaper/magazine subjects |
 | News / periodicals | Internet Archive | `language:(guj)` with newspaper or magazine subjects (e.g. the long-running *Kumar* periodical) |
-| Natural sciences | Shodhganga | `language=Gujarati`, subject contains Science / Physics / Chemistry |
+| Natural sciences (Shodhganga) | Shodhganga | `language=Gujarati`, subject contains Science / Physics / Chemistry |
+| Natural sciences (Archive) | Internet Archive | `language:(guj)`, subject/title contains Chemistry / Physics / Mathematics |
 | Social sciences | Shodhganga | `language=Gujarati`, subject contains Social Science / Economics / Sociology |
+| Law | Internet Archive | `language:(guj)`, subject/title contains law/legislation/act/constitution |
+| Official publications | Internet Archive | `language:(guj)`, subject/title contains government/gazette — the Gujarat state gazette collection alone yields 35,000+ matches |
+| Dictionaries | Internet Archive | `language:(guj)`, subject/title contains dictionary/kosh/lexicon |
 
 Shodhganga splits each thesis into one PDF per chapter (title page, declaration, chapter01, ... bibliography) rather than a single combined file — `shodhgangaDownloader.py` collects every bitstream PDF for a thesis, not just the first.
 
-Both science DAGs bypass the proxy pool entirely (`use_proxy=False`) — Shodhganga and Internet Archive are public, non-paywalled repositories that don't need IP rotation, and a direct connection avoids adding proxy-pool load for no benefit.
+### Russian and English
+
+Six identical categories exist for both languages, all Internet Archive-backed:
+
+| Category | Query strategy |
+|----------|-----------------|
+| Science | `language:(rus\|eng)`, subject contains science/physics/chemistry/biology/mathematics |
+| Literature (modern) | `language:(rus\|eng)`, subject contains fiction, `year:[1950 TO 2026]` |
+| Literature (classic) | `language:(rus\|eng)`, subject contains fiction, `year:[1000 TO 1949]` |
+| News / periodicals | `language:(rus\|eng)`, subject contains newspaper/periodical/magazine |
+| Law | `language:(rus\|eng)`, subject contains law/legislation |
+| Social science | `language:(rus\|eng)`, subject contains sociology/economics/political science/social science |
+
+English categories are capped at `max_results: 5000` per criterion given the huge Internet Archive footprint (100k–500k matches per category); Russian and Gujarati use smaller, source-appropriate caps.
+
+### Shared notes
+
+All Shodhganga and Internet Archive-backed DAGs bypass the proxy pool entirely (`use_proxy=False`) — both are public, non-paywalled repositories that don't need IP rotation, and a direct connection avoids adding proxy-pool load for no benefit.
+
+`archiveOrgDownloader.search_pdfs()` fetches per-item metadata (to find the actual PDF filename) for every search result on a page; a single slow/unreachable item raises `requests.exceptions.RequestException`, which is caught and skipped so the rest of the page's URLs are still saved (fixed 2026-07 — previously one timeout discarded the entire page's results).
+
+---
+
+## Custom Query Web UI
+
+`webui/` is a standalone Flask app (own Dockerfile, own docker-compose service) that lets an authenticated user submit an ad hoc structured query against any source (arXiv, PubMed, Semantic Scholar, Internet Archive, Shodhganga), name an output folder, and get matching PDFs collected there — without touching `search_configs.json` or restarting anything.
+
+- **Auth:** HTTP Basic Auth, single shared password (hash stored in `configs.json`'s `CustomQueryUiPasswordHash`, generated via `werkzeug.security.generate_password_hash`).
+- **Reuse-first:** for each discovered URL, `FindExistingDownload` checks whether that exact PDF (regardless of which source/tag originally found it) is already downloaded anywhere in `PdfDocuments`. If so, the file is copied via FTP straight into the custom folder — no re-download. Otherwise the URL is tagged `#customquery_{id}_{folderSlug}` and enqueued through the same shared `pdf_downloading` round-robin queue as every other source.
+- **DB schema:** `CustomQuery` (one row per submitted query) + `CustomQueryPdf` (one row per discovered URL, tracks pending/copied/downloaded/failed) — `database-v0.17.sql`.
+- **New DAG:** `custom_query_processor` (`@continuous`) — discovers URLs for pending queries, performs the reuse-check/copy, and promotes a query to `completed` once all its PDFs resolve.
+- Reachable at `/customquery` behind the shared nginx reverse proxy on port 5335 (see below) — routes are prefix-aware via a small WSGI middleware reading `X-Forwarded-Prefix`, so it also works accessed directly on its own port for debugging.
+
+## Shared Reverse Proxy (port 5335)
+
+Port 5335 is shared between the custom-query UI and Open WebUI (the Ollama chat UI used elsewhere on this host), via an `nginx:alpine` container (`nginx-5335` service, `network_mode: host`, config at `nginx/port-5335.conf`):
+
+| Path | Routes to |
+|------|-----------|
+| `/customquery/*` | the `webui` service (published on host port 8090) |
+| `/report/*` | the static auto-generated ops report (see below) |
+| `/` (everything else) | Open WebUI (moved to an internal-only port so nginx can own 5335) |
+
+## Automated Ops Report
+
+`tools/generate_ops_report.py` queries `PdfDocuments`, FTP, Airflow's `dag_run` history, and host/container resources directly (via `docker exec` against the mssql/postgres containers, `ftplib`, and `subprocess`), then renders a static, self-contained HTML report — served by `nginx-5335` at `/report`, regenerated every 30 minutes via cron. The report is in Russian.
+
+Credentials are read from environment only (`MSSQL_SA_PASSWORD`, `REPORT_FTP_USER`, `REPORT_FTP_PASSWORD`) — never hardcoded in the script. On the deployment host these live in a non-git-tracked `report.env` file (mode 600), sourced by the cron command before running the script.
 
 ---
 
@@ -347,10 +421,19 @@ This fetches all `metrics.json` files for the job, produces `metrics_report.html
 ├── springer/           ← downloaded Springer PDFs (currently excluded from downloading)
 ├── cyberleninka/       ← downloaded CyberLeninka PDFs
 ├── gujarati/
-│   ├── literature/     ← Gujarati books (Internet Archive)
-│   ├── news/           ← Gujarati newspapers/magazines (Internet Archive)
-│   ├── science_natural/  ← Gujarati natural-science theses (Shodhganga)
-│   └── science_social/   ← Gujarati social-science theses (Shodhganga)
+│   ├── literature/       ← Gujarati books (Internet Archive)
+│   ├── news/             ← Gujarati newspapers/magazines (Internet Archive)
+│   ├── science_natural/  ← Gujarati natural-science theses (Shodhganga) + Chemistry/Physics/Math (Archive)
+│   ├── science_social/   ← Gujarati social-science theses (Shodhganga)
+│   ├── law/              ← Gujarati acts/legislation (Internet Archive)
+│   ├── official/         ← Gujarati government gazettes/official publications (Internet Archive)
+│   └── dictionary/       ← Gujarati dictionaries/lexicons (Internet Archive)
+├── russian/
+│   ├── science/, literature_modern/, literature_classic/, news/, law/, social_science/
+├── english/
+│   ├── science/, literature_modern/, literature_classic/, news/, law/, social_science/
+├── custom/
+│   └── {folderSlug}_{queryId}/  ← ad hoc custom-query results (webui/)
 ├── Tex/                ← converted plain text files
 └── graphJobs/
     └── {jobId}/
@@ -408,6 +491,29 @@ Apply migrations in order using SSMS:
 | `database-v0.12.sql` | Fixes a v0.11 regression: `AddOrUpdateProxy`'s bare `INSERT ... VALUES` broke for every new proxy after `SuccessCount` was added |
 | `database-v0.13.sql` | `GetPdfToDownload`: excludes Springer URLs at the query level (temporary, paired with the Springer exclusion in `pdf-downloading-dag.py`) so a stuck Springer row can't head-of-line-block the whole queue |
 | `database-v0.14.sql` | `AddOrUpdateProxy`: rewritten with a single explicit transaction and `UPDLOCK`/`HOLDLOCK` (matching `MarkProxyAsBroken`'s pattern) to fix deadlocks under concurrent proxy-DAG load |
+| `database-v0.15.sql` | Adds `PdfDocuments.ClaimedAt`; `GetPdfToDownload` rewritten to atomically claim a row (`UPDATE TOP(1) ... OUTPUT`) so concurrent `pdf_downloading` workers stop redundantly claiming the same URL |
+| `database-v0.16.sql` | `GetPdfToDownload`: adds fair round-robin ordering across sources via `PdfSourceRotation`, so one source's huge backlog can't starve the others |
+| `database-v0.17.sql` | Adds `CustomQuery`/`CustomQueryPdf` tables + stored procedures for the custom-query web UI |
+| `database-v0.18.sql` | Fixes `AddPdfUrl`'s bare 2-value `INSERT` (broke for every new URL once v0.15 added `ClaimedAt`) — see the "known-gotcha" note below |
+| `database-v0.19.sql` | Drops `semantic_scholar` from `GetPdfToDownload`'s round-robin rotation (DAG paused, can never have pending rows) |
+| `database-v0.20.sql` | Adds `gujarati_law`/`gujarati_official`/`gujarati_dictionary` to the round-robin rotation |
+| `database-v0.21.sql` | Adds the six Russian sources to the round-robin rotation |
+| `database-v0.22.sql` | Adds the six English sources to the round-robin rotation |
+
+> **Known gotcha:** a bare `INSERT INTO table VALUES (...)` (no explicit column list) silently breaks the moment a new column is added to that table — SQL Server then requires a value for every non-identity column. This has bitten both `AddOrUpdateProxy` (fixed v0.12) and `AddPdfUrl` (fixed v0.18). Always use an explicit column list.
+
+---
+
+## Deployment Topology
+
+The live deployment does **not** run from this git checkout directly. On the deployment host there are two separate directories, easy to conflate:
+
+1. **This git repo's checkout** — its own `docker-compose.yml` (LocalExecutor, 5 services, no `mssql`/`redis`) is a local-dev template, not the production stack.
+2. **A separate, hand-maintained production directory** (not a git repo at all) — its own `docker-compose.yaml` (CeleryExecutor, real `mssql`/`redis`/`postgres`/worker/triggerer/dag-processor services, plus the `webui` and `nginx-5335` services described above) is what actually serves the pipeline. Its `dags/` folder is a **separate physical copy** that must be synced manually (e.g. `docker cp <file> <scheduler-container>:/opt/airflow/dags/<file>`) whenever a DAG file changes here — there is no automated sync.
+
+**To apply a code change for real:** commit/push here as usual, then also copy the changed files into the production `dags/` folder for it to actually take effect. Skipping the copy step means the change silently never runs, even though git and this checkout look correct.
+
+`configs.json` in the production directory has its own real credentials, distinct from this repo's git-tracked placeholder version — never overwrite it wholesale from git; reconcile any new keys by hand.
 
 ---
 
@@ -519,7 +625,11 @@ ORDER BY j.ID DESC;
 
 # Конвейер обработки текстовых корпусов
 
-Конвейер на базе Apache Airflow для краулинга научных текстовых корпусов, загрузки PDF-файлов, их конвертации в текст и построения семантических графов знаний. Три специализированных загрузчика научных статей (API arXiv, PubMed, Semantic Scholar) дополняют существующие веб-скраперы, наряду с отдельным конвейером для гуджаратиязычного корпуса (художественная литература, новости/периодика, диссертации по естественным и общественным наукам). Доступны три бэкенда построения графа: быстрый движок на основе правил NLP, конвейер с локальной LLM (HuggingFace) и иерархический конвейер с облачной LLM (Яндекс Облако).
+Конвейер на базе Apache Airflow для краулинга научных текстовых корпусов, загрузки PDF-файлов, их конвертации в текст и построения семантических графов знаний. Три специализированных загрузчика научных статей (API arXiv, PubMed, Semantic Scholar — Semantic Scholar сейчас на паузе, см. ниже) дополняют существующие веб-скраперы, наряду с отдельными конвейерами для гуджаратиязычного, русскоязычного и англоязычного корпусов (художественная литература — современная и классическая, где применимо, новости/периодика, наука, право, официальные публикации, словари и общественные науки). Доступны три бэкенда построения графа: быстрый движок на основе правил NLP, конвейер с локальной LLM (HuggingFace) и иерархический конвейер с облачной LLM (Яндекс Облако). Отдельный веб-интерфейс (`webui/`) позволяет авторизованному пользователю отправлять произвольные структурированные запросы к любому из этих источников, переиспользуя уже загруженные PDF, где это возможно. Автоматически формируемый отчёт о работе системы (`tools/generate_ops_report.py`) отслеживает состояние и пропускную способность конвейера.
+
+> **Важно про развёртывание:** реальное продакшн-развёртывание работает из отдельной, вручную поддерживаемой директории на сервере и **не** управляется напрямую через `docker-compose.yml` этого git-репозитория (это шаблон для локальной разработки). См. раздел [Топология развёртывания](#топология-развёртывания), прежде чем полагать, что одного `git push` достаточно, чтобы изменение попало в продакшн.
+
+**Репозиторий:** https://github.com/DenisBaliuckij/text-corpuses-processing (ветка `main`)
 
 ---
 
@@ -539,12 +649,15 @@ ORDER BY j.ID DESC;
 
 ## Архитектура
 
-Конвейер состоит из **24 DAG**, разбитых на группы:
+Конвейер состоит из **41 DAG**, разбитых на группы:
 
 - **Прокси:** `get_proxies_for_calls`, `get_proxies_for_calls_2`, `get_proxies_for_calls_3`, `get_proxies_for_calls_4`, `update-brightdata-proxy`
 - **Веб-скраперы:** `get_arxiv_urls`, `get_springer_urls`, `get_lenin_urls`
-- **API-загрузчики научных статей:** `download_arxiv_scientific`, `download_pubmed`, `download_semantic_scholar`
-- **Гуджаратиязычный корпус:** `download_gujarati_literature`, `download_gujarati_news`, `download_gujarati_science_natural`, `download_gujarati_science_social`
+- **API-загрузчики научных статей:** `download_arxiv_scientific`, `download_pubmed`, `download_semantic_scholar` (**на паузе** — см. раздел о многоязычном расширении)
+- **Гуджаратиязычный корпус (8 DAG):** `download_gujarati_literature`, `download_gujarati_news`, `download_gujarati_science_natural`, `download_gujarati_science_social`, `download_gujarati_science_archive`, `download_gujarati_law`, `download_gujarati_official`, `download_gujarati_dictionary`
+- **Русскоязычный корпус (6 DAG):** `download_russian_science`, `download_russian_literature_modern`, `download_russian_literature_classic`, `download_russian_news`, `download_russian_law`, `download_russian_social_science`
+- **Англоязычный корпус (6 DAG):** `download_english_science`, `download_english_literature_modern`, `download_english_literature_classic`, `download_english_news`, `download_english_law`, `download_english_social_science`
+- **Пользовательские запросы:** `custom_query_processor` — обрабатывает запросы из веб-интерфейса `webui/`
 - **Загрузка и конвертация:** `pdf_downloading`, `pdf_conversion`
 - **Построение графа:** `start_tree_formation_job` (ручной запуск), `prepare_graph_construction_job`, `resolve_anaphora`, **`build_graph`**, **`build_graph_llm_v2`**, **`build_graph_hierarchical`**, `finalize_job`
 
@@ -662,20 +775,73 @@ PubMed возвращает URL PDF из PMC: `https://www.ncbi.nlm.nih.gov/pmc/
 
 ---
 
-## Гуджаратиязычный корпус
+## Многоязычное расширение корпуса (гуджарати, русский, английский)
 
-Четыре DAG строят категоризированный гуджаратиязычный текстовый корпус, используя ту же очередь `PdfDocuments` и DAG `pdf_downloading`/`pdf_conversion`, что и все остальные источники — без отдельных таблиц. Поскольку в `PdfDocuments` нет столбца категории, каждый найденный URL несёт свою категорию в виде фрагмента URL (например, `#gujarati_literature`, никогда не передаётся по сети), чтобы `pdf_downloading` мог направить его в соответствующую подпапку FTP.
+Каждая категория ниже использует ту же очередь `PdfDocuments` и DAG `pdf_downloading`/`pdf_conversion`, что и все остальные источники — без отдельных таблиц. Поскольку в `PdfDocuments` нет столбца категории, каждый найденный URL несёт свою категорию в виде фрагмента URL (например, `#gujarati_literature`, `#russian_law`, никогда не передаётся по сети), чтобы `pdf_downloading` мог направить его в соответствующую подпапку FTP.
+
+### Гуджарати
 
 | Категория | Источник | Стратегия запроса |
 |-----------|----------|---------------------|
 | Литература | Internet Archive | `language:(guj)`, исключая темы «газета»/«журнал» |
 | Новости / периодика | Internet Archive | `language:(guj)` с темами «газета» или «журнал» (например, многолетний журнал *Kumar*) |
-| Естественные науки | Shodhganga | `language=Gujarati`, тема содержит Science / Physics / Chemistry |
+| Естественные науки (Shodhganga) | Shodhganga | `language=Gujarati`, тема содержит Science / Physics / Chemistry |
+| Естественные науки (Archive) | Internet Archive | `language:(guj)`, тема/заголовок содержит Chemistry / Physics / Mathematics |
 | Общественные науки | Shodhganga | `language=Gujarati`, тема содержит Social Science / Economics / Sociology |
+| Право | Internet Archive | `language:(guj)`, тема/заголовок содержит law/legislation/act/constitution |
+| Официальные публикации | Internet Archive | `language:(guj)`, тема/заголовок содержит government/gazette — только коллекция гуджаратских правительственных вестников (gazette) даёт 35 000+ совпадений |
+| Словари | Internet Archive | `language:(guj)`, тема/заголовок содержит dictionary/kosh/lexicon |
 
 Shodhganga разбивает каждую диссертацию на отдельный PDF по главам (титульный лист, декларация, глава 1, ... библиография), а не единый файл — `shodhgangaDownloader.py` собирает все PDF-файлы диссертации, а не только первый.
 
-Оба DAG для наук полностью обходят пул прокси (`use_proxy=False`) — Shodhganga и Internet Archive являются публичными репозиториями без платного доступа, не требующими ротации IP, а прямое соединение избегает лишней нагрузки на пул прокси без какой-либо пользы.
+### Русский и английский
+
+Для обоих языков существуют шесть одинаковых категорий, все на основе Internet Archive:
+
+| Категория | Стратегия запроса |
+|-----------|---------------------|
+| Наука | `language:(rus\|eng)`, тема содержит science/physics/chemistry/biology/mathematics |
+| Литература (современная) | `language:(rus\|eng)`, тема содержит fiction, `year:[1950 TO 2026]` |
+| Литература (классическая) | `language:(rus\|eng)`, тема содержит fiction, `year:[1000 TO 1949]` |
+| Новости / периодика | `language:(rus\|eng)`, тема содержит newspaper/periodical/magazine |
+| Право | `language:(rus\|eng)`, тема содержит law/legislation |
+| Общественные науки | `language:(rus\|eng)`, тема содержит sociology/economics/political science/social science |
+
+Для английских категорий установлен предел `max_results: 5000` на критерий, учитывая огромный объём Internet Archive (100–500 тыс. совпадений на категорию); для русского и гуджарати используются меньшие, соответствующие источнику пределы.
+
+### Общие замечания
+
+Все DAG на основе Shodhganga и Internet Archive полностью обходят пул прокси (`use_proxy=False`) — оба источника являются публичными репозиториями без платного доступа, не требующими ротации IP, а прямое соединение избегает лишней нагрузки на пул прокси без какой-либо пользы.
+
+`archiveOrgDownloader.search_pdfs()` запрашивает метаданные (для поиска реального имени PDF-файла) для каждого результата поиска на странице; если один медленный/недоступный элемент вызывает `requests.exceptions.RequestException`, это исключение перехватывается и пропускается, чтобы остальные URL страницы всё равно сохранились (исправлено в июле 2026 — раньше один тайм-аут отбрасывал все результаты страницы целиком).
+
+---
+
+## Веб-интерфейс произвольных запросов
+
+`webui/` — самостоятельное Flask-приложение (свой Dockerfile, свой сервис в docker-compose), позволяющее авторизованному пользователю отправить произвольный структурированный запрос к любому источнику (arXiv, PubMed, Semantic Scholar, Internet Archive, Shodhganga), назвать папку для результатов и получить туда подходящие PDF — без правки `search_configs.json` и без перезапуска чего-либо.
+
+- **Авторизация:** HTTP Basic Auth, один общий пароль (хеш хранится в `CustomQueryUiPasswordHash` в `configs.json`, создан через `werkzeug.security.generate_password_hash`).
+- **Сначала переиспользование:** для каждого найденного URL `FindExistingDownload` проверяет, скачан ли уже этот PDF где-либо в `PdfDocuments` (независимо от того, каким источником/тегом он был найден изначально). Если да — файл копируется по FTP прямо в папку запроса, без повторной загрузки. Иначе URL помечается тегом `#customquery_{id}_{folderSlug}` и ставится в ту же общую round-robin очередь `pdf_downloading`, что и все остальные источники.
+- **Схема БД:** `CustomQuery` (одна строка на отправленный запрос) + `CustomQueryPdf` (одна строка на найденный URL, отслеживает pending/copied/downloaded/failed) — `database-v0.17.sql`.
+- **Новый DAG:** `custom_query_processor` (`@continuous`) — находит URL для ожидающих запросов, выполняет проверку/копирование при переиспользовании и переводит запрос в статус `completed`, когда все его PDF обработаны.
+- Доступен по адресу `/customquery` за общим nginx-прокси на порту 5335 (см. ниже) — маршруты учитывают префикс через небольшой WSGI-мидлвэр, читающий заголовок `X-Forwarded-Prefix`, поэтому приложение также работает при прямом обращении на свой порт (для отладки).
+
+## Общий реверс-прокси (порт 5335)
+
+Порт 5335 разделён между веб-интерфейсом произвольных запросов и Open WebUI (чат-интерфейс Ollama, используемый на этом сервере для других задач) через контейнер `nginx:alpine` (сервис `nginx-5335`, `network_mode: host`, конфигурация в `nginx/port-5335.conf`):
+
+| Путь | Направляется в |
+|------|-----------------|
+| `/customquery/*` | сервис `webui` (опубликован на порту хоста 8090) |
+| `/report/*` | статический автоматически формируемый отчёт о работе системы (см. ниже) |
+| `/` (всё остальное) | Open WebUI (перемещён на внутренний порт, чтобы nginx мог занять 5335) |
+
+## Автоматический отчёт о работе системы
+
+`tools/generate_ops_report.py` запрашивает `PdfDocuments`, FTP, историю `dag_run` Airflow и ресурсы сервера/контейнеров напрямую (через `docker exec` к контейнерам mssql/postgres, `ftplib` и `subprocess`), затем формирует статический самодостаточный HTML-отчёт — отдаётся `nginx-5335` по адресу `/report`, обновляется каждые 30 минут через cron. Отчёт на русском языке.
+
+Учётные данные читаются только из переменных окружения (`MSSQL_SA_PASSWORD`, `REPORT_FTP_USER`, `REPORT_FTP_PASSWORD`) — никогда не хранятся в коде скрипта. На сервере развёртывания они находятся в файле `report.env` (не отслеживается git, права доступа 600), который подключается перед запуском скрипта командой cron.
 
 ---
 
@@ -799,10 +965,19 @@ python dags/tools/generate_metrics_report.py <job_id>
 ├── springer/           ← загруженные PDF со Springer (сейчас исключены из загрузки)
 ├── cyberleninka/       ← загруженные PDF с КиберЛенинки
 ├── gujarati/
-│   ├── literature/     ← гуджаратские книги (Internet Archive)
-│   ├── news/           ← гуджаратские газеты/журналы (Internet Archive)
-│   ├── science_natural/  ← гуджаратские диссертации по естественным наукам (Shodhganga)
-│   └── science_social/   ← гуджаратские диссертации по общественным наукам (Shodhganga)
+│   ├── literature/       ← гуджаратские книги (Internet Archive)
+│   ├── news/             ← гуджаратские газеты/журналы (Internet Archive)
+│   ├── science_natural/  ← диссертации по естественным наукам (Shodhganga) + химия/физика/математика (Archive)
+│   ├── science_social/   ← гуджаратские диссертации по общественным наукам (Shodhganga)
+│   ├── law/              ← гуджаратские законы/акты (Internet Archive)
+│   ├── official/         ← гуджаратские правительственные вестники/официальные публикации (Internet Archive)
+│   └── dictionary/       ← гуджаратские словари (Internet Archive)
+├── russian/
+│   ├── science/, literature_modern/, literature_classic/, news/, law/, social_science/
+├── english/
+│   ├── science/, literature_modern/, literature_classic/, news/, law/, social_science/
+├── custom/
+│   └── {folderSlug}_{queryId}/  ← результаты произвольных запросов (webui/)
 ├── Tex/                ← конвертированные текстовые файлы
 └── graphJobs/
     └── {jobId}/
@@ -851,6 +1026,29 @@ SQL Server база данных `TextCorpuses` на `LAPTOP-I91584GB\SQLEXPRESS
 | `database-v0.12.sql` | Исправляет регрессию из v0.11: голый `INSERT ... VALUES` в `AddOrUpdateProxy` ломался для каждого нового прокси после добавления `SuccessCount` |
 | `database-v0.13.sql` | `GetPdfToDownload`: исключает URL Springer на уровне запроса (временно, в паре с исключением Springer в `pdf-downloading-dag.py`), чтобы застрявшая строка Springer не блокировала всю очередь |
 | `database-v0.14.sql` | `AddOrUpdateProxy`: переписан с единой явной транзакцией и `UPDLOCK`/`HOLDLOCK` (по образцу `MarkProxyAsBroken`) для устранения взаимоблокировок при конкурентной работе DAG прокси |
+| `database-v0.15.sql` | Добавляет `PdfDocuments.ClaimedAt`; `GetPdfToDownload` переписан для атомарного захвата строки (`UPDATE TOP(1) ... OUTPUT`), чтобы параллельные воркеры `pdf_downloading` не захватывали один и тот же URL |
+| `database-v0.16.sql` | `GetPdfToDownload`: добавляет честное round-robin чередование источников через `PdfSourceRotation`, чтобы большой бэклог одного источника не «морил голодом» остальные |
+| `database-v0.17.sql` | Добавляет таблицы `CustomQuery`/`CustomQueryPdf` и хранимые процедуры для веб-интерфейса произвольных запросов |
+| `database-v0.18.sql` | Исправляет голый `INSERT` из 2 значений в `AddPdfUrl` (ломался для каждого нового URL после добавления `ClaimedAt` в v0.15) — см. примечание об известной проблеме ниже |
+| `database-v0.19.sql` | Исключает `semantic_scholar` из round-robin ротации `GetPdfToDownload` (DAG на паузе, у него никогда не будет строк в очереди) |
+| `database-v0.20.sql` | Добавляет `gujarati_law`/`gujarati_official`/`gujarati_dictionary` в round-robin ротацию |
+| `database-v0.21.sql` | Добавляет шесть русскоязычных источников в round-robin ротацию |
+| `database-v0.22.sql` | Добавляет шесть англоязычных источников в round-robin ротацию |
+
+> **Известная проблема:** голый `INSERT INTO table VALUES (...)` (без явного списка столбцов) незаметно ломается, как только в таблицу добавляется новый столбец — SQL Server начинает требовать значение для каждого не-identity столбца. Так уже происходило с `AddOrUpdateProxy` (исправлено в v0.12) и `AddPdfUrl` (исправлено в v0.18). Всегда указывайте явный список столбцов.
+
+---
+
+## Топология развёртывания
+
+Реальное развёртывание работает **не** из этого git-репозитория напрямую. На сервере развёртывания есть две отдельные директории, которые легко перепутать:
+
+1. **Клон этого git-репозитория** — его собственный `docker-compose.yml` (LocalExecutor, 5 сервисов, без `mssql`/`redis`) — это шаблон для локальной разработки, а не продакшн-стек.
+2. **Отдельная, вручную поддерживаемая продакшн-директория** (вообще не git-репозиторий) — её собственный `docker-compose.yaml` (CeleryExecutor, реальные сервисы `mssql`/`redis`/`postgres`/worker/triggerer/dag-processor, плюс сервисы `webui` и `nginx-5335`, описанные выше) — это то, что реально обслуживает конвейер. Её папка `dags/` — это **отдельная физическая копия**, которую нужно синхронизировать вручную (например, `docker cp <файл> <контейнер-scheduler>:/opt/airflow/dags/<файл>`) при каждом изменении DAG-файла здесь — автоматической синхронизации нет.
+
+**Чтобы изменение кода реально заработало:** закоммитьте и запушьте как обычно, затем также скопируйте изменённые файлы в продакшн-папку `dags/`. Пропуск этого шага означает, что изменение незаметно никогда не применится, хотя git и локальная копия будут выглядеть корректно.
+
+`configs.json` в продакшн-директории содержит собственные реальные учётные данные, отличные от версии-плейсхолдера, отслеживаемой в git — никогда не перезаписывайте его полностью из git; согласовывайте новые ключи вручную.
 
 ---
 
