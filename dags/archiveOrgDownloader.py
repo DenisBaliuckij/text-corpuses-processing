@@ -30,7 +30,13 @@ def search_pdfs(query, page, rows, proxies=None, tag=''):
         identifier = doc.get('identifier')
         if not identifier:
             continue
-        pdf_filename = _find_pdf_filename(identifier, proxies)
+        try:
+            pdf_filename = _find_pdf_filename(identifier, proxies)
+        except requests.exceptions.RequestException:
+            # A single slow/unreachable item (timeout, connection error) used
+            # to abort the whole page, discarding every URL already found -
+            # skip it and keep whatever the rest of the page yields instead.
+            continue
         if not pdf_filename:
             continue
         url = _DOWNLOAD_URL.format(identifier=identifier, filename=pdf_filename)
