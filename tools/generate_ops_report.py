@@ -416,7 +416,8 @@ def render(sources, grand_total, dag_runs, ftp_stats, host, containers,
         for level, title, body in issues
     )
 
-    return f"""<title>Конвейер обработки корпусов — Отчёт</title>
+    return f"""<meta charset="utf-8">
+<title>Конвейер обработки корпусов — Отчёт</title>
 <style>{CSS}</style>
 <div class="page">
   <header class="masthead">
