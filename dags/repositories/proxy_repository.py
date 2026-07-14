@@ -64,3 +64,17 @@ class ProxyRepository:
         cursor.close()
         cnxn.close()
         return {'proxieIp': row[0], 'proxiePort': row[1], 'proxieProtocol': row[2]}
+
+    @staticmethod
+    def get_top_candidates(top_n=50) -> list:
+        """Returns the top-N proxies by the same ranking GetLatestProxy uses
+        (SuccessCount desc, LastChecked desc) - i.e. the proxies actually
+        being selected for real downloads, for the validate_proxies DAG to
+        re-test on a schedule."""
+        cnxn = pyodbc.connect(getConfig()['ConnectionString'])
+        cursor = cnxn.cursor()
+        cursor.execute("execute [dbo].[GetTopProxiesForValidation] @topN = ?", (top_n,))
+        rows = cursor.fetchall()
+        cursor.close()
+        cnxn.close()
+        return [(row[0], row[1], row[2]) for row in rows]

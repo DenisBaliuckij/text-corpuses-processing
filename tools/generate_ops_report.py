@@ -153,6 +153,18 @@ def get_grand_total() -> dict:
     return {'total': int(total), 'downloaded': int(downloaded)}
 
 
+def get_24h_inserted() -> int:
+    """Count of URLs added in the last 24h, from InsertedAt (added
+    database-v0.24.sql). Rows inserted before that migration have a NULL
+    InsertedAt and are excluded, so this undercounts until 24h of history
+    has accumulated after the column was added."""
+    rows = run_sqlcmd(
+        "SELECT COUNT(*) FROM TextCorpuses.dbo.PdfDocuments "
+        "WHERE InsertedAt >= DATEADD(HOUR, -24, SYSUTCDATETIME());"
+    )
+    return int(rows[0][0]) if rows and rows[0][0].isdigit() else 0
+
+
 def get_24h_dag_runs() -> dict:
     dag_list = ",".join(f"'{d}'" for d in DAG_IDS)
     rows = run_psql(
@@ -346,7 +358,7 @@ def meter(label: str, used: float, total: float, unit: str, warn_pct: float = 80
 
 
 def render(sources, grand_total, dag_runs, ftp_stats, host, containers,
-           shodhganga_up, paused_states, generated_at) -> str:
+           shodhganga_up, paused_states, generated_at, inserted_24h) -> str:
     total_ftp_files = sum(f['files'] for f in ftp_stats.values())
     total_ftp_size_gb = sum(f['size_mb'] for f in ftp_stats.values()) / 1024
     total_24h_downloads = sum(f['recent_24h'] for f in ftp_stats.values())
@@ -448,6 +460,7 @@ def render(sources, grand_total, dag_runs, ftp_stats, host, containers,
     <h2>Последние 24 часа</h2>
     <div class="stat-grid">
       <div class="stat-card"><span class="stat-label">PDF загружено</span><span class="stat-value accent">{total_24h_downloads:,}</span><span class="stat-sub">по времени изменения файла на FTP</span></div>
+      <div class="stat-card"><span class="stat-label">URL добавлено</span><span class="stat-value accent">{inserted_24h:,}</span><span class="stat-sub">по PdfDocuments.InsertedAt</span></div>
       <div class="stat-card"><span class="stat-label">Запусков DAG обнаружения</span><span class="stat-value">{total_dag_success + total_dag_failed:,}</span><span class="stat-sub">с ошибкой: {total_dag_failed:,}</span></div>
     </div>
     <div class="table-wrap"><table>
@@ -455,7 +468,7 @@ def render(sources, grand_total, dag_runs, ftp_stats, host, containers,
       <tbody>{''.join(dag_rows)}</tbody>
     </table></div>
     <p style="font-size:0.82rem;color:var(--text-dim);max-width:70ch;">
-      В таблице <code>PdfDocuments</code> нет метки времени поступления URL, поэтому число запусков DAG обнаружения — ближайший доступный показатель активности сбора URL, а не точное их количество: успешный запуск может не найти ни одного нового URL.
+      «URL добавлено» считает только строки с заполненным <code>InsertedAt</code> (столбец добавлен в database-v0.24.sql) — первые 24 часа после миграции это число будет заниженным, пока не накопится полное окно.
     </p>
   </section>
 
@@ -507,9 +520,10 @@ def main():
     host = get_host_resources()
     containers = get_container_stats()
     shodhganga_up = check_shodhganga_reachable()
+    inserted_24h = get_24h_inserted()
 
     output = render(sources, grand_total, dag_runs, ftp_stats, host, containers,
-                     shodhganga_up, paused_states, generated_at)
+                     shodhganga_up, paused_states, generated_at, inserted_24h)
 
     with open(REPORT_OUTPUT_PATH, 'w', encoding='utf-8') as f:
         f.write(output)
