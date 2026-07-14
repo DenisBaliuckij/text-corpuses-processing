@@ -4,7 +4,7 @@
 Runs directly on the deployment host (not inside a container) so it can
 shell out to `docker exec` against the mssql/postgres containers and
 connect to the host-published FTP port directly. Intended to be invoked
-by cron every 30 minutes; see the accompanying crontab entry.
+by cron every 15 minutes; see the accompanying crontab entry.
 
 Output is written to REPORT_OUTPUT_PATH, which nginx (the nginx-5335
 service in docker-compose.yaml) serves as a static file at /report/.
@@ -435,8 +435,8 @@ def render(sources, grand_total, dag_runs, ftp_stats, host, containers,
   <header class="masthead">
     <span class="eyebrow">Обработка текстовых корпусов — Инфраструктура</span>
     <h1>Отчёт о работе конвейера</h1>
-    <p class="subtitle">Формируется автоматически каждые 30 минут на основе данных PdfDocuments, FTP, Airflow и метрик сервера.</p>
-    <span class="timestamp">Сформирован {generated_at} UTC · сервер 172.21.128.103 · обновляется каждые 30 минут через cron</span>
+    <p class="subtitle">Формируется автоматически каждые 15 минут на основе данных PdfDocuments, FTP, Airflow и метрик сервера.</p>
+    <span class="timestamp">Сформирован {generated_at} UTC · сервер 172.21.128.103 · обновляется каждые 15 минут через cron</span>
   </header>
 
   <section>
@@ -504,7 +504,7 @@ def render(sources, grand_total, dag_runs, ftp_stats, host, containers,
 
   <footer>
     <span>Конвейер обработки текстовых корпусов — внутренний отчёт о работе системы, не для внешнего распространения.</span>
-    <span>Формируется автоматически каждые 30 минут скриптом generate_ops_report.py. Данные приведены на момент формирования отчёта.</span>
+    <span>Формируется автоматически каждые 15 минут скриптом generate_ops_report.py. Данные приведены на момент формирования отчёта.</span>
   </footer>
 </div>
 """
