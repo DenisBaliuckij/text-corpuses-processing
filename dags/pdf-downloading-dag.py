@@ -30,11 +30,12 @@ with DAG(
         # Every worker independently calls ProxyRepository.get_latest(), which
         # deterministically returns the single highest-SuccessCount proxy -
         # so many workers can still concentrate load on one "champion" free
-        # proxy at once. Raised from the original 3 (tuned around BrightData's
-        # concurrent-connection limit) now that a healthy, validated free
-        # pool exists; keep an eye on whether the current champion proxy
-        # starts failing under this load before raising further.
-        CONCURRENCY = 8
+        # proxy at once. Raised from 8 to 16 (2026-07-14) after the Gujarati/
+        # Russian/English source expansion turned most of the 500 per-run
+        # slots into real (slow) downloads instead of instant no-ops, which
+        # collapsed hourly throughput; keep an eye on whether the current
+        # champion proxy starts failing under this load before raising further.
+        CONCURRENCY = 16
 
         def storeFile(initialUrl, filename, file):
             ftpConnector.storeFile(filename, file)
@@ -66,65 +67,65 @@ with DAG(
                     url = url.replace('/article', 'content/pdf')
                 if '#gujarati_literature' in url:
                     filename = 'gujarati/literature/'
-                    url = url.split('#')[0]
+                    url = url.rsplit('#', 1)[0]
                 if '#gujarati_news' in url:
                     filename = 'gujarati/news/'
-                    url = url.split('#')[0]
+                    url = url.rsplit('#', 1)[0]
                 if '#gujarati_science_natural' in url:
                     filename = 'gujarati/science_natural/'
-                    url = url.split('#')[0]
+                    url = url.rsplit('#', 1)[0]
                 if '#gujarati_science_social' in url:
                     filename = 'gujarati/science_social/'
-                    url = url.split('#')[0]
+                    url = url.rsplit('#', 1)[0]
                 if '#gujarati_law' in url:
                     filename = 'gujarati/law/'
-                    url = url.split('#')[0]
+                    url = url.rsplit('#', 1)[0]
                 if '#gujarati_official' in url:
                     filename = 'gujarati/official/'
-                    url = url.split('#')[0]
+                    url = url.rsplit('#', 1)[0]
                 if '#gujarati_dictionary' in url:
                     filename = 'gujarati/dictionary/'
-                    url = url.split('#')[0]
+                    url = url.rsplit('#', 1)[0]
                 if '#russian_science' in url:
                     filename = 'russian/science/'
-                    url = url.split('#')[0]
+                    url = url.rsplit('#', 1)[0]
                 if '#russian_literature_modern' in url:
                     filename = 'russian/literature_modern/'
-                    url = url.split('#')[0]
+                    url = url.rsplit('#', 1)[0]
                 if '#russian_literature_classic' in url:
                     filename = 'russian/literature_classic/'
-                    url = url.split('#')[0]
+                    url = url.rsplit('#', 1)[0]
                 if '#russian_news' in url:
                     filename = 'russian/news/'
-                    url = url.split('#')[0]
+                    url = url.rsplit('#', 1)[0]
                 if '#russian_law' in url:
                     filename = 'russian/law/'
-                    url = url.split('#')[0]
+                    url = url.rsplit('#', 1)[0]
                 if '#russian_social_science' in url:
                     filename = 'russian/social_science/'
-                    url = url.split('#')[0]
+                    url = url.rsplit('#', 1)[0]
                 if '#english_science' in url:
                     filename = 'english/science/'
-                    url = url.split('#')[0]
+                    url = url.rsplit('#', 1)[0]
                 if '#english_literature_modern' in url:
                     filename = 'english/literature_modern/'
-                    url = url.split('#')[0]
+                    url = url.rsplit('#', 1)[0]
                 if '#english_literature_classic' in url:
                     filename = 'english/literature_classic/'
-                    url = url.split('#')[0]
+                    url = url.rsplit('#', 1)[0]
                 if '#english_news' in url:
                     filename = 'english/news/'
-                    url = url.split('#')[0]
+                    url = url.rsplit('#', 1)[0]
                 if '#english_law' in url:
                     filename = 'english/law/'
-                    url = url.split('#')[0]
+                    url = url.rsplit('#', 1)[0]
                 if '#english_social_science' in url:
                     filename = 'english/social_science/'
-                    url = url.split('#')[0]
+                    url = url.rsplit('#', 1)[0]
                 if '#customquery_' in url:
-                    tag = url.split('#customquery_')[1]
+                    tag = url.rsplit('#customquery_', 1)[1]
                     filename = f'custom/{tag}/'
-                    url = url.split('#')[0]
+                    url = url.rsplit('#', 1)[0]
                 filename += str(uuid.uuid4())
                 filename += '.pdf'
                 proxieResult = ProxyRepository.get_latest()

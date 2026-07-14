@@ -130,7 +130,7 @@
   ],
   "russian_science": [
     {
-      "query": "mediatype:(texts) AND language:(rus) AND (subject:(science) OR subject:(physics) OR subject:(chemistry) OR subject:(biology) OR subject:(mathematics))",
+      "query": "mediatype:(texts) AND language:(rus) AND (subject:(science) OR subject:(physics) OR subject:(chemistry) OR subject:(biology) OR subject:(mathematics)) AND year:[1000 TO 1929]",
       "max_results": 3000,
       "repeat": true
     }
@@ -151,28 +151,28 @@
   ],
   "russian_news": [
     {
-      "query": "mediatype:(texts) AND language:(rus) AND (subject:(newspaper) OR subject:(periodical) OR subject:(magazine))",
+      "query": "mediatype:(texts) AND language:(rus) AND (subject:(newspaper) OR subject:(periodical) OR subject:(magazine)) AND year:[1000 TO 1929]",
       "max_results": 2000,
       "repeat": true
     }
   ],
   "russian_law": [
     {
-      "query": "mediatype:(texts) AND language:(rus) AND (subject:(law) OR subject:(legislation))",
+      "query": "mediatype:(texts) AND language:(rus) AND (subject:(law) OR subject:(legislation)) AND year:[1000 TO 1929]",
       "max_results": 700,
       "repeat": true
     }
   ],
   "russian_social_science": [
     {
-      "query": "mediatype:(texts) AND language:(rus) AND (subject:(sociology) OR subject:(economics) OR subject:(\"political science\") OR subject:(\"social science\"))",
+      "query": "mediatype:(texts) AND language:(rus) AND (subject:(sociology) OR subject:(economics) OR subject:(\"political science\") OR subject:(\"social science\")) AND year:[1000 TO 1929]",
       "max_results": 500,
       "repeat": true
     }
   ],
   "english_science": [
     {
-      "query": "mediatype:(texts) AND language:(eng) AND (subject:(science) OR subject:(physics) OR subject:(chemistry) OR subject:(biology) OR subject:(mathematics))",
+      "query": "mediatype:(texts) AND language:(eng) AND (subject:(science) OR subject:(physics) OR subject:(chemistry) OR subject:(biology) OR subject:(mathematics)) AND year:[1000 TO 1929]",
       "max_results": 5000,
       "repeat": true
     }
@@ -193,21 +193,21 @@
   ],
   "english_news": [
     {
-      "query": "mediatype:(texts) AND language:(eng) AND (subject:(newspaper) OR subject:(periodical) OR subject:(magazine))",
+      "query": "mediatype:(texts) AND language:(eng) AND (subject:(newspaper) OR subject:(periodical) OR subject:(magazine)) AND year:[1000 TO 1929]",
       "max_results": 5000,
       "repeat": true
     }
   ],
   "english_law": [
     {
-      "query": "mediatype:(texts) AND language:(eng) AND (subject:(law) OR subject:(legislation))",
+      "query": "mediatype:(texts) AND language:(eng) AND (subject:(law) OR subject:(legislation)) AND year:[1000 TO 1929]",
       "max_results": 5000,
       "repeat": true
     }
   ],
   "english_social_science": [
     {
-      "query": "mediatype:(texts) AND language:(eng) AND (subject:(sociology) OR subject:(economics) OR subject:(\"political science\") OR subject:(\"social science\"))",
+      "query": "mediatype:(texts) AND language:(eng) AND (subject:(sociology) OR subject:(economics) OR subject:(\"political science\") OR subject:(\"social science\")) AND year:[1000 TO 1929]",
       "max_results": 5000,
       "repeat": true
     }
