@@ -35,7 +35,10 @@ with DAG(
         # slots into real (slow) downloads instead of instant no-ops, which
         # collapsed hourly throughput; keep an eye on whether the current
         # champion proxy starts failing under this load before raising further.
-        CONCURRENCY = 16
+        # Being stepped up further (2026-07-14 evening) towards a ~85% host
+        # utilization target, watching load average/memory/docker stats
+        # between steps - see project memory for the step log.
+        CONCURRENCY = 32
 
         def storeFile(initialUrl, filename, file):
             ftpConnector.storeFile(filename, file)
