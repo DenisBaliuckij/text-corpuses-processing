@@ -6,7 +6,7 @@ from airflow.sdk import task
 
 with DAG(
     dag_id="validate_proxies",
-    schedule="*/15 * * * *",
+    schedule="@continuous",
     start_date=pendulum.datetime(2021, 1, 1, tz="UTC"),
     catchup=False,
     is_paused_upon_creation=False,
