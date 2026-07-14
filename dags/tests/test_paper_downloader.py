@@ -1,8 +1,9 @@
 import sys
 import os
+import time
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
-from paperDownloader import _next_active_index, advance_state
+from paperDownloader import _next_active_index, advance_state, _is_backing_off
 
 CRITERIA_SINGLE_REPEAT = [{"query": "a", "repeat": True}]
 CRITERIA_SINGLE_ONCE   = [{"query": "a", "repeat": False}]
@@ -35,7 +36,14 @@ def test_next_active_all_done_returns_none():
 def test_advance_increments_page_when_has_more():
     state = {"criterion_index": 0, "page": 3, "done_criteria": []}
     result = advance_state(state, CRITERIA_SINGLE_REPEAT, has_more=True)
-    assert result == {"criterion_index": 0, "page": 4, "done_criteria": []}
+    assert result == {"criterion_index": 0, "page": 4, "done_criteria": [], "resume_at": None}
+
+
+def test_advance_has_more_clears_existing_resume_at():
+    # Progress resumed after a cooldown; the cooldown marker must not linger.
+    state = {"criterion_index": 0, "page": 3, "done_criteria": [], "resume_at": 12345.0}
+    result = advance_state(state, CRITERIA_SINGLE_REPEAT, has_more=True)
+    assert result["resume_at"] is None
 
 
 def test_advance_has_more_does_not_change_criterion():
@@ -51,13 +59,35 @@ def test_advance_has_more_does_not_change_criterion():
 def test_advance_repeat_moves_to_next_criterion():
     state = {"criterion_index": 0, "page": 5, "done_criteria": []}
     result = advance_state(state, CRITERIA_TWO_REPEAT, has_more=False)
-    assert result == {"criterion_index": 1, "page": 1, "done_criteria": []}
+    assert result == {"criterion_index": 1, "page": 1, "done_criteria": [], "resume_at": None}
 
 
 def test_advance_repeat_single_wraps_to_self():
     state = {"criterion_index": 0, "page": 5, "done_criteria": []}
     result = advance_state(state, CRITERIA_SINGLE_REPEAT, has_more=False)
-    assert result == {"criterion_index": 0, "page": 1, "done_criteria": []}
+    assert result["criterion_index"] == 0
+    assert result["page"] == 1
+    assert result["done_criteria"] == []
+
+
+def test_advance_repeat_single_wraps_to_self_sets_cooldown():
+    # Only one active criterion and it just exhausted a full pass: this is
+    # the busy-loop case (e.g. gujarati_news re-scanning the same closed
+    # Archive.org result set every @continuous tick) - back off instead of
+    # hammering the same query again immediately.
+    state = {"criterion_index": 0, "page": 5, "done_criteria": []}
+    before = time.time()
+    result = advance_state(state, CRITERIA_SINGLE_REPEAT, has_more=False)
+    assert result["resume_at"] is not None
+    assert result["resume_at"] > before
+
+
+def test_advance_repeat_rotating_to_sibling_does_not_set_cooldown():
+    # A different, not-yet-exhausted criterion is available - this is normal
+    # rotation, not exhaustion, so no cooldown should be applied.
+    state = {"criterion_index": 0, "page": 5, "done_criteria": []}
+    result = advance_state(state, CRITERIA_TWO_REPEAT, has_more=False)
+    assert result["resume_at"] is None
 
 
 def test_advance_repeat_skips_done_on_next():
@@ -68,7 +98,7 @@ def test_advance_repeat_skips_done_on_next():
     ]
     state = {"criterion_index": 0, "page": 2, "done_criteria": [1]}
     result = advance_state(state, criteria, has_more=False)
-    assert result == {"criterion_index": 2, "page": 1, "done_criteria": [1]}
+    assert result == {"criterion_index": 2, "page": 1, "done_criteria": [1], "resume_at": None}
 
 
 # ── advance_state: repeat=False, has_more=False ───────────────────────────────
@@ -111,3 +141,17 @@ def test_advance_once_preserves_existing_done():
     assert result["criterion_index"] == 2
     assert 0 in result["done_criteria"]
     assert 1 in result["done_criteria"]
+
+
+# ── _is_backing_off ───────────────────────────────────────────────────────────
+
+def test_is_backing_off_true_when_resume_at_in_future():
+    assert _is_backing_off({"resume_at": 1000.0}, now=500.0) is True
+
+
+def test_is_backing_off_false_when_resume_at_in_past():
+    assert _is_backing_off({"resume_at": 500.0}, now=1000.0) is False
+
+
+def test_is_backing_off_false_when_resume_at_absent():
+    assert _is_backing_off({"criterion_index": 0}, now=1000.0) is False

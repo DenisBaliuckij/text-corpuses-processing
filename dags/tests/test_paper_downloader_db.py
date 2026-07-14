@@ -14,7 +14,7 @@ from paperDownloader import (
 def test_load_state_returns_default_when_no_state():
     with patch('paperDownloader.ServiceStateRepository.get', return_value=None):
         result = load_state(4)
-    assert result == {'criterion_index': 0, 'page': 1, 'done_criteria': []}
+    assert result == {'criterion_index': 0, 'page': 1, 'done_criteria': [], 'resume_at': None}
 
 
 def test_load_state_parses_json_from_db():
@@ -22,7 +22,15 @@ def test_load_state_parses_json_from_db():
     row = (json.dumps(state),)
     with patch('paperDownloader.ServiceStateRepository.get', return_value=row):
         result = load_state(4)
-    assert result == state
+    assert result == {**state, 'resume_at': None}
+
+
+def test_load_state_preserves_existing_resume_at():
+    state = {'criterion_index': 0, 'page': 1, 'done_criteria': [], 'resume_at': 12345.0}
+    row = (json.dumps(state),)
+    with patch('paperDownloader.ServiceStateRepository.get', return_value=row):
+        result = load_state(4)
+    assert result['resume_at'] == 12345.0
 
 
 def test_save_state_serialises_and_calls_update():

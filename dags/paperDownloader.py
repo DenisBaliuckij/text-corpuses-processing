@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import json
 import os
+import time
 
 import requests
 
@@ -10,6 +11,8 @@ from repositories.pdf_repository import PdfRepository
 
 _DAG_FOLDER = os.path.dirname(os.path.abspath(__file__))
 _SEARCH_CONFIG_PATH = os.path.join(_DAG_FOLDER, 'configs', 'search_configs.json')
+
+_EXHAUSTION_BACKOFF_SECONDS = 3600
 
 
 def load_search_config(source: str) -> list:
@@ -22,8 +25,10 @@ def load_state(service_id: int) -> dict:
     """Reads crawl state from ServiceState. Returns a fresh default state if none exists."""
     result = ServiceStateRepository.get(service_id)
     if result is None:
-        return {'criterion_index': 0, 'page': 1, 'done_criteria': []}
-    return json.loads(result[0])
+        return {'criterion_index': 0, 'page': 1, 'done_criteria': [], 'resume_at': None}
+    state = json.loads(result[0])
+    state.setdefault('resume_at', None)
+    return state
 
 
 def save_state(service_id: int, state: dict) -> None:
@@ -81,22 +86,37 @@ def advance_state(state: dict, criteria: list, has_more: bool):
     done = set(state['done_criteria'])
 
     if has_more:
-        return {**state, 'page': state['page'] + 1}
+        return {**state, 'page': state['page'] + 1, 'resume_at': None}
 
     criterion = criteria[current]
     if criterion.get('repeat', False):
         next_idx = _next_active_index(current, criteria, done)
+        resolved_idx = next_idx if next_idx is not None else current
+        # No other active criterion to rotate to: this criterion just
+        # finished a full pass and would otherwise restart page 1 again on
+        # the very next @continuous tick, hammering the same (now fully
+        # scanned) query forever. Back off instead of busy-looping.
+        resume_at = (time.time() + _EXHAUSTION_BACKOFF_SECONDS) if resolved_idx == current else None
         return {
-            'criterion_index': next_idx if next_idx is not None else current,
+            'criterion_index': resolved_idx,
             'page': 1,
             'done_criteria': list(done),
+            'resume_at': resume_at,
         }
     else:
         done = done | {current}
         next_idx = _next_active_index(current, criteria, done)
         if next_idx is None:
             return None
-        return {'criterion_index': next_idx, 'page': 1, 'done_criteria': list(done)}
+        return {'criterion_index': next_idx, 'page': 1, 'done_criteria': list(done), 'resume_at': None}
+
+
+def _is_backing_off(state: dict, now: float = None) -> bool:
+    """Pure predicate: True if state carries a resume_at cooldown still in the future."""
+    resume_at = state.get('resume_at')
+    if resume_at is None:
+        return False
+    return (now if now is not None else time.time()) < resume_at
 
 
 def run_search(service_id: int, source: str, adapter_fn, use_proxy: bool = True) -> None:
@@ -119,6 +139,9 @@ def run_search(service_id: int, source: str, adapter_fn, use_proxy: bool = True)
         return
 
     state = load_state(service_id)
+    if _is_backing_off(state):
+        return  # exhausted; cooling down before re-scanning the same query
+
     done = set(state['done_criteria'])
 
     # Recover if state points at an already-done criterion
@@ -128,7 +151,7 @@ def run_search(service_id: int, source: str, adapter_fn, use_proxy: bool = True)
         if current is None:
             clear_state(service_id)
             return
-        state = {'criterion_index': current, 'page': 1, 'done_criteria': list(done)}
+        state = {'criterion_index': current, 'page': 1, 'done_criteria': list(done), 'resume_at': None}
 
     proxy = None
     if use_proxy:
