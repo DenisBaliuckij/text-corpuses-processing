@@ -18,6 +18,7 @@ with DAG(
     def downloadPdfFiles():
         # -*- coding: utf-8 -*-
         import requests
+        import time
         import uuid
         import io
         from concurrent.futures import ThreadPoolExecutor
@@ -27,6 +28,7 @@ with DAG(
         from ftpConnector import ftpConnector
 
         TOTAL_URLS = 500
+        QUEUE_EMPTY_BACKOFF_SECONDS = 15 * 60
         # Every worker independently calls ProxyRepository.get_latest(), which
         # deterministically returns the single highest-SuccessCount proxy -
         # so many workers can still concentrate load on one "champion" free
@@ -45,21 +47,26 @@ with DAG(
             PdfRepository.save_location(initialUrl, filename)
 
         def downloadOne():
+            # Returns whether a URL was actually claimed from the queue (True),
+            # as opposed to the queue having nothing left to give out (False) -
+            # used after the batch to detect a fully-empty download queue.
             proxieIp = None
+            got_url = False
             try:
                 url = PdfRepository.get_next_to_download()
                 if url is None:
-                    return
+                    return False
+                got_url = True
                 initialUrl = url
 
                 if 'support' in url:
                     PdfRepository.save_location(initialUrl, "NA")
-                    return
+                    return True
                 if 'springer' in url:
                     # Excluded for now due to a known Springer-specific issue.
                     # Left pending (not marked NA) so it resumes automatically
                     # once re-enabled.
-                    return
+                    return True
                 filename = ""
                 if 'arxiv' in url:
                     filename = 'arxiv/'
@@ -168,10 +175,19 @@ with DAG(
                 print(e)
                 if proxieIp and isinstance(e, requests.exceptions.ProxyError):
                     ProxyRepository.mark_broken(str(proxieIp).strip())
+            return got_url
 
         with ThreadPoolExecutor(max_workers=CONCURRENCY) as executor:
             futures = [executor.submit(downloadOne) for _ in range(TOTAL_URLS)]
-            for future in futures:
-                future.result()
+            results = [future.result() for future in futures]
+
+        if not any(results):
+            # Every single attempt in this batch found nothing to claim -
+            # the download queue is empty across all sources right now.
+            # Back off instead of having @continuous re-trigger an
+            # immediate identical no-op batch over and over.
+            print(f'[pdf_downloading] queue empty (0/{TOTAL_URLS} claimed); '
+                  f'backing off {QUEUE_EMPTY_BACKOFF_SECONDS}s')
+            time.sleep(QUEUE_EMPTY_BACKOFF_SECONDS)
 
     downloadPdfFiles()
