@@ -4,10 +4,11 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
 import json
 import pytest
+import requests
 from unittest.mock import patch
 from paperDownloader import (
     load_state, save_state, clear_state,
-    get_proxy, mark_proxy_broken, save_urls,
+    get_proxy, mark_proxy_broken, save_urls, run_search,
 )
 
 
@@ -72,3 +73,44 @@ def test_save_urls_calls_add_url_for_each():
     assert mock_add.call_count == 2
     mock_add.assert_any_call('http://a.com')
     mock_add.assert_any_call('http://b.com')
+
+
+def test_run_search_reraises_adapter_exception_after_logging():
+    """An adapter failure (e.g. target site unreachable) must surface as a
+    failed Airflow task, not a silent success - otherwise outages like a
+    scraped site going down are invisible in the ops report/dag_run history."""
+    criteria = [{'query': 'x', 'repeat': True}]
+    state = {'criterion_index': 0, 'page': 1, 'done_criteria': [], 'resume_at': None}
+
+    def failing_adapter(criterion, page, proxy):
+        raise ConnectionError('boom')
+
+    with patch('paperDownloader.load_search_config', return_value=criteria), \
+         patch('paperDownloader.ServiceStateRepository.get', return_value=(json.dumps(state),)), \
+         patch('paperDownloader.ServiceStateRepository.update') as mock_update, \
+         patch('paperDownloader.ServiceStateRepository.remove') as mock_remove:
+        with pytest.raises(ConnectionError):
+            run_search(service_id=1, source='x', adapter_fn=failing_adapter, use_proxy=False)
+
+    mock_update.assert_not_called()
+    mock_remove.assert_not_called()
+
+
+def test_run_search_marks_proxy_broken_then_reraises_on_proxy_error():
+    criteria = [{'query': 'x', 'repeat': True}]
+    state = {'criterion_index': 0, 'page': 1, 'done_criteria': [], 'resume_at': None}
+    proxy_row = {'proxieIp': '1.2.3.4', 'proxiePort': 8080, 'proxieProtocol': 'http'}
+
+    def failing_adapter(criterion, page, proxy):
+        raise requests.exceptions.ProxyError('bad proxy')
+
+    with patch('paperDownloader.load_search_config', return_value=criteria), \
+         patch('paperDownloader.ServiceStateRepository.get', return_value=(json.dumps(state),)), \
+         patch('paperDownloader.ServiceStateRepository.update') as mock_update, \
+         patch('paperDownloader.ProxyRepository.get_latest', return_value=proxy_row), \
+         patch('paperDownloader.ProxyRepository.mark_broken') as mock_mark_broken:
+        with pytest.raises(requests.exceptions.ProxyError):
+            run_search(service_id=1, source='x', adapter_fn=failing_adapter, use_proxy=True)
+
+    mock_mark_broken.assert_called_once_with('1.2.3.4')
+    mock_update.assert_not_called()

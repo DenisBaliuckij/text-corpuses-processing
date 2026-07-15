@@ -166,7 +166,10 @@ def run_search(service_id: int, source: str, adapter_fn, use_proxy: bool = True)
         print(f'[paperDownloader] adapter error: {e}')
         if proxy and isinstance(e, requests.exceptions.ProxyError):
             mark_proxy_broken(proxy['ip'])
-        return  # state NOT advanced; Airflow retries on next run
+        # State NOT advanced; re-raise so Airflow marks the task failed
+        # instead of a silent success, so outages (e.g. a scraped site
+        # going down) are visible in dag_run history and the ops report.
+        raise
 
     save_urls(urls)
 
