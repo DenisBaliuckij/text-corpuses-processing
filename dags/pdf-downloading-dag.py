@@ -29,18 +29,18 @@ with DAG(
 
         TOTAL_URLS = 500
         QUEUE_EMPTY_BACKOFF_SECONDS = 15 * 60
-        # Every worker independently calls ProxyRepository.get_latest(), which
-        # deterministically returns the single highest-SuccessCount proxy -
-        # so many workers can still concentrate load on one "champion" free
-        # proxy at once. Raised from 8 to 16 (2026-07-14) after the Gujarati/
-        # Russian/English source expansion turned most of the 500 per-run
-        # slots into real (slow) downloads instead of instant no-ops, which
-        # collapsed hourly throughput; keep an eye on whether the current
-        # champion proxy starts failing under this load before raising further.
-        # Being stepped up further (2026-07-14 evening) towards a ~85% host
-        # utilization target, watching load average/memory/docker stats
-        # between steps - see project memory for the step log.
-        CONCURRENCY = 32
+        # Raised from 8 to 16 (2026-07-14) after the Gujarati/Russian/English
+        # source expansion, then held at 32 for a while because raising it
+        # further wasn't helping - GetLatestProxy deterministically returned
+        # one "champion" proxy to every worker, and Airflow's global
+        # core.parallelism (default 32) was fully saturated by the ~30
+        # continuous discovery DAGs, so pdf_downloading couldn't even get
+        # enough executor slots to benefit from more in-task threads. Both
+        # fixed same day (proxy selection now spreads across top 20
+        # candidates; core.parallelism raised to 64) - stepping up again
+        # towards ~85% host utilization, watching load/mem/throughput
+        # between steps. See project memory for the step log.
+        CONCURRENCY = 64
 
         def storeFile(initialUrl, filename, file):
             ftpConnector.storeFile(filename, file)
