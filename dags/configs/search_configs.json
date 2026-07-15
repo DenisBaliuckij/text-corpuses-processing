@@ -61,7 +61,7 @@
   ],
   "gujarati_news": [
     {
-      "query": "mediatype:(texts) AND language:(guj) AND (subject:(newspaper) OR subject:(magazine))",
+      "query": "mediatype:(texts) AND language:(guj) AND (subject:(newspaper) OR subject:(magazine) OR subject:(bulletin) OR subject:(journal) OR title:(samachar) OR title:(patrika))",
       "max_results": 2000,
       "repeat": true
     }
@@ -103,7 +103,7 @@
   ],
   "gujarati_law": [
     {
-      "query": "mediatype:(texts) AND language:(guj) AND (subject:(law) OR subject:(legislation) OR subject:(act) OR title:(act) OR title:(law) OR subject:(constitution))",
+      "query": "mediatype:(texts) AND language:(guj) AND (subject:(law) OR subject:(legislation) OR subject:(act) OR subject:(regulation) OR subject:(ordinance) OR subject:(rules) OR subject:(code) OR subject:(bill) OR title:(act) OR title:(law) OR title:(regulation) OR title:(rules) OR subject:(constitution))",
       "max_results": 500,
       "repeat": true
     }
@@ -117,7 +117,7 @@
   ],
   "gujarati_dictionary": [
     {
-      "query": "mediatype:(texts) AND language:(guj) AND (subject:(dictionary) OR subject:(dictionaries) OR title:(dictionary) OR title:(kosh) OR subject:(lexicon))",
+      "query": "mediatype:(texts) AND language:(guj) AND (subject:(dictionary) OR subject:(dictionaries) OR title:(dictionary) OR title:(kosh) OR subject:(lexicon) OR subject:(glossary) OR title:(glossary) OR subject:(vocabulary) OR title:(shabdakosh))",
       "max_results": 500,
       "repeat": true
     }
@@ -138,8 +138,8 @@
   ],
   "russian_literature_classic": [
     {
-      "query": "mediatype:(texts) AND language:(rus) AND subject:(fiction) AND year:[1000 TO 1949]",
-      "max_results": 500,
+      "query": "mediatype:(texts) AND language:(rus) AND (subject:(fiction) OR subject:(literature) OR subject:(poetry) OR subject:(novel)) AND year:[1000 TO 1949]",
+      "max_results": 3000,
       "repeat": true
     }
   ],
