@@ -135,3 +135,24 @@ original `/var/lib/docker` be removed to reclaim `sda` space.
 
 - Moving FTP-served PDF storage or the swap files to NVMe, if `sda`
   pressure persists after this change too.
+
+## Completion (2026-07-16)
+
+Executed successfully. All containers self-restarted via their restart
+policies with no manual `docker compose up -d` needed. `mssql` data
+verified intact throughout (row counts progressed normally, no gaps).
+
+Result, measured via `iostat -x` after the initial post-restart
+settling period:
+
+| Metric | `sda` before | `sda` after | `nvme0n1` after |
+|---|---|---|---|
+| Utilization | 80-99% | 1.6-4.8% | 1.9-2.4% |
+| Write latency | 170-450ms | 0-2.4ms | 0.4-0.43ms |
+| Read latency | 15-50ms | 1.3-36ms | ~0ms |
+
+`sda` went from permanently saturated to nearly idle. Combined with the
+mssql migration, this fully resolved the disk-I/O bottleneck identified
+during the throughput investigation - both migrations were necessary,
+neither alone was sufficient (the mssql-only move left `sda` still at
+80-94%, per the sibling spec's completion note).

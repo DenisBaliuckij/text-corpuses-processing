@@ -107,3 +107,31 @@ to reclaim space.
 - Investigating why/when the NVMe drive was originally attached to the
   host (couldn't be determined without `sudo` - `dmesg`/`smartctl`
   access - during this session).
+
+## Completion (2026-07-16)
+
+Executed successfully, with two real problems hit and fixed along the
+way (both caught before any data loss):
+
+1. `rsync` silently failed to copy the actual `.mdf`/`.ldf` files
+   (owned by uid 10001, unreadable by `s939`) - switched to `docker cp`,
+   which reads through the running/stopped container correctly.
+2. `docker compose stop` doesn't work on this container at all -
+   `restart: always` overrides manual stops, causing an unclean SIGKILL
+   + crash-recovery cycle instead of a graceful shutdown. Fixed by
+   temporarily setting `restart: "no"`, stopping cleanly, then restoring
+   `restart: always` after the cutover.
+3. `docker cp` re-owns extracted files to the invoking user (`s939`,
+   uid 1000) rather than preserving the source uid (10001) - needed one
+   manual `sudo chown -R 10001:10001` before the container could start
+   at the new location.
+
+Data integrity verified via row counts at every step (`PdfDocuments`,
+`IPProxy`, `ServiceState`, `GraphConstructionJob`) - all progressed
+normally throughout, no gaps or resets.
+
+Follow-up result: `sda` remained at 80-94% utilization immediately
+after this migration alone - SQL Server was not the only major
+consumer. See the sibling Docker-root-migration spec, which was needed
+in addition to fully resolve the bottleneck (`sda` dropped to
+1.6-4.8% only after both migrations were complete).
