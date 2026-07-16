@@ -61,7 +61,7 @@
   ],
   "gujarati_news": [
     {
-      "query": "mediatype:(texts) AND language:(guj) AND (subject:(newspaper) OR subject:(magazine) OR subject:(bulletin) OR subject:(journal) OR title:(samachar) OR title:(patrika))",
+      "query": "mediatype:(texts) AND language:(guj) AND (subject:(newspaper) OR subject:(magazine) OR subject:(bulletin) OR subject:(journal) OR subject:(periodical) OR title:(samachar) OR title:(patrika) OR title:(akhbar) OR title:(weekly) OR title:(daily))",
       "max_results": 2000,
       "repeat": true
     }
@@ -105,6 +105,11 @@
     {
       "query": "mediatype:(texts) AND language:(guj) AND (subject:(law) OR subject:(legislation) OR subject:(act) OR subject:(regulation) OR subject:(ordinance) OR subject:(rules) OR subject:(code) OR subject:(bill) OR title:(act) OR title:(law) OR title:(regulation) OR title:(rules) OR subject:(constitution))",
       "max_results": 500,
+      "repeat": true
+    },
+    {
+      "query": "mediatype:(texts) AND identifier:(in.gazette.gujarat.*)",
+      "max_results": 5000,
       "repeat": true
     }
   ],
