@@ -54,3 +54,89 @@ def test_ftppostfix_uses_suffixed_config_keys():
         ftpConnector.storeFile('graph.json', fake_file, ftpPostfix='Graph')
         MockFTP.return_value.connect.assert_called_once_with('127.0.0.2', 22)
         MockFTP.return_value.login.assert_called_once_with('guser', 'gpass')
+
+
+# Regression coverage for the 2026-07-16 incident: a failed storbinary/
+# retrbinary/nlst left the FTP session open server-side (quit() was never
+# reached), and under CONCURRENCY=64 those leaked sessions accumulated on
+# the FileZilla server until it silently stopped accepting new passive
+# data connections (systemd still reported it "active"). Every connection
+# must be closed even when the transfer itself raises.
+
+def test_store_file_closes_connection_even_if_storbinary_raises():
+    fake_file = io.BytesIO(b'data')
+    with patch('ftpConnector.getConfig', return_value=_CFG), \
+         patch('ftpConnector.ftplib.FTP') as MockFTP:
+        mock_server = MockFTP.return_value
+        mock_server.storbinary.side_effect = TimeoutError('data connection timed out')
+        try:
+            ftpConnector.storeFile('test.pdf', fake_file)
+        except TimeoutError:
+            pass
+        else:
+            raise AssertionError('expected the original TimeoutError to propagate')
+        mock_server.quit.assert_called_once()
+
+
+def test_store_file_falls_back_to_close_if_quit_itself_fails():
+    fake_file = io.BytesIO(b'data')
+    with patch('ftpConnector.getConfig', return_value=_CFG), \
+         patch('ftpConnector.ftplib.FTP') as MockFTP:
+        mock_server = MockFTP.return_value
+        # quit() sends a QUIT command over a socket that storbinary() just
+        # broke - it can raise too. Must not leak the connection or crash.
+        mock_server.storbinary.side_effect = ConnectionResetError('broken pipe')
+        mock_server.quit.side_effect = OSError('socket already closed')
+        try:
+            ftpConnector.storeFile('test.pdf', fake_file)
+        except ConnectionResetError:
+            pass
+        else:
+            raise AssertionError('expected the original ConnectionResetError to propagate')
+        mock_server.quit.assert_called_once()
+        mock_server.close.assert_called_once()
+
+
+def test_get_file_closes_connection_even_if_retrbinary_raises():
+    with patch('ftpConnector.getConfig', return_value=_CFG), \
+         patch('ftpConnector.ftplib.FTP') as MockFTP:
+        mock_server = MockFTP.return_value
+        mock_server.retrbinary.side_effect = TimeoutError('data connection timed out')
+        try:
+            ftpConnector.getFile('arxiv/paper.pdf')
+        except TimeoutError:
+            pass
+        else:
+            raise AssertionError('expected the original TimeoutError to propagate')
+        mock_server.quit.assert_called_once()
+
+
+def test_get_file_list_closes_connection_even_if_nlst_raises():
+    with patch('ftpConnector.getConfig', return_value=_CFG), \
+         patch('ftpConnector.ftplib.FTP') as MockFTP:
+        mock_server = MockFTP.return_value
+        mock_server.nlst.side_effect = TimeoutError('data connection timed out')
+        try:
+            ftpConnector.getFileList('arxiv/')
+        except TimeoutError:
+            pass
+        else:
+            raise AssertionError('expected the original TimeoutError to propagate')
+        mock_server.quit.assert_called_once()
+
+
+def test_store_file_closes_connection_even_if_login_raises():
+    # A failure before the transfer even starts (e.g. bad credentials,
+    # connect timeout) must not leave the socket open either.
+    fake_file = io.BytesIO(b'data')
+    with patch('ftpConnector.getConfig', return_value=_CFG), \
+         patch('ftpConnector.ftplib.FTP') as MockFTP:
+        mock_server = MockFTP.return_value
+        mock_server.login.side_effect = OSError('connection refused')
+        try:
+            ftpConnector.storeFile('test.pdf', fake_file)
+        except OSError:
+            pass
+        else:
+            raise AssertionError('expected the original OSError to propagate')
+        mock_server.quit.assert_called_once()
