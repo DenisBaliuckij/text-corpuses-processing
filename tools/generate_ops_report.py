@@ -233,18 +233,64 @@ def get_host_resources() -> dict:
     load_match = re.search(r'load average:\s*([\d.]+),\s*([\d.]+),\s*([\d.]+)', uptime_out)
     load = load_match.groups() if load_match else ('?', '?', '?')
 
-    df_out = subprocess.run(['df', '-B1', '/'], capture_output=True, text=True).stdout
-    df_fields = df_out.splitlines()[1].split()
-    disk_total, disk_used = int(df_fields[1]), int(df_fields[2])
-
     nproc = int(subprocess.run(['nproc'], capture_output=True, text=True).stdout.strip())
 
     return {
         'mem_used_gb': mem_used / 1024 ** 3, 'mem_total_gb': mem_total / 1024 ** 3,
         'swap_used_gb': swap_used / 1024 ** 3, 'swap_total_gb': swap_total / 1024 ** 3,
-        'disk_used_gb': disk_used / 1024 ** 3, 'disk_total_tb': disk_total / 1024 ** 4,
         'load': load, 'nproc': nproc,
     }
+
+
+def get_disk_stats() -> list[dict]:
+    """Per-drive capacity + a live I/O utilization snapshot.
+
+    Added 2026-07-16 after migrating mssql's data/log files and Docker's
+    storage root from sda (which was measured at 80-99% utilization,
+    170-450ms write latency - the throughput bottleneck at the time) onto
+    a previously-unused NVMe drive. Tracks both going forward so a
+    regression back toward sda saturation is visible here, not just
+    discovered ad hoc.
+    """
+    drives = [
+        {'device': 'sda', 'label': 'sda — ОС, FTP, подкачка', 'mount': '/'},
+        {'device': 'nvme0n1', 'label': 'nvme0n1 — mssql + Docker root', 'mount': '/mnt/nvme-mssql'},
+    ]
+
+    for d in drives:
+        df_out = subprocess.run(['df', '-B1', d['mount']], capture_output=True, text=True).stdout
+        fields = df_out.splitlines()[1].split()
+        d['used_gb'] = int(fields[2]) / 1024 ** 3
+        d['total_gb'] = int(fields[1]) / 1024 ** 3
+
+    # Two samples 1s apart; the first iostat table is a since-boot cumulative
+    # average, not current activity - only the second (live) sample is used.
+    try:
+        iostat_out = subprocess.run(
+            ['iostat', '-dx', '1', '2'], capture_output=True, text=True, timeout=15,
+        ).stdout
+        device_lines = {}
+        for line in iostat_out.splitlines():
+            parts = line.split()
+            if parts and parts[0] in ('sda', 'nvme0n1'):
+                device_lines[parts[0]] = parts  # last occurrence wins = 2nd sample
+        for d in drives:
+            parts = device_lines.get(d['device'])
+            # columns: Device r/s rkB/s rrqm/s %rrqm r_await rareq-sz w/s wkB/s
+            #          wrqm/s %wrqm w_await wareq-sz d/s dkB/s drqm/s %drqm
+            #          d_await dareq-sz f/s f_await aqu-sz %util
+            if parts and len(parts) >= 22:
+                d['w_await_ms'] = float(parts[10])
+                d['util_pct'] = float(parts[21])
+            else:
+                d['w_await_ms'] = None
+                d['util_pct'] = None
+    except (subprocess.SubprocessError, OSError, ValueError):
+        for d in drives:
+            d['w_await_ms'] = None
+            d['util_pct'] = None
+
+    return drives
 
 
 def get_container_stats() -> list[dict]:
@@ -358,7 +404,7 @@ def meter(label: str, used: float, total: float, unit: str, warn_pct: float = 80
 
 
 def render(sources, grand_total, dag_runs, ftp_stats, host, containers,
-           shodhganga_up, paused_states, generated_at, inserted_24h) -> str:
+           shodhganga_up, paused_states, generated_at, inserted_24h, disks) -> str:
     total_ftp_files = sum(f['files'] for f in ftp_stats.values())
     total_ftp_size_gb = sum(f['size_mb'] for f in ftp_stats.values()) / 1024
     total_24h_downloads = sum(f['recent_24h'] for f in ftp_stats.values())
@@ -399,6 +445,21 @@ def render(sources, grand_total, dag_runs, ftp_stats, host, containers,
         ftp_rows.append(
             f'<tr><td class="name">{html.escape(folder)}</td><td class="num">{f["files"]:,}</td>'
             f'<td class="num">{f["size_mb"]:,.1f} MB</td><td class="num">{f["recent_24h"]:,}</td></tr>'
+        )
+
+    disk_rows = []
+    for d in disks:
+        cap_pct = (d['used_gb'] / d['total_gb'] * 100) if d['total_gb'] else 0
+        if d['util_pct'] is None:
+            util_cell = '<span class="pill neutral">н/д</span>'
+            latency_cell = '—'
+        else:
+            util_cell = bar(d['util_pct'])
+            latency_cell = f"{d['w_await_ms']:.1f} мс"
+        disk_rows.append(
+            f'<tr><td class="name">{html.escape(d["label"])}</td>'
+            f'<td class="num">{d["used_gb"]:.0f} / {d["total_gb"]:.0f} ГБ ({cap_pct:.0f}%)</td>'
+            f'<td>{util_cell}</td><td class="num">{latency_cell}</td></tr>'
         )
 
     container_rows = []
@@ -485,8 +546,21 @@ def render(sources, grand_total, dag_runs, ftp_stats, host, containers,
     <div class="meter-grid">
       {meter(f"Память ({host['mem_used_gb']:.0f} / {host['mem_total_gb']:.0f} ГиБ)", host['mem_used_gb'], host['mem_total_gb'], 'GiB')}
       {meter(f"Подкачка ({host['swap_used_gb']:.1f} / {host['swap_total_gb']:.0f} ГиБ)", host['swap_used_gb'], host['swap_total_gb'], 'GiB', warn_pct=60)}
-      {meter(f"Диск ({host['disk_used_gb']:.0f} ГБ / {host['disk_total_tb']:.1f} ТБ)", host['disk_used_gb'], host['disk_total_tb'] * 1024, 'GB')}
     </div>
+  </section>
+
+  <section>
+    <h2>Диски <span class="section-note">sda vs nvme0n1 — ёмкость и загрузка в реальном времени (iostat)</span></h2>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Диск</th><th class="num">Занято / Всего</th><th>Загрузка (util%)</th><th class="num">Задержка записи</th></tr></thead>
+      <tbody>{''.join(disk_rows)}</tbody>
+    </table></div>
+    <p style="font-size:0.82rem;color:var(--text-dim);max-width:70ch;">
+      2026-07-16: mssql-data/mssql-backups и Docker storage root перенесены с sda
+      (был на уровне 80-99% загрузки, задержка записи 170-450 мс — узкое место
+      throughput) на ранее неиспользуемый nvme0n1. Обе секции отслеживаются здесь,
+      чтобы регресс обратно к насыщению sda был виден сразу, а не находился вручную.
+    </p>
   </section>
 
   <section>
@@ -518,12 +592,13 @@ def main():
     paused_states = get_dag_paused_states()
     ftp_stats = get_ftp_stats()
     host = get_host_resources()
+    disks = get_disk_stats()
     containers = get_container_stats()
     shodhganga_up = check_shodhganga_reachable()
     inserted_24h = get_24h_inserted()
 
     output = render(sources, grand_total, dag_runs, ftp_stats, host, containers,
-                     shodhganga_up, paused_states, generated_at, inserted_24h)
+                     shodhganga_up, paused_states, generated_at, inserted_24h, disks)
 
     with open(REPORT_OUTPUT_PATH, 'w', encoding='utf-8') as f:
         f.write(output)
