@@ -107,10 +107,19 @@ def main():
     restarted, output = restart_service()
     if restarted:
         log(f"Restarted {SERVICE_NAME} successfully")
-        # Give it a moment, then re-probe once so a failed restart is visible
-        # in this same log line rather than only surfacing on the next tick.
-        time.sleep(3)
-        ok2, detail2 = probe_passive_data_connection()
+        # Give it a moment, then re-probe so a failed restart is visible in
+        # this same log line rather than only surfacing on the next tick.
+        # A single 3s wait proved too short in production (2026-07-17):
+        # the service hadn't finished binding its passive-port range yet,
+        # so every restart logged a false "still failing" even though it
+        # came up fine a few seconds later. Retry with backoff instead of
+        # one fixed-delay check.
+        ok2, detail2 = False, None
+        for wait_s in (3, 5, 7):
+            time.sleep(wait_s)
+            ok2, detail2 = probe_passive_data_connection()
+            if ok2:
+                break
         if ok2:
             log("Post-restart probe: OK")
         else:

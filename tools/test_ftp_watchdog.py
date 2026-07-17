@@ -97,6 +97,42 @@ def test_main_restarts_and_reprobes_when_unhealthy():
         assert 'Post-restart probe: OK' in logged
 
 
+def test_main_retries_post_restart_probe_with_backoff_before_giving_up():
+    # Regression test for the 2026-07-17 incident: a single 3s post-restart
+    # check was too short (FileZilla hadn't finished binding its passive
+    # ports yet), so every restart logged a false "still failing" even
+    # though the service came up fine moments later. The probe should be
+    # retried a few times before concluding failure.
+    with patch('ftp_watchdog.FTP_USER', 'user'), \
+         patch('ftp_watchdog.FTP_PASSWORD', 'pass'), \
+         patch('ftp_watchdog.probe_passive_data_connection',
+               side_effect=[(False, 'initial down'), (False, 'still starting'), (False, 'still starting'), (True, 'ok')]) as mock_probe, \
+         patch('ftp_watchdog.restart_service', return_value=(True, '')) as mock_restart, \
+         patch('ftp_watchdog.time.sleep') as mock_sleep, \
+         patch('ftp_watchdog.log') as mock_log:
+        ftp_watchdog.main()
+        mock_restart.assert_called_once()
+        assert mock_probe.call_count == 4  # initial + 3 retries before success
+        logged = ' '.join(str(c.args[0]) for c in mock_log.call_args_list)
+        assert 'Post-restart probe: OK' in logged
+        # backoff waits: 3s, 5s, 7s
+        sleep_calls = [c.args[0] for c in mock_sleep.call_args_list]
+        assert sleep_calls == [3, 5, 7]
+
+
+def test_main_gives_up_after_exhausting_all_retries():
+    with patch('ftp_watchdog.FTP_USER', 'user'), \
+         patch('ftp_watchdog.FTP_PASSWORD', 'pass'), \
+         patch('ftp_watchdog.probe_passive_data_connection', return_value=(False, 'still down')) as mock_probe, \
+         patch('ftp_watchdog.restart_service', return_value=(True, '')), \
+         patch('ftp_watchdog.time.sleep'), \
+         patch('ftp_watchdog.log') as mock_log:
+        ftp_watchdog.main()
+        assert mock_probe.call_count == 4  # initial + 3 retries, all failing
+        logged = ' '.join(str(c.args[0]) for c in mock_log.call_args_list)
+        assert 'Post-restart probe STILL FAILING' in logged
+
+
 def test_main_logs_when_restart_itself_fails():
     with patch('ftp_watchdog.FTP_USER', 'user'), \
          patch('ftp_watchdog.FTP_PASSWORD', 'pass'), \
