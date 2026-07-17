@@ -1,3 +1,5 @@
+from datetime import timedelta
+
 import pendulum
 
 from airflow.sdk import DAG
@@ -14,7 +16,18 @@ with DAG(
     tags=["pdfFiles"],
 ) as dag:
 
-    @task()
+    # Guaranteed recovery for the 2026-07-17 stuck-task incidents: a
+    # ThreadPoolExecutor worker can hang forever in a blocking syscall
+    # (observed with SOCKS4/5 proxies not honoring their timeout) despite
+    # downloadOne()'s internal ~30s timeouts, and Python cannot forcibly
+    # kill a thread stuck mid-syscall - the process itself would just sit
+    # there indefinitely, occupying the one max_active_runs=1 slot, with
+    # no automatic recovery. execution_timeout operates at the OS process
+    # level (Airflow sends SIGTERM/SIGKILL from outside the process), so
+    # it terminates the task regardless of what state Python's threads are
+    # in. Set well above the observed legitimate run range (35-98 min) so
+    # it only fires on a genuine hang, never a merely-slow real batch.
+    @task(execution_timeout=timedelta(hours=3))
     def downloadPdfFiles():
         # -*- coding: utf-8 -*-
         import requests
@@ -177,9 +190,33 @@ with DAG(
                     ProxyRepository.mark_broken(str(proxieIp).strip())
             return got_url
 
+        # Root cause of the 2026-07-17 stuck-task incidents: downloadOne()
+        # bounds each individual request/FTP call at ~30s, but that isn't
+        # airtight for every code path (observed: SOCKS4/5 proxies, which
+        # don't always honor the timeout passed through requests/PySocks
+        # on a stalled handshake). Python cannot forcibly kill a thread
+        # blocked in a syscall, so a single such hang permanently strands
+        # that worker for the rest of the batch. future.result() with no
+        # timeout then blocks the *main* thread forever too, since results
+        # are collected in submission order - even though up to 63 other
+        # workers may have finished, the whole task just sits there,
+        # never crashing, never exiting, indefinitely occupying the one
+        # max_active_runs=1 slot until someone manually kills it.
+        # PER_FUTURE_TIMEOUT_SECONDS is generous (some legitimate PDFs are
+        # multi-GB and can take minutes even without hanging) but bounded,
+        # so a hung future is treated as "claimed nothing" instead of
+        # stalling the batch forever.
+        PER_FUTURE_TIMEOUT_SECONDS = 300
         with ThreadPoolExecutor(max_workers=CONCURRENCY) as executor:
             futures = [executor.submit(downloadOne) for _ in range(TOTAL_URLS)]
-            results = [future.result() for future in futures]
+            results = []
+            for future in futures:
+                try:
+                    results.append(future.result(timeout=PER_FUTURE_TIMEOUT_SECONDS))
+                except TimeoutError:
+                    print(f'[pdf_downloading] a download hung past {PER_FUTURE_TIMEOUT_SECONDS}s '
+                          f'(worker thread lost, not the whole batch) - treating as unclaimed')
+                    results.append(False)
 
         if not any(results):
             # Every single attempt in this batch found nothing to claim -
