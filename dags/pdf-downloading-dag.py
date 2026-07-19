@@ -207,16 +207,31 @@ with DAG(
         # so a hung future is treated as "claimed nothing" instead of
         # stalling the batch forever.
         PER_FUTURE_TIMEOUT_SECONDS = 300
-        with ThreadPoolExecutor(max_workers=CONCURRENCY) as executor:
-            futures = [executor.submit(downloadOne) for _ in range(TOTAL_URLS)]
-            results = []
-            for future in futures:
-                try:
-                    results.append(future.result(timeout=PER_FUTURE_TIMEOUT_SECONDS))
-                except TimeoutError:
-                    print(f'[pdf_downloading] a download hung past {PER_FUTURE_TIMEOUT_SECONDS}s '
-                          f'(worker thread lost, not the whole batch) - treating as unclaimed')
-                    results.append(False)
+        # Root cause of the 2026-07-18/19 90-150 minute zero-throughput windows:
+        # `with ThreadPoolExecutor(...) as executor:` calls shutdown(wait=True)
+        # on exit, which blocks until *every* submitted worker thread has
+        # actually returned - even ones this loop already gave up on via
+        # future.result(timeout=...) below. A single very slow-but-not-hung
+        # download (e.g. a multi-GB file trickling through a barely-alive
+        # proxy, never tripping the per-chunk 30s read timeout) therefore
+        # held up the *entire task's return* - and with it, the next
+        # @continuous batch's claims - for as long as that one straggler took,
+        # regardless of PER_FUTURE_TIMEOUT_SECONDS. Confirmed via task logs:
+        # the last "hung past 300s" print was followed by 50-100+ minutes of
+        # total silence before "Done." Fix: don't join stragglers before
+        # returning - let them finish in the background so the batch (and the
+        # next one's claims) isn't gated on the slowest single download.
+        executor = ThreadPoolExecutor(max_workers=CONCURRENCY)
+        futures = [executor.submit(downloadOne) for _ in range(TOTAL_URLS)]
+        results = []
+        for future in futures:
+            try:
+                results.append(future.result(timeout=PER_FUTURE_TIMEOUT_SECONDS))
+            except TimeoutError:
+                print(f'[pdf_downloading] a download hung past {PER_FUTURE_TIMEOUT_SECONDS}s '
+                      f'(worker thread lost, not the whole batch) - treating as unclaimed')
+                results.append(False)
+        executor.shutdown(wait=False)
 
         if not any(results):
             # Every single attempt in this batch found nothing to claim -

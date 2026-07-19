@@ -96,7 +96,14 @@
   ],
   "gujarati_science_archive": [
     {
-      "query": "mediatype:(texts) AND language:(guj) AND (subject:(chemistry) OR subject:(physics) OR subject:(mathematics) OR title:(chemistry) OR title:(physics) OR title:(mathematics))",
+      "query": "mediatype:(texts) AND language:(guj) AND (subject:(science) OR subject:(chemistry) OR subject:(physics) OR subject:(mathematics) OR subject:(biology) OR subject:(astronomy) OR subject:(geography) OR title:(science) OR title:(chemistry) OR title:(physics) OR title:(mathematics) OR title:(biology))",
+      "max_results": 1000,
+      "repeat": true
+    }
+  ],
+  "gujarati_science_social_archive": [
+    {
+      "query": "mediatype:(texts) AND language:(guj) AND (subject:(\"social science\") OR subject:(economics) OR subject:(sociology) OR subject:(\"political science\") OR subject:(psychology) OR subject:(history) OR subject:(geography) OR title:(economics) OR title:(sociology) OR title:(\"social science\"))",
       "max_results": 1000,
       "repeat": true
     }
@@ -153,6 +160,11 @@
       "query": "mediatype:(texts) AND language:(rus) AND (subject:(newspaper) OR subject:(periodical) OR subject:(magazine)) AND year:[1000 TO 1929]",
       "max_results": 2000,
       "repeat": true
+    },
+    {
+      "query": "mediatype:(texts) AND language:(rus) AND (title:(Известия) OR title:(Правда) OR title:(Коммерсантъ) OR title:(\"Комсомольская правда\") OR title:(\"РИА Новости\")) AND year:[1000 TO 1929]",
+      "max_results": 500,
+      "repeat": true
     }
   ],
   "russian_law": [
@@ -194,6 +206,11 @@
     {
       "query": "mediatype:(texts) AND language:(eng) AND (subject:(newspaper) OR subject:(periodical) OR subject:(magazine)) AND year:[1000 TO 1929]",
       "max_results": 5000,
+      "repeat": true
+    },
+    {
+      "query": "mediatype:(texts) AND language:(eng) AND (title:(\"BBC\") OR title:(\"Guardian\") OR title:(\"The Times\") OR title:(\"New York Times\") OR title:(\"Washington Post\") OR title:(\"USA Today\")) AND year:[1000 TO 1929]",
+      "max_results": 2000,
       "repeat": true
     }
   ],
