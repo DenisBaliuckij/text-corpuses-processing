@@ -33,7 +33,6 @@ with DAG(
         import requests
         import time
         import uuid
-        import io
         from concurrent.futures import ThreadPoolExecutor
         from repositories.pdf_repository import PdfRepository
         from repositories.proxy_repository import ProxyRepository
@@ -164,10 +163,19 @@ with DAG(
                                         'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/35.0.1916.47 Safari/537.36'
                                         },
                                     proxies=proxies,
-                                    timeout=30)
+                                    timeout=30,
+                                    stream=True)
                 if response.status_code == 200:
-                    file = io.BytesIO(response.content)
-                    storeFile(initialUrl, filename, file)
+                    # stream=True + response.raw (not response.content) so the file
+                    # body is never fully buffered in process memory - it's read in
+                    # chunks straight into the FTP upload (ftpConnector.storeFile ->
+                    # storbinary). With up to 64 concurrent downloads and some sources
+                    # carrying multi-GB PDFs, io.BytesIO(response.content) held every
+                    # concurrent file's full bytes in RAM at once - a plausible
+                    # contributor to unexplained OOM-shaped task failures (see
+                    # 2026-07-19 zero-throughput report, §3.1/3.3).
+                    response.raw.decode_content = True
+                    storeFile(initialUrl, filename, response.raw)
                     ProxyRepository.mark_success(str(proxieIp).strip())
 
                 else:
@@ -177,10 +185,11 @@ with DAG(
                                   'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/35.0.1916.47 Safari/537.36'
                                   },
                               proxies=proxies,
-                              timeout=30)
+                              timeout=30,
+                              stream=True)
                     if response.status_code == 200:
-                        file = io.BytesIO(response.content)
-                        storeFile(initialUrl, filename, file)
+                        response.raw.decode_content = True
+                        storeFile(initialUrl, filename, response.raw)
                         ProxyRepository.mark_success(str(proxieIp).strip())
                     else:
                         PdfRepository.save_location(initialUrl, "NA")
