@@ -56,6 +56,14 @@ SOURCE_PATTERNS = [
     ('english_news', '%english_news%'),
     ('english_law', '%english_law%'),
     ('english_social_science', '%english_social_science%'),
+    ('gutenberg_science', '%gutenberg_science%'),
+    ('gutenberg_social_science', '%gutenberg_social_science%'),
+    ('gutenberg_law', '%gutenberg_law%'),
+    ('gutenberg_history', '%gutenberg_history%'),
+    ('gutenberg_philosophy_religion', '%gutenberg_philosophy_religion%'),
+    ('gutenberg_poetry_drama', '%gutenberg_poetry_drama%'),
+    ('gutenberg_children', '%gutenberg_children%'),
+    ('gutenberg_literature', '%gutenberg_literature%'),
     ('arxiv', '%arxiv%'),
     ('cyberleninka', '%lenin%'),
     ('pubmed', '%ncbi%'),
@@ -72,6 +80,9 @@ FTP_FOLDERS = [
     'russian/news', 'russian/law', 'russian/social_science',
     'english/science', 'english/literature_modern', 'english/literature_classic',
     'english/news', 'english/law', 'english/social_science',
+    'gutenberg/science', 'gutenberg/social_science', 'gutenberg/law',
+    'gutenberg/history', 'gutenberg/philosophy_religion', 'gutenberg/poetry_drama',
+    'gutenberg/children', 'gutenberg/literature',
 ]
 
 DAG_IDS = [
@@ -86,6 +97,10 @@ DAG_IDS = [
     'download_english_science', 'download_english_literature_modern',
     'download_english_literature_classic', 'download_english_news',
     'download_english_law', 'download_english_social_science',
+    'download_gutenberg_science', 'download_gutenberg_social_science',
+    'download_gutenberg_law', 'download_gutenberg_history',
+    'download_gutenberg_philosophy_religion', 'download_gutenberg_poetry_drama',
+    'download_gutenberg_children', 'download_gutenberg_literature',
 ]
 
 
