@@ -189,132 +189,6 @@ def get_pdf_downloading_runs() -> dict:
     return {'success': 0, 'failed': 0}
 
 
-def get_pdf_downloading_run_windows(hours: int = 4) -> list[dict]:
-    """Start/end/duration for every pdf_downloading dag_run touching the
-    recent window, used by get_recent_throughput to explain *why* a zero
-    bucket happened instead of just flagging that it did.
-
-    Added 2026-07-19 alongside the zero-throughput root-cause report: a
-    ~15-16 minute run is very likely the intentional QUEUE_EMPTY_BACKOFF_SECONDS
-    path (found nothing to claim, backed off) - benign. A run well above the
-    healthy 20-50 minute range is the straggler-blocking pattern documented
-    in that report (fixed 2026-07-19, but keep detecting it in case it or
-    something shaped like it recurs). Still-running rows have no end_date -
-    treated as ongoing until now.
-    """
-    rows = run_psql(f"""
-        SELECT start_date, COALESCE(end_date, NOW()),
-               EXTRACT(EPOCH FROM (COALESCE(end_date, NOW()) - start_date))/60
-        FROM dag_run
-        WHERE dag_id='pdf_downloading' AND start_date > NOW() - INTERVAL '{hours} hours'
-        ORDER BY start_date;
-    """)
-    windows = []
-    for r in rows:
-        if len(r) != 3:
-            continue
-        try:
-            # psql -A output for timestamptz, e.g. "2026-07-19 14:54:57.13435+00" -
-            # fromisoformat (3.11+) parses this directly, variable-precision
-            # fractional seconds and all.
-            start = datetime.fromisoformat(r[0])
-            end = datetime.fromisoformat(r[1])
-            duration_min = float(r[2])
-        except ValueError:
-            continue
-        windows.append({'start': start, 'end': end, 'duration_min': duration_min})
-    return windows
-
-
-# A run in this range is almost certainly QUEUE_EMPTY_BACKOFF_SECONDS (900s)
-# plus a little startup/shutdown overhead - the queue was genuinely empty
-# across every source, not a stall.
-_BENIGN_BACKOFF_RUN_MINUTES = (10, 20)
-# A run at or above this is well outside the healthy 20-50 minute range
-# observed historically - treat any zero bucket it overlaps as a real,
-# unexplained stall worth investigating rather than benign backoff.
-_STALL_RUN_MINUTES_FLOOR = 75
-
-
-def _classify_zero_bucket(bucket_start, bucket_end, run_windows) -> str:
-    """Returns 'benign_backoff', 'stall', or 'unexplained' for a zero-count bucket.
-
-    Runs aren't aligned to the 15-minute calendar buckets ClaimedAt is grouped
-    into, so a single short backoff run commonly spans parts of two buckets -
-    requiring *every* overlapping run to be backoff-shaped was too strict and
-    never matched anything in practice. A stall-shaped run overlapping at all
-    is still decisive (any('stall') below) since that's the higher-confidence,
-    higher-cost-of-missing signal; benign_backoff only needs one qualifying
-    run and no disqualifying one.
-    """
-    overlapping = [
-        w for w in run_windows if w['start'] < bucket_end and w['end'] > bucket_start
-    ]
-    if any(w['duration_min'] >= _STALL_RUN_MINUTES_FLOOR for w in overlapping):
-        return 'stall'
-    if any(
-        _BENIGN_BACKOFF_RUN_MINUTES[0] <= w['duration_min'] <= _BENIGN_BACKOFF_RUN_MINUTES[1]
-        for w in overlapping
-    ):
-        return 'benign_backoff'
-    return 'unexplained'
-
-
-def get_recent_throughput(hours: int = 4, bucket_minutes: int = 15) -> list[dict]:
-    """PDF download counts in fixed-size recent buckets, from
-    PdfDocuments.ClaimedAt. Traced against GetPdfToDownload: ClaimedAt is
-    stamped the moment a URL is *claimed* by a worker, not when the download
-    succeeds - so a zero bucket means no worker claimed anything at all in
-    that window (the whole task was idle), not merely that attempts failed.
-    (This corrects an earlier, inaccurate version of this comment that
-    described ClaimedAt as success-only - see the 2026-07-19 zero-throughput
-    report for how that was traced.)
-
-    Added 2026-07-16 alongside get_pdf_downloading_runs(): the report
-    previously had no time-series view at all, only 24h rolling totals,
-    so a short outage was mathematically invisible in it. Buckets with no
-    claims are explicitly filled with 0 (not omitted) so a gap renders as a
-    visible zero bar, not a silently-missing row. Each zero bucket is also
-    classified (see _classify_zero_bucket) against the overlapping
-    pdf_downloading run's duration, so a benign 15-minute empty-queue
-    backoff doesn't read the same as a real stall.
-    """
-    rows = run_sqlcmd(f"""
-        SELECT CONVERT(varchar, DATEADD(minute, (DATEDIFF(minute, 0, ClaimedAt)/{bucket_minutes})*{bucket_minutes}, 0), 120) AS Bucket,
-               COUNT(*) AS Cnt
-        FROM TextCorpuses.dbo.PdfDocuments
-        WHERE ClaimedAt > DATEADD(hour, -{hours}, GETUTCDATE())
-        GROUP BY DATEADD(minute, (DATEDIFF(minute, 0, ClaimedAt)/{bucket_minutes})*{bucket_minutes}, 0);
-    """)
-    counts = {}
-    for r in rows:
-        if len(r) == 2:
-            try:
-                counts[r[0]] = int(r[1])
-            except ValueError:
-                continue
-
-    run_windows = get_pdf_downloading_run_windows(hours)
-
-    now = datetime.now(timezone.utc)
-    now_bucket = now.replace(
-        minute=(now.minute // bucket_minutes) * bucket_minutes, second=0, microsecond=0,
-    )
-    n_buckets = hours * 60 // bucket_minutes
-    buckets = []
-    for i in range(n_buckets, -1, -1):
-        bucket_time = now_bucket - timedelta(minutes=bucket_minutes * i)
-        key = bucket_time.strftime('%Y-%m-%d %H:%M:%S')
-        count = counts.get(key, 0)
-        kind = 'data'
-        if count == 0:
-            kind = _classify_zero_bucket(
-                bucket_time, bucket_time + timedelta(minutes=bucket_minutes), run_windows
-            )
-        buckets.append({'label': bucket_time.strftime('%H:%M'), 'count': count, 'kind': kind})
-    return buckets
-
-
 def get_24h_dag_runs() -> dict:
     dag_list = ",".join(f"'{d}'" for d in DAG_IDS)
     rows = run_psql(
@@ -444,10 +318,13 @@ def get_disk_stats() -> list[dict]:
 
 
 def get_container_stats() -> list[dict]:
-    out = subprocess.run(
-        ['docker', 'stats', '--no-stream', '--format', '{{.Name}}\t{{.CPUPerc}}\t{{.MemUsage}}\t{{.MemPerc}}'],
-        capture_output=True, text=True, timeout=30,
-    ).stdout
+    try:
+        out = subprocess.run(
+            ['docker', 'stats', '--no-stream', '--format', '{{.Name}}\t{{.CPUPerc}}\t{{.MemUsage}}\t{{.MemPerc}}'],
+            capture_output=True, text=True, timeout=30,
+        ).stdout
+    except subprocess.TimeoutExpired:
+        return []
     containers = []
     for line in out.splitlines():
         parts = line.split('\t')
@@ -546,25 +423,6 @@ def bar(pct: float) -> str:
             f'<span class="bar-pct">{pct:.1f}%</span></div>')
 
 
-def throughput_bar(count: int, max_count: int, kind: str = 'data') -> str:
-    """Unlike bar() above (where a full bar is a warning - disk/CPU
-    saturation), here a full bar is good: more downloads is better. A
-    zero-count bucket renders as a full-width bar so a gap can't be missed
-    while skimming the report - red ('stall'/'unexplained') if it looks like
-    a real problem, amber ('benign_backoff') if it's very likely just the
-    intentional empty-queue backoff (see _classify_zero_bucket)."""
-    if count == 0:
-        css_cls = 'warn' if kind == 'benign_backoff' else 'bad'
-        note = 'простой в очереди' if kind == 'benign_backoff' else '0'
-        return (f'<div class="bar-cell"><div class="bar-track">'
-                f'<div class="bar-fill {css_cls}" style="width:100%"></div></div>'
-                f'<span class="bar-pct">{note}</span></div>')
-    pct = max((count / max_count * 100) if max_count else 0, 4)
-    return (f'<div class="bar-cell"><div class="bar-track">'
-            f'<div class="bar-fill good" style="width:{pct:.1f}%"></div></div>'
-            f'<span class="bar-pct">{count:,}</span></div>')
-
-
 def meter(label: str, used: float, total: float, unit: str, warn_pct: float = 80) -> str:
     pct = (used / total * 100) if total else 0
     color = 'var(--bad)' if pct >= warn_pct else ('var(--warn)' if pct >= 60 else 'var(--good)')
@@ -575,7 +433,7 @@ def meter(label: str, used: float, total: float, unit: str, warn_pct: float = 80
 
 def render(sources, grand_total, dag_runs, ftp_stats, host, containers,
            shodhganga_up, paused_states, generated_at, inserted_24h, disks,
-           pdf_downloading_runs, recent_throughput) -> str:
+           pdf_downloading_runs) -> str:
     total_ftp_files = sum(f['files'] for f in ftp_stats.values())
     total_ftp_size_gb = sum(f['size_mb'] for f in ftp_stats.values()) / 1024
     total_24h_downloads = sum(f['recent_24h'] for f in ftp_stats.values())
@@ -633,23 +491,6 @@ def render(sources, grand_total, dag_runs, ftp_stats, host, containers,
             f'<td>{util_cell}</td><td class="num">{latency_cell}</td></tr>'
         )
 
-    max_throughput = max((b['count'] for b in recent_throughput), default=0)
-    throughput_rows = []
-    for b in recent_throughput:
-        throughput_rows.append(
-            f'<tr><td class="name">{html.escape(b["label"])}</td>'
-            f'<td>{throughput_bar(b["count"], max_throughput, b.get("kind", "data"))}</td></tr>'
-        )
-    # The most recent bucket is usually still partially in-progress at
-    # generation time - a low/zero count there is expected, not a gap.
-    # Only buckets that had a full window to fill count for the alert.
-    # Split by kind (see _classify_zero_bucket): a benign_backoff bucket is
-    # the intentional empty-queue sleep, not a problem - don't raise it as
-    # one, but still show it so the queue-empty pattern itself is visible.
-    zero_buckets_final = recent_throughput[:-1]
-    stall_buckets = [b['label'] for b in zero_buckets_final if b['count'] == 0 and b.get('kind') != 'benign_backoff']
-    backoff_buckets = [b['label'] for b in zero_buckets_final if b['count'] == 0 and b.get('kind') == 'benign_backoff']
-
     container_rows = []
     for c in containers:
         container_rows.append(
@@ -658,18 +499,6 @@ def render(sources, grand_total, dag_runs, ftp_stats, host, containers,
         )
 
     issues = []
-    if stall_buckets:
-        issues.append(('bad', f'Разрыв в загрузках PDF ({len(stall_buckets)} окон по 0, не объяснённых пустой очередью)',
-                        'Загрузки полностью останавливались в следующих 15-минутных окнах (UTC): '
-                        + ', '.join(stall_buckets) + '. Проверьте состояние FTP-сервера '
-                        '(systemctl status filezilla-server, реально ли принимает passive-соединения, '
-                        'не только "active"), пул прокси (IPProxy) и длительность последних запусков '
-                        'pdf_downloading (аномально долгий запуск - признак зависшей загрузки).'))
-    if backoff_buckets:
-        issues.append(('good', f'Пустая очередь на загрузку ({len(backoff_buckets)} окон по 0)',
-                        'Эти 15-минутные окна (UTC) объясняются штатным 15-минутным бэкоффом '
-                        '(QUEUE_EMPTY_BACKOFF_SECONDS) - очередь на загрузку была пуста по всем источникам, '
-                        'это не сбой: ' + ', '.join(backoff_buckets)))
     if pdf_downloading_runs['failed'] > 0:
         issues.append(('warn', f"pdf_downloading: {pdf_downloading_runs['failed']} неудачных запусков за 24ч",
                         'Проверьте логи последних неудачных запусков в Airflow - типичные причины: '
@@ -740,20 +569,6 @@ def render(sources, grand_total, dag_runs, ftp_stats, host, containers,
   </section>
 
   <section>
-    <h2>Пропускная способность <span class="section-note">PdfDocuments.ClaimedAt, последние 4 часа по 15 мин</span></h2>
-    <div class="table-wrap"><table>
-      <thead><tr><th>Время (UTC)</th><th>Загружено PDF</th></tr></thead>
-      <tbody>{''.join(throughput_rows)}</tbody>
-    </table></div>
-    <p style="font-size:0.82rem;color:var(--text-dim);max-width:70ch;">
-      Добавлено 2026-07-16: 24-часовые совокупные показатели выше не показывают
-      кратковременный простой (10-30 минут почти не меняют суточную сумму).
-      Пустой (красный) столбец здесь означает ноль загрузок за это окно.
-      Последний столбец обычно ещё не заполнен полностью на момент формирования отчёта.
-    </p>
-  </section>
-
-  <section>
     <h2>Хранилище на FTP</h2>
     <div class="table-wrap"><table>
       <thead><tr><th>Папка</th><th class="num">Файлов</th><th class="num">Размер</th><th class="num">Добавлено (24ч)</th></tr></thead>
@@ -817,11 +632,10 @@ def main():
     shodhganga_up = check_shodhganga_reachable()
     inserted_24h = get_24h_inserted()
     pdf_downloading_runs = get_pdf_downloading_runs()
-    recent_throughput = get_recent_throughput()
 
     output = render(sources, grand_total, dag_runs, ftp_stats, host, containers,
                      shodhganga_up, paused_states, generated_at, inserted_24h, disks,
-                     pdf_downloading_runs, recent_throughput)
+                     pdf_downloading_runs)
 
     with open(REPORT_OUTPUT_PATH, 'w', encoding='utf-8') as f:
         f.write(output)
