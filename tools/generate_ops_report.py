@@ -189,6 +189,49 @@ def get_pdf_downloading_runs() -> dict:
     return {'success': 0, 'failed': 0}
 
 
+def get_recent_throughput(hours: int = 4, bucket_minutes: int = 15) -> list[dict]:
+    """PDF download counts in fixed-size recent buckets, from
+    PdfDocuments.ClaimedAt. Buckets with no claims are explicitly filled
+    with 0 (not omitted) so a gap renders as a visible zero bar rather
+    than a silently-missing row.
+
+    Deliberately plain: an earlier version classified zero buckets as
+    'stall' vs 'benign_backoff' and raised alerts from that classification,
+    but the classification kept misfiring (flagging healthy quiet periods
+    as stalls), so it was removed - this just reports raw counts per
+    window with no alerting attached. pdf_downloading's own failed-run
+    count (get_pdf_downloading_runs) is what still drives the "needs
+    attention" alerts.
+    """
+    rows = run_sqlcmd(f"""
+        SELECT CONVERT(varchar, DATEADD(minute, (DATEDIFF(minute, 0, ClaimedAt)/{bucket_minutes})*{bucket_minutes}, 0), 120) AS Bucket,
+               COUNT(*) AS Cnt
+        FROM TextCorpuses.dbo.PdfDocuments
+        WHERE ClaimedAt > DATEADD(hour, -{hours}, GETUTCDATE())
+        GROUP BY DATEADD(minute, (DATEDIFF(minute, 0, ClaimedAt)/{bucket_minutes})*{bucket_minutes}, 0);
+    """)
+    counts = {}
+    for r in rows:
+        if len(r) == 2:
+            try:
+                counts[r[0]] = int(r[1])
+            except ValueError:
+                continue
+
+    now = datetime.now(timezone.utc)
+    now_bucket = now.replace(
+        minute=(now.minute // bucket_minutes) * bucket_minutes, second=0, microsecond=0,
+    )
+    n_buckets = hours * 60 // bucket_minutes
+    buckets = []
+    for i in range(n_buckets, -1, -1):
+        bucket_time = now_bucket - timedelta(minutes=bucket_minutes * i)
+        key = bucket_time.strftime('%Y-%m-%d %H:%M:%S')
+        count = counts.get(key, 0)
+        buckets.append({'label': bucket_time.strftime('%H:%M'), 'count': count})
+    return buckets
+
+
 def get_24h_dag_runs() -> dict:
     dag_list = ",".join(f"'{d}'" for d in DAG_IDS)
     rows = run_psql(
@@ -423,6 +466,22 @@ def bar(pct: float) -> str:
             f'<span class="bar-pct">{pct:.1f}%</span></div>')
 
 
+def throughput_bar(count: int, max_count: int) -> str:
+    """Unlike bar() above (where a full bar is a warning - disk/CPU
+    saturation), here a full bar is good: more downloads is better.
+    Deliberately plain - no color-coded alerting on zero counts (see
+    get_recent_throughput's docstring for why the earlier stall/
+    benign_backoff distinction was removed)."""
+    if count == 0:
+        return (f'<div class="bar-cell"><div class="bar-track">'
+                f'<div class="bar-fill" style="width:2%; background:var(--text-dim);"></div></div>'
+                f'<span class="bar-pct">0</span></div>')
+    pct = max((count / max_count * 100) if max_count else 0, 4)
+    return (f'<div class="bar-cell"><div class="bar-track">'
+            f'<div class="bar-fill good" style="width:{pct:.1f}%"></div></div>'
+            f'<span class="bar-pct">{count:,}</span></div>')
+
+
 def meter(label: str, used: float, total: float, unit: str, warn_pct: float = 80) -> str:
     pct = (used / total * 100) if total else 0
     color = 'var(--bad)' if pct >= warn_pct else ('var(--warn)' if pct >= 60 else 'var(--good)')
@@ -433,7 +492,7 @@ def meter(label: str, used: float, total: float, unit: str, warn_pct: float = 80
 
 def render(sources, grand_total, dag_runs, ftp_stats, host, containers,
            shodhganga_up, paused_states, generated_at, inserted_24h, disks,
-           pdf_downloading_runs) -> str:
+           pdf_downloading_runs, recent_throughput) -> str:
     total_ftp_files = sum(f['files'] for f in ftp_stats.values())
     total_ftp_size_gb = sum(f['size_mb'] for f in ftp_stats.values()) / 1024
     total_24h_downloads = sum(f['recent_24h'] for f in ftp_stats.values())
@@ -489,6 +548,14 @@ def render(sources, grand_total, dag_runs, ftp_stats, host, containers,
             f'<tr><td class="name">{html.escape(d["label"])}</td>'
             f'<td class="num">{d["used_gb"]:.0f} / {d["total_gb"]:.0f} ГБ ({cap_pct:.0f}%)</td>'
             f'<td>{util_cell}</td><td class="num">{latency_cell}</td></tr>'
+        )
+
+    max_throughput = max((b['count'] for b in recent_throughput), default=0)
+    throughput_rows = []
+    for b in recent_throughput:
+        throughput_rows.append(
+            f'<tr><td class="name">{html.escape(b["label"])}</td>'
+            f'<td>{throughput_bar(b["count"], max_throughput)}</td></tr>'
         )
 
     container_rows = []
@@ -569,6 +636,23 @@ def render(sources, grand_total, dag_runs, ftp_stats, host, containers,
   </section>
 
   <section>
+    <h2>Пропускная способность <span class="section-note">PdfDocuments.ClaimedAt, последние 4 часа по 15 мин</span></h2>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Время (UTC)</th><th>Загружено PDF</th></tr></thead>
+      <tbody>{''.join(throughput_rows)}</tbody>
+    </table></div>
+    <p style="font-size:0.82rem;color:var(--text-dim);max-width:70ch;">
+      24-часовые совокупные показатели выше не показывают кратковременный простой
+      (10-30 минут почти не меняют суточную сумму). Столбец здесь — просто
+      количество загрузок за это 15-минутное окно, без дополнительной классификации
+      "сбой/не сбой" (более ранняя версия пыталась отличать штатный простой очереди
+      от реального сбоя и регулярно ошибалась, поэтому эта логика убрана — пустое
+      окно не обязательно означает проблему). Последний столбец обычно ещё не
+      заполнен полностью на момент формирования отчёта.
+    </p>
+  </section>
+
+  <section>
     <h2>Хранилище на FTP</h2>
     <div class="table-wrap"><table>
       <thead><tr><th>Папка</th><th class="num">Файлов</th><th class="num">Размер</th><th class="num">Добавлено (24ч)</th></tr></thead>
@@ -632,10 +716,11 @@ def main():
     shodhganga_up = check_shodhganga_reachable()
     inserted_24h = get_24h_inserted()
     pdf_downloading_runs = get_pdf_downloading_runs()
+    recent_throughput = get_recent_throughput()
 
     output = render(sources, grand_total, dag_runs, ftp_stats, host, containers,
                      shodhganga_up, paused_states, generated_at, inserted_24h, disks,
-                     pdf_downloading_runs)
+                     pdf_downloading_runs, recent_throughput)
 
     with open(REPORT_OUTPUT_PATH, 'w', encoding='utf-8') as f:
         f.write(output)
