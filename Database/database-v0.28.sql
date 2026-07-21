@@ -1,3 +1,6 @@
+USE [TextCorpuses]
+GO
+
 -- Adds the 8 new Gutenberg genre sources to GetPdfToDownload's round-robin
 -- rotation, so pdf_downloading actually claims their discovered URLs.
 ALTER PROCEDURE [dbo].[GetPdfToDownload]
@@ -83,7 +86,7 @@ BEGIN
 		  AND (ClaimedAt IS NULL OR ClaimedAt <= @claimThreshold);
 	END
 
-	IF EXISTS (SELECT 1 FROM @result)
+	IF @claimedIdx IS NOT NULL
 		UPDATE dbo.PdfSourceRotation SET LastIndex = @claimedIdx;
 
 	SELECT PDFUrl FROM @result;
