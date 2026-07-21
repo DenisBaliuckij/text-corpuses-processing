@@ -36,6 +36,7 @@ with DAG(
         from concurrent.futures import ThreadPoolExecutor
         from repositories.pdf_repository import PdfRepository
         from repositories.proxy_repository import ProxyRepository
+        from gutenbergDownloader import parse_download_tag
         import ftpConnector
         from ftpConnector import ftpConnector
 
@@ -80,6 +81,7 @@ with DAG(
                     # once re-enabled.
                     return True
                 filename = ""
+                ext = 'pdf'
                 if 'arxiv' in url:
                     filename = 'arxiv/'
                 if 'lenin' in url:
@@ -148,8 +150,12 @@ with DAG(
                     tag = url.rsplit('#customquery_', 1)[1]
                     filename = f'custom/{tag}/'
                     url = url.rsplit('#', 1)[0]
+                gutenberg_match = parse_download_tag(url)
+                if gutenberg_match:
+                    folder, ext, url = gutenberg_match
+                    filename = f'gutenberg/{folder}/'
                 filename += str(uuid.uuid4())
-                filename += '.pdf'
+                filename += '.' + ext
                 proxieResult = ProxyRepository.get_latest()
                 proxieIp = proxieResult["proxieIp"]
                 proxiePort = proxieResult["proxiePort"]
