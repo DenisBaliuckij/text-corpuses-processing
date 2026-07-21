@@ -119,6 +119,14 @@ Each stage is an independent Airflow DAG that does exactly one unit of work per 
 | `download_english_news` | `@continuous` | Internet Archive — English-language newspapers/periodicals/magazines, `year:[1000 TO 1929]` |
 | `download_english_law` | `@continuous` | Internet Archive — English-language law/legislation, `year:[1000 TO 1929]` |
 | `download_english_social_science` | `@continuous` | Internet Archive — English-language sociology/economics/political science, `year:[1000 TO 1929]` |
+| `download_gutenberg_science` | `@continuous` | Project Gutenberg (Gutendex API) — science books |
+| `download_gutenberg_social_science` | `@continuous` | Project Gutenberg (Gutendex API) — economics/sociology/political science books |
+| `download_gutenberg_law` | `@continuous` | Project Gutenberg (Gutendex API) — law books |
+| `download_gutenberg_history` | `@continuous` | Project Gutenberg (Gutendex API) — history books |
+| `download_gutenberg_philosophy_religion` | `@continuous` | Project Gutenberg (Gutendex API) — philosophy/religion books |
+| `download_gutenberg_poetry_drama` | `@continuous` | Project Gutenberg (Gutendex API) — poetry/drama books |
+| `download_gutenberg_children` | `@continuous` | Project Gutenberg (Gutendex API) — children's books |
+| `download_gutenberg_literature` | `@continuous` | Project Gutenberg (Gutendex API) — general fiction |
 | `custom_query_processor` | `@continuous` | Fulfills ad hoc queries submitted via the custom-query web UI (`webui/`) |
 | `pdf_downloading` | `@continuous` | Downloads PDFs from discovered URLs |
 | `pdf_conversion` | `@continuous` | Converts PDFs to plain text |
@@ -518,6 +526,7 @@ Apply migrations in order using SSMS:
 | `database-v0.23.sql` | `GetPdfToDownload`: gives `arxiv`/`lenin`/`ncbi` 3 rotation slots each instead of 1, restoring their share after 18 new source patterns diluted the round-robin to 1-of-21 |
 | `database-v0.24.sql` | Adds `PdfDocuments.InsertedAt`; `AddPdfUrl` now sets it, so the ops report can measure URLs-inserted-per-timespan precisely instead of approximating via `ClaimedAt` |
 | `database-v0.25.sql` | Adds `GetTopProxiesForValidation` — returns the top-N proxies by the same ranking `GetLatestProxy` uses, for the new `validate_proxies` DAG |
+| `database-v0.28.sql` | Adds the 8 Project Gutenberg genre sources to `GetPdfToDownload`'s round-robin rotation |
 
 > **Known gotcha:** a bare `INSERT INTO table VALUES (...)` (no explicit column list) silently breaks the moment a new column is added to that table — SQL Server then requires a value for every non-identity column. This has bitten both `AddOrUpdateProxy` (fixed v0.12) and `AddPdfUrl` (fixed v0.18). Always use an explicit column list.
 
@@ -668,7 +677,7 @@ ORDER BY j.ID DESC;
 
 ## Архитектура
 
-Конвейер состоит из **42 DAG**, разбитых на группы:
+Конвейер состоит из **50 DAG**, разбитых на группы:
 
 - **Прокси:** `get_proxies_for_calls`, `get_proxies_for_calls_2`, `get_proxies_for_calls_3`, `get_proxies_for_calls_4`, `update-brightdata-proxy`, `validate_proxies`
 - **Веб-скраперы:** `get_arxiv_urls`, `get_springer_urls`, `get_lenin_urls`
@@ -676,6 +685,7 @@ ORDER BY j.ID DESC;
 - **Гуджаратиязычный корпус (8 DAG):** `download_gujarati_literature`, `download_gujarati_news`, `download_gujarati_science_natural`, `download_gujarati_science_social`, `download_gujarati_science_archive`, `download_gujarati_law`, `download_gujarati_official`, `download_gujarati_dictionary`
 - **Русскоязычный корпус (6 DAG):** `download_russian_science`, `download_russian_literature_modern`, `download_russian_literature_classic`, `download_russian_news`, `download_russian_law`, `download_russian_social_science`
 - **Англоязычный корпус (6 DAG):** `download_english_science`, `download_english_literature_modern`, `download_english_literature_classic`, `download_english_news`, `download_english_law`, `download_english_social_science`
+- **Источники книг Project Gutenberg (8 DAG):** `download_gutenberg_science`, `download_gutenberg_social_science`, `download_gutenberg_law`, `download_gutenberg_history`, `download_gutenberg_philosophy_religion`, `download_gutenberg_poetry_drama`, `download_gutenberg_children`, `download_gutenberg_literature`
 - **Пользовательские запросы:** `custom_query_processor` — обрабатывает запросы из веб-интерфейса `webui/`
 - **Загрузка и конвертация:** `pdf_downloading`, `pdf_conversion`
 - **Построение графа:** `start_tree_formation_job` (ручной запуск), `prepare_graph_construction_job`, `resolve_anaphora`, **`build_graph`**, **`build_graph_llm_v2`**, **`build_graph_hierarchical`**, `finalize_job`
@@ -1071,6 +1081,7 @@ SQL Server база данных `TextCorpuses` на `LAPTOP-I91584GB\SQLEXPRESS
 | `database-v0.23.sql` | `GetPdfToDownload`: даёт `arxiv`/`lenin`/`ncbi` по 3 слота ротации вместо 1, восстанавливая их долю после того, как 18 новых источников развели round-robin до 1 из 21 |
 | `database-v0.24.sql` | Добавляет `PdfDocuments.InsertedAt`; `AddPdfUrl` теперь заполняет её, чтобы отчёт о работе системы мог точно измерять количество добавленных URL за период вместо приближения через `ClaimedAt` |
 | `database-v0.25.sql` | Добавляет `GetTopProxiesForValidation` — возвращает топ-N прокси по тому же ранжированию, что и `GetLatestProxy`, для нового DAG `validate_proxies` |
+| `database-v0.28.sql` | Добавляет 8 источников книг Project Gutenberg в round-robin ротацию `GetPdfToDownload` |
 
 > **Известная проблема:** голый `INSERT INTO table VALUES (...)` (без явного списка столбцов) незаметно ломается, как только в таблицу добавляется новый столбец — SQL Server начинает требовать значение для каждого не-identity столбца. Так уже происходило с `AddOrUpdateProxy` (исправлено в v0.12) и `AddPdfUrl` (исправлено в v0.18). Всегда указывайте явный список столбцов.
 
