@@ -227,5 +227,81 @@
       "max_results": 5000,
       "repeat": true
     }
+  ],
+  "gutenberg_science": [
+    {
+      "query": "science",
+      "max_results": 5000,
+      "repeat": true
+    }
+  ],
+  "gutenberg_social_science": [
+    {
+      "query": "economics",
+      "max_results": 5000,
+      "repeat": true
+    },
+    {
+      "query": "sociology",
+      "max_results": 5000,
+      "repeat": true
+    },
+    {
+      "query": "political science",
+      "max_results": 5000,
+      "repeat": true
+    }
+  ],
+  "gutenberg_law": [
+    {
+      "query": "law",
+      "max_results": 5000,
+      "repeat": true
+    }
+  ],
+  "gutenberg_history": [
+    {
+      "query": "history",
+      "max_results": 5000,
+      "repeat": true
+    }
+  ],
+  "gutenberg_philosophy_religion": [
+    {
+      "query": "philosophy",
+      "max_results": 5000,
+      "repeat": true
+    },
+    {
+      "query": "religion",
+      "max_results": 5000,
+      "repeat": true
+    }
+  ],
+  "gutenberg_poetry_drama": [
+    {
+      "query": "poetry",
+      "max_results": 5000,
+      "repeat": true
+    },
+    {
+      "query": "drama",
+      "max_results": 5000,
+      "repeat": true
+    }
+  ],
+  "gutenberg_children": [
+    {
+      "query": "children",
+      "max_results": 5000,
+      "repeat": true
+    }
+  ],
+  "gutenberg_literature": [
+    {
+      "query": "fiction",
+      "max_results": 5000,
+      "repeat": true
+    }
   ]
 }
