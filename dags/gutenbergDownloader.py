@@ -62,3 +62,16 @@ def search_books(query, page, proxy=None, tag=''):
 
     has_more = bool(data.get('next'))
     return urls, has_more
+
+
+def parse_download_tag(url: str):
+    """If `url` carries a '#gutenberg_{category}.{ext}' tag appended by
+    search_books, returns (folder, ext, url_without_tag) where folder is
+    the category with the 'gutenberg_' prefix stripped (e.g. 'science',
+    'philosophy_religion'). Returns None for any URL without that tag."""
+    if '#gutenberg_' not in url:
+        return None
+    clean_url, tag_part = url.rsplit('#', 1)
+    category, ext = tag_part.rsplit('.', 1)
+    folder = category[len('gutenberg_'):]
+    return folder, ext, clean_url

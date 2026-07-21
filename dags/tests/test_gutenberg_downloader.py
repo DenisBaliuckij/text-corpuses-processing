@@ -3,7 +3,7 @@ import os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
 from unittest.mock import patch, MagicMock
-from gutenbergDownloader import search_books
+from gutenbergDownloader import search_books, parse_download_tag
 
 
 def _fake_response(json_data):
@@ -150,3 +150,24 @@ def test_search_books_no_tag_appends_nothing():
     with patch('gutenbergDownloader.requests.get', return_value=_fake_response(data)):
         urls, _ = search_books('science', 1, tag='')
     assert urls == ['https://www.gutenberg.org/ebooks/6.txt.utf-8']
+
+
+def test_parse_download_tag_extracts_folder_ext_and_clean_url():
+    url = 'https://www.gutenberg.org/ebooks/1.epub3.images#gutenberg_science.epub'
+    result = parse_download_tag(url)
+    assert result == ('science', 'epub', 'https://www.gutenberg.org/ebooks/1.epub3.images')
+
+
+def test_parse_download_tag_multi_word_category():
+    url = 'https://www.gutenberg.org/ebooks/2.html.images#gutenberg_philosophy_religion.html'
+    result = parse_download_tag(url)
+    assert result == ('philosophy_religion', 'html', 'https://www.gutenberg.org/ebooks/2.html.images')
+
+
+def test_parse_download_tag_returns_none_for_non_gutenberg_url():
+    url = 'https://archive.org/download/foo/foo.pdf#gujarati_law'
+    assert parse_download_tag(url) is None
+
+
+def test_parse_download_tag_returns_none_for_plain_url():
+    assert parse_download_tag('https://example.com/file.pdf') is None
