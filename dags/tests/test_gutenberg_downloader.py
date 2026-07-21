@@ -74,6 +74,20 @@ def test_search_books_falls_back_to_txt_when_only_txt():
     assert urls == ['https://www.gutenberg.org/ebooks/4.txt.utf-8#gutenberg_science.txt']
 
 
+def test_search_books_falls_back_to_txt_with_ascii_charset_variant():
+    data = {
+        'count': 1, 'next': None,
+        'results': [{
+            'id': 7, 'formats': {
+                'text/plain; charset=us-ascii': 'https://www.gutenberg.org/files/7/7-0.txt',
+            }
+        }]
+    }
+    with patch('gutenbergDownloader.requests.get', return_value=_fake_response(data)):
+        urls, _ = search_books('science', 1, tag='gutenberg_science')
+    assert urls == ['https://www.gutenberg.org/files/7/7-0.txt#gutenberg_science.txt']
+
+
 def test_search_books_skips_item_with_no_usable_format():
     data = {
         'count': 1, 'next': None,

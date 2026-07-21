@@ -7,17 +7,24 @@ _FORMAT_PRIORITY = [
     ('application/pdf', 'pdf'),
     ('application/epub+zip', 'epub'),
     ('text/html', 'html'),
-    ('text/plain; charset=utf-8', 'txt'),
 ]
 
 
 def _pick_format(formats: dict):
     """Returns (url, ext) for the highest-priority format present in
     `formats` (a Gutendex book's mime-type -> URL dict), or None if none
-    of the known formats are present."""
+    of the known formats are present. Checks pdf, epub, and html by exact
+    mime-type match, then falls back to any 'text/plain' variant (Gutendex
+    exposes different charset variants, e.g. 'text/plain; charset=utf-8'
+    vs 'text/plain; charset=us-ascii', as distinct keys - matching only
+    the utf-8 one would silently skip a book that only has the ascii
+    variant)."""
     for mime, ext in _FORMAT_PRIORITY:
         if mime in formats:
             return formats[mime], ext
+    for mime, url in formats.items():
+        if mime.startswith('text/plain'):
+            return url, 'txt'
     return None
 
 
