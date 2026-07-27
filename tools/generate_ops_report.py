@@ -375,6 +375,41 @@ def get_disk_stats() -> list[dict]:
     return drives
 
 
+# Standalone scraper containers that live on this host alongside the
+# pipeline but aren't part of it (no service_id, no PdfDocuments/FTP
+# wiring) - shown as infrastructure-only status, not download stats.
+STANDALONE_SOURCES = [
+    'twirpx-scraper',
+]
+
+
+def get_standalone_sources() -> list[dict]:
+    results = []
+    for name in STANDALONE_SOURCES:
+        try:
+            out = subprocess.run(
+                ['docker', 'inspect', name, '--format',
+                 '{{.State.Status}}\t{{.State.StartedAt}}\t{{.RestartCount}}'],
+                capture_output=True, text=True, timeout=15,
+            ).stdout.strip()
+        except subprocess.TimeoutExpired:
+            out = ''
+        if not out:
+            results.append({'name': name, 'status': 'нет данных', 'uptime': '-', 'restarts': '-'})
+            continue
+        status, started_at, restarts = out.split('\t')
+        try:
+            started = datetime.strptime(started_at[:19], '%Y-%m-%dT%H:%M:%S').replace(tzinfo=timezone.utc)
+            delta = datetime.now(timezone.utc) - started
+            hours, rem = divmod(int(delta.total_seconds()), 3600)
+            minutes = rem // 60
+            uptime = f'{hours} ч {minutes} мин' if status == 'running' else '-'
+        except ValueError:
+            uptime = '-'
+        results.append({'name': name, 'status': status, 'uptime': uptime, 'restarts': restarts})
+    return results
+
+
 def get_container_stats() -> list[dict]:
     try:
         out = subprocess.run(
@@ -507,7 +542,7 @@ def meter(label: str, used: float, total: float, unit: str, warn_pct: float = 80
 
 def render(sources, grand_total, dag_runs, ftp_stats, host, containers,
            shodhganga_up, paused_states, generated_at, inserted_24h, disks,
-           pdf_downloading_runs, recent_throughput) -> str:
+           pdf_downloading_runs, recent_throughput, standalone_sources) -> str:
     total_ftp_files = sum(f['files'] for f in ftp_stats.values())
     total_ftp_size_gb = sum(f['size_mb'] for f in ftp_stats.values()) / 1024
     total_24h_downloads = sum(f['recent_24h'] for f in ftp_stats.values())
@@ -571,6 +606,15 @@ def render(sources, grand_total, dag_runs, ftp_stats, host, containers,
         throughput_rows.append(
             f'<tr><td class="name">{html.escape(b["label"])}</td>'
             f'<td>{throughput_bar(b["count"], max_throughput)}</td></tr>'
+        )
+
+    standalone_rows = []
+    for s in standalone_sources:
+        status_pill = '<span class="pill good">работает</span>' if s['status'] == 'running' \
+            else f'<span class="pill neutral">{html.escape(s["status"])}</span>'
+        standalone_rows.append(
+            f'<tr><td class="name">{html.escape(s["name"])}</td><td>{status_pill}</td>'
+            f'<td class="num">{html.escape(s["uptime"])}</td><td class="num">{html.escape(str(s["restarts"]))}</td></tr>'
         )
 
     container_rows = []
@@ -706,6 +750,14 @@ def render(sources, grand_total, dag_runs, ftp_stats, host, containers,
   </section>
 
   <section>
+    <h2>Прочие неклассифицированные источники <span class="section-note">standalone-контейнеры вне пайплайна - только статус, без учёта загрузок</span></h2>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Контейнер</th><th>Статус</th><th class="num">Аптайм</th><th class="num">Перезапуски</th></tr></thead>
+      <tbody>{''.join(standalone_rows)}</tbody>
+    </table></div>
+  </section>
+
+  <section>
     <h2>Требует внимания</h2>
     <div class="issue-list">{issue_html}</div>
   </section>
@@ -728,6 +780,7 @@ def main():
     host = get_host_resources()
     disks = get_disk_stats()
     containers = get_container_stats()
+    standalone_sources = get_standalone_sources()
     shodhganga_up = check_shodhganga_reachable()
     inserted_24h = get_24h_inserted()
     pdf_downloading_runs = get_pdf_downloading_runs()
@@ -735,7 +788,7 @@ def main():
 
     output = render(sources, grand_total, dag_runs, ftp_stats, host, containers,
                      shodhganga_up, paused_states, generated_at, inserted_24h, disks,
-                     pdf_downloading_runs, recent_throughput)
+                     pdf_downloading_runs, recent_throughput, standalone_sources)
 
     with open(REPORT_OUTPUT_PATH, 'w', encoding='utf-8') as f:
         f.write(output)
