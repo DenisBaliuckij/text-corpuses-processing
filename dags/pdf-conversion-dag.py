@@ -1,5 +1,6 @@
 import pendulum
 
+from airflow.models import Variable
 from airflow.sdk import DAG
 from airflow.sdk import task
 
@@ -17,7 +18,9 @@ with DAG(
     @task()
     def convertPdfFiles():
         import pdfConverter
-        converted = pdfConverter.run_conversion()
-        print(f"Converted {converted} files")
+        phase_str = Variable.get("pdf_conversion_phase", default_var=None)
+        phase = int(phase_str) if phase_str else None
+        converted = pdfConverter.run_conversion(phase=phase)
+        print(f"Converted {converted} files (phase={phase})")
 
     convertPdfFiles()

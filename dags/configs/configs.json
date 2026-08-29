@@ -1,6 +1,5 @@
 {
-
-	"ConnectionString": "Driver={ODBC Driver 18 for SQL Server};Server=host.docker.internal,1433;Database=TextCorpuses;UID=airflow;PWD=airflow;TrustServerCertificate=yes;Encrypt=yes;",
+	"ConnectionString": "Driver={ODBC Driver 18 for SQL Server};Server=mssql,1433;Database=TextCorpuses;TrustServerCertificate=yes;UID=sa;PWD=Qwerty123!;",
 	"FtpHost": "host.docker.internal",
 	"FtpPort": 21,
 	"FtpUser": "airflow",
@@ -9,10 +8,10 @@
 	"FtpPortTex": 21,
 	"FtpUserTex": "latex",
 	"FtpPasswordTex": "latex",
-	"FtpHostGraph": "host.docker.internal",
-	"FtpPortGraph": 21,
-	"FtpUserGraph": "airflow",
-	"FtpPasswordGraph": "airflow",
-	"SemanticScholarApiKey": "",
-	"CustomQueryUiPasswordHash": ""
+	"FtpHostRepos": "host.docker.internal",
+	"FtpPortRepos": 21,
+	"FtpUserRepos": "apirepos",
+	"FtpPasswordRepos": "GmlUdVBhnB7N_vdKbnpb4DUm",
+	"CustomQueryUiPasswordHash": "scrypt:32768:8:1$s1uEZL1aqMjynV7S$32647c81d5821e64459fb8997bec216271b13571d9738321e840dc7312b39ce9b5e1fcaed18634950ad981e414ec68c634a4470c2d5b114c115f6cc0e7a9cc92",
+	"SemanticScholarApiKey": ""
 }

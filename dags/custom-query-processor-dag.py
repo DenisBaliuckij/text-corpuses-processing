@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import pendulum
+from datetime import timedelta
 from airflow.sdk import DAG
 from airflow.sdk import task
 
@@ -13,7 +14,12 @@ with DAG(
     tags=["pdfUrls", "customQuery"],
 ) as dag:
 
-    @task()
+    # Hard safety net: with max_active_runs=1 on a @continuous schedule, any
+    # single run that hangs (a source adapter blocking on an unreachable
+    # host, etc.) permanently wedges every future query, not just the one
+    # being processed. This bounds worst-case impact regardless of the root
+    # cause, on top of (not instead of) fixing individual adapters.
+    @task(execution_timeout=timedelta(minutes=5))
     def process_custom_queries():
         import json
         import re

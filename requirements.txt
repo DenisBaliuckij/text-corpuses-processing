@@ -1,18 +1,21 @@
-# ── Core pipeline ────────────────────────────────────────────────────
-apache-airflow
+pysocks
+pypdf
 pyodbc
 requests
 beautifulsoup4
-pypdf
-spacy
-nltk
-networkx
-pyvis
-pendulum
-
-# ── Testing ──────────────────────────────────────────────────────────
-pytest
-
-# ── Optional LLM backends (install separately) ───────────────────────
-# LLM v2 (HuggingFace):   pip install -r dags/llm_v2/requirements.txt
-# Hierarchical (Yandex):  pip install -r dags/hierarchical_llm_version/requirements.txt
+pdf2image
+langdetect
+pymupdf
+matplotlib
+pillow
+pandas
+lxml
+numpy
+scikit-image
+pyyaml
+click
+rich
+ollama
+pytesseract
+pix2tex
+sentencepiece

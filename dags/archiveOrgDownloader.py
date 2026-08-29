@@ -32,10 +32,18 @@ def search_pdfs(query, page, rows, proxies=None, tag=''):
             continue
         try:
             pdf_filename = _find_pdf_filename(identifier, proxies)
+        except (requests.exceptions.Timeout, requests.exceptions.ConnectionError):
+            # The metadata host itself is unreachable (not just this one
+            # identifier) - retrying the same broken host for up to `rows`
+            # remaining items would silently burn ~rows*30s with zero
+            # progress (this previously hung process_custom_queries for
+            # 4+ minutes on a single page). Stop this page immediately and
+            # keep whatever URLs were already found instead of retrying.
+            has_more = False
+            return urls, has_more
         except requests.exceptions.RequestException:
-            # A single slow/unreachable item (timeout, connection error) used
-            # to abort the whole page, discarding every URL already found -
-            # skip it and keep whatever the rest of the page yields instead.
+            # Other errors (e.g. a bad response for this one identifier)
+            # don't indicate the host is down - skip just this item.
             continue
         if not pdf_filename:
             continue

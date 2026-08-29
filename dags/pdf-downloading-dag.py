@@ -83,77 +83,79 @@ with DAG(
                 filename = ""
                 ext = 'pdf'
                 if 'arxiv' in url:
-                    filename = 'arxiv/'
+                    filename = 'arxiv2/'
+                if 'pubmed' in url:
+                    filename = 'pubmed2/'
                 if 'lenin' in url:
-                    filename = 'cyberleninka/'
+                    filename = 'cyberleninka2/'
                 if 'springer' in url:
-                    filename = 'springer/'
+                    filename = 'springer2/'
                     url = url.replace('/article', 'content/pdf')
                 if '#gujarati_literature' in url:
-                    filename = 'gujarati/literature/'
+                    filename = 'gujarati2/literature/'
                     url = url.rsplit('#', 1)[0]
                 if '#gujarati_news' in url:
-                    filename = 'gujarati/news/'
+                    filename = 'gujarati2/news/'
                     url = url.rsplit('#', 1)[0]
                 if '#gujarati_science_natural' in url:
-                    filename = 'gujarati/science_natural/'
+                    filename = 'gujarati2/science_natural/'
                     url = url.rsplit('#', 1)[0]
                 if '#gujarati_science_social' in url:
-                    filename = 'gujarati/science_social/'
+                    filename = 'gujarati2/science_social/'
                     url = url.rsplit('#', 1)[0]
                 if '#gujarati_law' in url:
-                    filename = 'gujarati/law/'
+                    filename = 'gujarati2/law/'
                     url = url.rsplit('#', 1)[0]
                 if '#gujarati_official' in url:
-                    filename = 'gujarati/official/'
+                    filename = 'gujarati2/official/'
                     url = url.rsplit('#', 1)[0]
                 if '#gujarati_dictionary' in url:
-                    filename = 'gujarati/dictionary/'
+                    filename = 'gujarati2/dictionary/'
                     url = url.rsplit('#', 1)[0]
                 if '#russian_science' in url:
-                    filename = 'russian/science/'
+                    filename = 'russian2/science/'
                     url = url.rsplit('#', 1)[0]
                 if '#russian_literature_modern' in url:
-                    filename = 'russian/literature_modern/'
+                    filename = 'russian2/literature_modern/'
                     url = url.rsplit('#', 1)[0]
                 if '#russian_literature_classic' in url:
-                    filename = 'russian/literature_classic/'
+                    filename = 'russian2/literature_classic/'
                     url = url.rsplit('#', 1)[0]
                 if '#russian_news' in url:
-                    filename = 'russian/news/'
+                    filename = 'russian2/news/'
                     url = url.rsplit('#', 1)[0]
                 if '#russian_law' in url:
-                    filename = 'russian/law/'
+                    filename = 'russian2/law/'
                     url = url.rsplit('#', 1)[0]
                 if '#russian_social_science' in url:
-                    filename = 'russian/social_science/'
+                    filename = 'russian2/social_science/'
                     url = url.rsplit('#', 1)[0]
                 if '#english_science' in url:
-                    filename = 'english/science/'
+                    filename = 'english2/science/'
                     url = url.rsplit('#', 1)[0]
                 if '#english_literature_modern' in url:
-                    filename = 'english/literature_modern/'
+                    filename = 'english2/literature_modern/'
                     url = url.rsplit('#', 1)[0]
                 if '#english_literature_classic' in url:
-                    filename = 'english/literature_classic/'
+                    filename = 'english2/literature_classic/'
                     url = url.rsplit('#', 1)[0]
                 if '#english_news' in url:
-                    filename = 'english/news/'
+                    filename = 'english2/news/'
                     url = url.rsplit('#', 1)[0]
                 if '#english_law' in url:
-                    filename = 'english/law/'
+                    filename = 'english2/law/'
                     url = url.rsplit('#', 1)[0]
                 if '#english_social_science' in url:
-                    filename = 'english/social_science/'
+                    filename = 'english2/social_science/'
                     url = url.rsplit('#', 1)[0]
                 if '#customquery_' in url:
                     tag = url.rsplit('#customquery_', 1)[1]
-                    filename = f'custom/{tag}/'
+                    filename = f'custom2/{tag}/'
                     url = url.rsplit('#', 1)[0]
                 gutenberg_match = parse_download_tag(url)
                 if gutenberg_match:
                     folder, ext, url = gutenberg_match
-                    filename = f'gutenberg/{folder}/'
+                    filename = f'gutenberg2/{folder}/'
                 filename += str(uuid.uuid4())
                 filename += '.' + ext
                 proxieResult = ProxyRepository.get_latest()

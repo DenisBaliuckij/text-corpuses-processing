@@ -71,7 +71,36 @@ SOURCE_PATTERNS = [
     ('springer', '%springer%'),
 ]
 
+# Updated 2026-08-19: pdf-downloading-dag.py's downloadOne() writes into
+# '<source>2/...' folders (e.g. 'arxiv2/', 'gujarati2/literature/'), not the
+# original '<source>/...' paths below - the folder layout changed at some
+# point but this list was never updated to match, so get_ftp_stats() was
+# silently checking stale/frozen pre-migration folders (0 recent files)
+# while real downloads landed in the '2' folders, making the "PDF
+# downloaded (24h)" card always read 0 regardless of actual throughput.
+# Also added 'pubmed2', which was missing from this list even before the
+# folder rename (download_pubmed is a tracked DAG_ID but had no FTP_FOLDERS
+# entry), so its downloads were never counted here either.
 FTP_FOLDERS = [
+    'arxiv2', 'pubmed2', 'cyberleninka2', 'springer2',
+    'gujarati2/literature', 'gujarati2/news', 'gujarati2/science_natural',
+    'gujarati2/science_social', 'gujarati2/law', 'gujarati2/official',
+    'gujarati2/dictionary',
+    'russian2/science', 'russian2/literature_modern', 'russian2/literature_classic',
+    'russian2/news', 'russian2/law', 'russian2/social_science',
+    'english2/science', 'english2/literature_modern', 'english2/literature_classic',
+    'english2/news', 'english2/law', 'english2/social_science',
+    'gutenberg2/science', 'gutenberg2/social_science', 'gutenberg2/law',
+    'gutenberg2/history', 'gutenberg2/philosophy_religion', 'gutenberg2/poetry_drama',
+    'gutenberg2/children', 'gutenberg2/literature',
+    # Pre-rename folder names (added 2026-08-20). The 2026-08-19 fix pointed this
+    # list at the new <source>2/ folders pdf-downloading-dag.py actually writes to
+    # now, but dropped the old <source>/ names outright instead of keeping both -
+    # those still hold ~262K real, previously-downloaded files (confirmed via
+    # live FTP MLSD: e.g. arxiv/ has 58,254 files, frozen/abandoned but present,
+    # not deleted), so "Хранилище на FTP" was silently missing most of the
+    # historical corpus. No old 'pubmed' folder exists (download_pubmed only ever
+    # used the '2' name), so it's the only source without a pre-rename entry here.
     'arxiv', 'cyberleninka', 'springer',
     'gujarati/literature', 'gujarati/news', 'gujarati/science_natural',
     'gujarati/science_social', 'gujarati/law', 'gujarati/official',
@@ -343,7 +372,13 @@ def get_disk_stats() -> list[dict]:
         df_out = subprocess.run(['df', '-B1', d['mount']], capture_output=True, text=True).stdout
         fields = df_out.splitlines()[1].split()
         d['used_gb'] = int(fields[2]) / 1024 ** 3
-        d['total_gb'] = int(fields[1]) / 1024 ** 3
+        # total_gb is used-space-visible-to-users capacity (used + available),
+        # not the raw filesystem size in fields[1] - that raw size includes
+        # ext4's root-reserved blocks (~5% by default), which aren't available
+        # for normal writes and were making this section understate how full
+        # the disk actually is (e.g. showing 89% when `df -h` said 95%).
+        avail_gb = int(fields[3]) / 1024 ** 3
+        d['total_gb'] = d['used_gb'] + avail_gb
 
     # Two samples 1s apart; the first iostat table is a since-boot cumulative
     # average, not current activity - only the second (live) sample is used.
@@ -375,17 +410,51 @@ def get_disk_stats() -> list[dict]:
     return drives
 
 
-# Standalone scraper containers that live on this host alongside the
-# pipeline but aren't part of it (no service_id, no PdfDocuments/FTP
-# wiring) - shown as infrastructure-only status, not download stats.
-STANDALONE_SOURCES = [
-    'twirpx-scraper',
+# Independent grammar/dictionary-corpus scrapers that live on this host alongside
+# the langembed pipeline but aren't part of it (no service_id, no PdfDocuments/FTP
+# wiring) - shown as infrastructure status + output file count, not download stats.
+# twirpx-scraper runs as 8 replicas sharing one output directory (proxy-rotation
+# parallelism, not 8 independent corpora), so only the first replica's entry
+# carries output_dir - added 2026-08-13 alongside a proxy-fallback fix for
+# grammarwatch/lsp-scraper/elp-scraper/glottolog (see their own scripts' db_proxy
+# usage) after several were found IP-blocked or silently stalled on some hosts.
+GRAMMAR_CONTAINERS = [
+    {'name': 'grammarwatch', 'output_dir': '/home/s939/grammarwatch/pdf_grammars',
+     'source': 'Zotero-группа lang-science grammars'},
+    {'name': 'lsp-scraper', 'output_dir': '/home/s939/parsing_lsp/lsp_grammars',
+     'source': 'langsci-press.org'},
+    {'name': 'elp-scraper', 'output_dir': '/home/s939/parsing_elp/elp_grammars',
+     'source': 'endangeredlanguages.com'},
+    {'name': 'glottolog', 'output_dir': '/home/s939/glottolog/ia_grammars_all',
+     'source': 'archive.org (по списку языков Glottolog)'},
+    {'name': 'twirpx-scraper', 'output_dir': '/home/s939/twirpx_scraper/downloads',
+     'source': 'twirpx.com (реплика 1/8, каталог общий для всех реплик)'},
+    {'name': 'twirpx-scraper-2', 'output_dir': None, 'source': 'twirpx.com (реплика 2/8)'},
+    {'name': 'twirpx-scraper-3', 'output_dir': None, 'source': 'twirpx.com (реплика 3/8)'},
+    {'name': 'twirpx-scraper-4', 'output_dir': None, 'source': 'twirpx.com (реплика 4/8)'},
+    {'name': 'twirpx-scraper-5', 'output_dir': None, 'source': 'twirpx.com (реплика 5/8)'},
+    {'name': 'twirpx-scraper-6', 'output_dir': None, 'source': 'twirpx.com (реплика 6/8)'},
+    {'name': 'twirpx-scraper-7', 'output_dir': None, 'source': 'twirpx.com (реплика 7/8)'},
+    {'name': 'twirpx-scraper-8', 'output_dir': None, 'source': 'twirpx.com (реплика 8/8)'},
 ]
 
 
-def get_standalone_sources() -> list[dict]:
+def _count_files(path: str) -> int | None:
+    """None (rendered as "н/д") on any failure - a missing/unreadable directory
+    shouldn't break report generation for every other container's row."""
+    try:
+        out = subprocess.run(
+            ['find', path, '-type', 'f'], capture_output=True, text=True, timeout=20,
+        ).stdout
+        return len(out.splitlines())
+    except (subprocess.SubprocessError, OSError):
+        return None
+
+
+def get_grammar_containers() -> list[dict]:
     results = []
-    for name in STANDALONE_SOURCES:
+    for entry in GRAMMAR_CONTAINERS:
+        name = entry['name']
         try:
             out = subprocess.run(
                 ['docker', 'inspect', name, '--format',
@@ -395,7 +464,8 @@ def get_standalone_sources() -> list[dict]:
         except subprocess.TimeoutExpired:
             out = ''
         if not out:
-            results.append({'name': name, 'status': 'нет данных', 'uptime': '-', 'restarts': '-'})
+            results.append({'name': name, 'source': entry['source'], 'status': 'нет данных',
+                             'uptime': '-', 'restarts': '-', 'files': None})
             continue
         status, started_at, restarts = out.split('\t')
         try:
@@ -406,8 +476,92 @@ def get_standalone_sources() -> list[dict]:
             uptime = f'{hours} ч {minutes} мин' if status == 'running' else '-'
         except ValueError:
             uptime = '-'
-        results.append({'name': name, 'status': status, 'uptime': uptime, 'restarts': restarts})
+        files = _count_files(entry['output_dir']) if entry['output_dir'] else None
+        results.append({'name': name, 'source': entry['source'], 'status': status,
+                         'uptime': uptime, 'restarts': restarts, 'files': files})
     return results
+
+
+def get_grammar_pdf_totals() -> dict:
+    """Combined PDF count across the grammar/dictionary scrapers (GRAMMAR_CONTAINERS).
+
+    Added 2026-08-20: these write straight to local disk on the NVMe drive
+    (/mnt/nvme-mssql/scraper_data/... via the /home/s939/<name> symlinks) and
+    never touch FTP or PdfDocuments, so the headline stats at the top of this
+    report (grand_total, total_24h_downloads, etc. - all FTP/PdfDocuments-based)
+    were silently excluding this entire second pipeline. This surfaces it
+    alongside those, deduplicating twirpx-scraper's 8 replicas (they share one
+    output_dir, only the first entry carries a path).
+    """
+    seen_dirs: set[str] = set()
+    total_files = 0
+    recent_24h = 0
+    for entry in GRAMMAR_CONTAINERS:
+        d = entry['output_dir']
+        if not d or d in seen_dirs:
+            continue
+        seen_dirs.add(d)
+        total_files += _count_files(d) or 0
+        try:
+            out = subprocess.run(
+                ['find', d, '-type', 'f', '-mmin', '-1440'],
+                capture_output=True, text=True, timeout=20,
+            ).stdout
+            recent_24h += len(out.splitlines())
+        except (subprocess.SubprocessError, OSError):
+            pass
+    return {'total_files': total_files, 'recent_24h': recent_24h, 'sources': len(seen_dirs)}
+
+
+TWIRPX_BASE_DIR = '/home/s939/twirpx_scraper'
+TWIRPX_DOWNLOADS_DIR = f'{TWIRPX_BASE_DIR}/downloads'
+# One completed-languages file per shard (8-way parallel run, shards 2-8 plus the
+# original unsharded file) - each line is one language twirpx-scraper considers
+# fully processed. downloads/<language>/ is one folder per language, shared by all
+# shards, so folder count/mtimes double as a per-language download timeline even
+# for languages not yet marked complete.
+TWIRPX_COMPLETED_FILES = [
+    'completed_languages.txt',
+    *(f'completed_languages_shard_{i}.txt' for i in range(2, 9)),
+]
+
+
+def get_twirpx_details() -> dict:
+    """Added 2026-08-13 at the user's request to track twirpx-scraper's 8-way
+    sharded run more closely: languages completed, when each language folder was
+    last touched, and total files/folders -- not just the single running/stopped
+    status get_grammar_containers() shows per replica."""
+    completed_languages: set[str] = set()
+    for fname in TWIRPX_COMPLETED_FILES:
+        try:
+            with open(f'{TWIRPX_BASE_DIR}/{fname}', encoding='utf-8') as f:
+                completed_languages.update(line.strip() for line in f if line.strip())
+        except OSError:
+            continue
+
+    folders: list[tuple[str, datetime]] = []
+    try:
+        out = subprocess.run(
+            ['find', TWIRPX_DOWNLOADS_DIR, '-mindepth', '1', '-maxdepth', '1', '-type', 'd',
+             '-printf', '%f\t%T@\n'],
+            capture_output=True, text=True, timeout=20,
+        ).stdout
+        for line in out.splitlines():
+            parts = line.split('\t')
+            if len(parts) == 2:
+                try:
+                    folders.append((parts[0], datetime.fromtimestamp(float(parts[1]), tz=timezone.utc)))
+                except ValueError:
+                    continue
+    except (subprocess.SubprocessError, OSError):
+        pass
+
+    return {
+        'languages_completed': len(completed_languages),
+        'folders_created': len(folders),
+        'files_downloaded': _count_files(TWIRPX_DOWNLOADS_DIR),
+        'recent_folders': sorted(folders, key=lambda x: x[1], reverse=True)[:12],
+    }
 
 
 def get_container_stats() -> list[dict]:
@@ -542,9 +696,8 @@ def meter(label: str, used: float, total: float, unit: str, warn_pct: float = 80
 
 def render(sources, grand_total, dag_runs, ftp_stats, host, containers,
            shodhganga_up, paused_states, generated_at, inserted_24h, disks,
-           pdf_downloading_runs, recent_throughput, standalone_sources) -> str:
-    total_ftp_files = sum(f['files'] for f in ftp_stats.values())
-    total_ftp_size_gb = sum(f['size_mb'] for f in ftp_stats.values()) / 1024
+           pdf_downloading_runs, recent_throughput, grammar_containers, twirpx_details,
+           grammar_pdf_totals) -> str:
     total_24h_downloads = sum(f['recent_24h'] for f in ftp_stats.values())
     total_dag_success = sum(d['success'] for d in dag_runs.values())
     total_dag_failed = sum(d['failed'] for d in dag_runs.values())
@@ -608,14 +761,27 @@ def render(sources, grand_total, dag_runs, ftp_stats, host, containers,
             f'<td>{throughput_bar(b["count"], max_throughput)}</td></tr>'
         )
 
-    standalone_rows = []
-    for s in standalone_sources:
+    grammar_rows = []
+    for s in grammar_containers:
         status_pill = '<span class="pill good">работает</span>' if s['status'] == 'running' \
             else f'<span class="pill neutral">{html.escape(s["status"])}</span>'
-        standalone_rows.append(
-            f'<tr><td class="name">{html.escape(s["name"])}</td><td>{status_pill}</td>'
-            f'<td class="num">{html.escape(s["uptime"])}</td><td class="num">{html.escape(str(s["restarts"]))}</td></tr>'
+        files_cell = f'{s["files"]:,}' if s['files'] is not None else 'н/д'
+        grammar_rows.append(
+            f'<tr><td class="name">{html.escape(s["name"])}</td>'
+            f'<td>{html.escape(s["source"])}</td><td>{status_pill}</td>'
+            f'<td class="num">{html.escape(s["uptime"])}</td>'
+            f'<td class="num">{html.escape(str(s["restarts"]))}</td>'
+            f'<td class="num">{files_cell}</td></tr>'
         )
+
+    twirpx_folder_rows = []
+    for lang, mtime in twirpx_details['recent_folders']:
+        twirpx_folder_rows.append(
+            f'<tr><td class="name">{html.escape(lang)}</td>'
+            f'<td class="num">{mtime.strftime("%Y-%m-%d %H:%M")} UTC</td></tr>'
+        )
+    twirpx_files = twirpx_details['files_downloaded']
+    twirpx_files_display = f'{twirpx_files:,}' if twirpx_files is not None else 'н/д'
 
     container_rows = []
     for c in containers:
@@ -662,8 +828,8 @@ def render(sources, grand_total, dag_runs, ftp_stats, host, containers,
   <section>
     <div class="stat-grid">
       <div class="stat-card"><span class="stat-label">Отслеживается URL PDF</span><span class="stat-value">{grand_total['total']:,}</span><span class="stat-sub">источников: {len(sources)}</span></div>
-      <div class="stat-card"><span class="stat-label">Загружено</span><span class="stat-value accent">{grand_total['downloaded']:,}</span><span class="stat-sub">{downloaded_pct:.1f}% от общей очереди</span></div>
-      <div class="stat-card"><span class="stat-label">Занято места на FTP</span><span class="stat-value">{total_ftp_size_gb:.1f} ГБ</span><span class="stat-sub">~{total_ftp_files:,} файлов</span></div>
+      <div class="stat-card"><span class="stat-label">Загружено (Airflow DAG)</span><span class="stat-value accent">{grand_total['downloaded']:,}</span><span class="stat-sub">{downloaded_pct:.1f}% от общей очереди</span></div>
+      <div class="stat-card"><span class="stat-label">PDF скраперов грамматик</span><span class="stat-value">{grammar_pdf_totals['total_files']:,}</span><span class="stat-sub">{grammar_pdf_totals['sources']} источников, отдельно от FTP — новый NVMe-диск</span></div>
       <div class="stat-card"><span class="stat-label">Загрузка сервера ({host['nproc']} ядер)</span><span class="stat-value">{'/'.join(host['load'])}</span><span class="stat-sub">среднее за 1/5/15 мин</span></div>
     </div>
   </section>
@@ -679,7 +845,8 @@ def render(sources, grand_total, dag_runs, ftp_stats, host, containers,
   <section>
     <h2>Последние 24 часа</h2>
     <div class="stat-grid">
-      <div class="stat-card"><span class="stat-label">PDF загружено</span><span class="stat-value accent">{total_24h_downloads:,}</span><span class="stat-sub">по времени изменения файла на FTP</span></div>
+      <div class="stat-card"><span class="stat-label">PDF загружено (FTP)</span><span class="stat-value accent">{total_24h_downloads:,}</span><span class="stat-sub">по времени изменения файла на FTP</span></div>
+      <div class="stat-card"><span class="stat-label">PDF скачано (скраперы грамматик)</span><span class="stat-value accent">{grammar_pdf_totals['recent_24h']:,}</span><span class="stat-sub">по времени изменения файла на NVMe-диске</span></div>
       <div class="stat-card"><span class="stat-label">URL добавлено</span><span class="stat-value accent">{inserted_24h:,}</span><span class="stat-sub">по PdfDocuments.InsertedAt</span></div>
       <div class="stat-card"><span class="stat-label">Запусков DAG обнаружения</span><span class="stat-value">{total_dag_success + total_dag_failed:,}</span><span class="stat-sub">с ошибкой: {total_dag_failed:,}</span></div>
       <div class="stat-card"><span class="stat-label">Запусков pdf_downloading</span><span class="stat-value">{pdf_downloading_runs['success'] + pdf_downloading_runs['failed']:,}</span><span class="stat-sub">с ошибкой: {pdf_downloading_runs['failed']:,}</span></div>
@@ -750,11 +917,38 @@ def render(sources, grand_total, dag_runs, ftp_stats, host, containers,
   </section>
 
   <section>
-    <h2>Прочие неклассифицированные источники <span class="section-note">standalone-контейнеры вне пайплайна - только статус, без учёта загрузок</span></h2>
+    <h2>Скраперы грамматик и словарей <span class="section-note">standalone-контейнеры вне основного пайплайна PdfDocuments/FTP</span></h2>
     <div class="table-wrap"><table>
-      <thead><tr><th>Контейнер</th><th>Статус</th><th class="num">Аптайм</th><th class="num">Перезапуски</th></tr></thead>
-      <tbody>{''.join(standalone_rows)}</tbody>
+      <thead><tr><th>Контейнер</th><th>Источник</th><th>Статус</th><th class="num">Аптайм</th><th class="num">Перезапуски</th><th class="num">Файлов</th></tr></thead>
+      <tbody>{''.join(grammar_rows)}</tbody>
     </table></div>
+    <p style="font-size:0.82rem;color:var(--text-dim);max-width:70ch;">
+      grammarwatch, lsp-scraper, elp-scraper и glottolog переведены на резервные
+      прокси (тот же пул, что и у twirpx-scraper) 2026-08-13 — до этого запросы к
+      некоторым источникам (например bod.de для lsp-scraper) молча зависали на
+      таймауте без ретрая через прокси. twirpx-scraper — 8 параллельных реплик,
+      делящих один общий каталог загрузок; подробности по языкам — в следующем
+      разделе.
+    </p>
+  </section>
+
+  <section>
+    <h2>twirpx-scraper — детали по языкам <span class="section-note">completed_languages*.txt (8 шардов) + downloads/&lt;язык&gt;/</span></h2>
+    <div class="stat-grid">
+      <div class="stat-card"><span class="stat-label">Языков завершено</span><span class="stat-value accent">{twirpx_details['languages_completed']:,}</span><span class="stat-sub">по всем 8 шардам, объединено</span></div>
+      <div class="stat-card"><span class="stat-label">Папок создано</span><span class="stat-value">{twirpx_details['folders_created']:,}</span><span class="stat-sub">downloads/&lt;язык&gt;/, включая незавершённые</span></div>
+      <div class="stat-card"><span class="stat-label">Файлов скачано</span><span class="stat-value">{twirpx_files_display}</span><span class="stat-sub">все языки суммарно</span></div>
+    </div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Язык</th><th class="num">Последняя активность</th></tr></thead>
+      <tbody>{''.join(twirpx_folder_rows)}</tbody>
+    </table></div>
+    <p style="font-size:0.82rem;color:var(--text-dim);max-width:70ch;">
+      «Последняя активность» — время изменения папки языка на диске (создание файла
+      или проверка без результата), не обязательно означает завершённую загрузку.
+      Показаны 12 самых недавно тронутых языков; полный список завершённых — в
+      completed_languages*.txt на сервере.
+    </p>
   </section>
 
   <section>
@@ -780,7 +974,9 @@ def main():
     host = get_host_resources()
     disks = get_disk_stats()
     containers = get_container_stats()
-    standalone_sources = get_standalone_sources()
+    grammar_containers = get_grammar_containers()
+    twirpx_details = get_twirpx_details()
+    grammar_pdf_totals = get_grammar_pdf_totals()
     shodhganga_up = check_shodhganga_reachable()
     inserted_24h = get_24h_inserted()
     pdf_downloading_runs = get_pdf_downloading_runs()
@@ -788,7 +984,8 @@ def main():
 
     output = render(sources, grand_total, dag_runs, ftp_stats, host, containers,
                      shodhganga_up, paused_states, generated_at, inserted_24h, disks,
-                     pdf_downloading_runs, recent_throughput, standalone_sources)
+                     pdf_downloading_runs, recent_throughput, grammar_containers, twirpx_details,
+                     grammar_pdf_totals)
 
     with open(REPORT_OUTPUT_PATH, 'w', encoding='utf-8') as f:
         f.write(output)
