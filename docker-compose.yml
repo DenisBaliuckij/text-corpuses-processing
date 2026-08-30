@@ -56,8 +56,18 @@ x-airflow-common:
   environment:
     &airflow-common-env
     AIRFLOW__CORE__EXECUTOR: CeleryExecutor
-    AIRFLOW__CORE__PARALLELISM: '32'
-    AIRFLOW__CELERY__WORKER_CONCURRENCY: '32'
+    # Lowered from the Airflow docs' stock default of 32 -- that ceiling was
+    # never tuned for this host's actual 31GB RAM, which is shared with
+    # Ollama (~12GB for qwen3:14b GPU-resident + host-side buffer),
+    # twirpx-scraper's Chromium fleet (~4-5GB), and MSSQL. 32 concurrent
+    # tasks (each up to several GB for memory-heavy ones like
+    # pdf_conversion's sciparse pipeline) was capable of fully exhausting
+    # both RAM and swap simultaneously (confirmed 2026-08-30: 482MB free /
+    # swap 15Gi/15Gi with 31 tasks actually running at once), causing
+    # system-wide thrashing that crash-looped the scheduler as collateral
+    # damage. 16 halves worst-case concurrent memory exposure.
+    AIRFLOW__CORE__PARALLELISM: '16'
+    AIRFLOW__CELERY__WORKER_CONCURRENCY: '16'
     AIRFLOW__CORE__AUTH_MANAGER: airflow.providers.fab.auth_manager.fab_auth_manager.FabAuthManager
     AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
     AIRFLOW__CELERY__RESULT_BACKEND: db+postgresql://airflow:airflow@postgres/airflow
@@ -192,6 +202,18 @@ services:
   airflow-worker:
     <<: *airflow-common
     command: celery worker
+    # No limit existed before 2026-08-30 -- a single container could
+    # consume unbounded host memory, which is exactly what turned "one
+    # heavy task" into "the whole host thrashes and the scheduler
+    # crash-loops" (see the WORKER_CONCURRENCY comment above). 12GB caps
+    # the worst case for 16 concurrent tasks (average observed ~300-800MB,
+    # occasional sciparse pdf_conversion tasks up to ~3-4GB) while leaving
+    # headroom for Ollama/twirpx/MSSQL on the rest of the 31GB host. If
+    # this limit is ever hit, Docker OOM-kills the container (Celery
+    # retries the interrupted tasks per their own retry policy) instead of
+    # the whole host thrashing -- a much cheaper failure mode.
+    mem_limit: 12g
+    mem_reservation: 4g
     cap_add:
       - SYS_PTRACE
     healthcheck:
