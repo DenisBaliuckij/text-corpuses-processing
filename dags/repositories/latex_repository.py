@@ -65,4 +65,6 @@ class LatexRepository:
         cnxn.close()
         if row is None or not row[0]:
             return None
+        if row[0] == 'NA':
+            raise RuntimeError(f"sciparse failed to convert {pdf_location} (LatexLocation='NA')")
         return row[0]

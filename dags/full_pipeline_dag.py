@@ -4,6 +4,8 @@ docs/superpowers/specs/2026-08-31-full-pipeline-dag-design.md (langembed repo) f
 full design.
 """
 
+import re
+
 import pendulum
 
 from airflow.providers.ssh.operators.ssh import SSHOperator
@@ -20,6 +22,17 @@ _BRANCH_TASK_IDS = {
     "CBOW": "branch_cbow",
 }
 
+_SAFE_PATH_RE = re.compile(r"^[A-Za-z0-9_./-]+$")
+
+
+def _remote_dir_exists(sftp, path: str) -> bool:
+    try:
+        sftp.stat(path)
+        return True
+    except FileNotFoundError:
+        return False
+
+
 with DAG(
     dag_id="full_pipeline",
     schedule=None,
@@ -27,6 +40,7 @@ with DAG(
     catchup=False,
     is_paused_upon_creation=True,
     max_active_runs=1,
+    default_args={"retries": 1, "retry_delay": pendulum.duration(minutes=5)},
     tags=["langembed", "manual"],
     params={
         "lang": Param(default="", type="string"),
@@ -35,7 +49,7 @@ with DAG(
         "source_documents": Param(default=[], type="array"),
         "conversion_method": Param(default="fast", enum=["fast", "sciparse"]),
         "min_corpus_size_mb": Param(default=50, type="integer"),
-        "label_method": Param(default="svd", enum=["svd", "backtranslation", "native"]),
+        "label_method": Param(default="svd", enum=["svd", "backtranslation"]),
         "branches": Param(default=["A", "B", "C", "CBOW"], type="array"),
         "embed_sample_size": Param(default=200, type="integer"),
         "base_model_b": Param(default="sentence-transformers/LaBSE", type="string"),
@@ -52,10 +66,23 @@ with DAG(
         params = context["params"]
         if not params["lang"]:
             raise ValueError("`lang` is required")
+        if not re.fullmatch(r"[a-z]{2,8}", params["lang"]):
+            raise ValueError(f"`lang` must be 2-8 lowercase letters, got: {params['lang']!r}")
         if not params["branches"]:
             raise ValueError("`branches` must select at least one of A/B/C/CBOW")
+        valid_branches = {"A", "B", "C", "CBOW"}
+        invalid = set(params["branches"]) - valid_branches
+        if invalid:
+            raise ValueError(f"`branches` contains invalid values: {invalid}, must be a subset of {valid_branches}")
         if params["source_mode"] == "convert_documents" and not params["source_documents"]:
             raise ValueError("`source_documents` is required when source_mode=convert_documents")
+        if params["raw_text_path"] and not _SAFE_PATH_RE.fullmatch(params["raw_text_path"]):
+            raise ValueError(f"`raw_text_path` contains unsafe characters: {params['raw_text_path']!r}")
+        for doc in params["source_documents"]:
+            if not _SAFE_PATH_RE.fullmatch(doc):
+                raise ValueError(f"`source_documents` entry contains unsafe characters: {doc!r}")
+        if params["base_model_b"] and not _SAFE_PATH_RE.fullmatch(params["base_model_b"]):
+            raise ValueError(f"`base_model_b` contains unsafe characters: {params['base_model_b']!r}")
         return "wait_for_corpus_size" if params["source_mode"] == "existing_text" else "normalize_and_extract"
 
     @task()
@@ -80,16 +107,19 @@ with DAG(
             time.sleep(15)
         raise TimeoutError(f"{full_path} did not reach {params['min_corpus_size_mb']}MB within 600s")
 
+    # Deliberately CPU-only regardless of use_gpu -- format normalization/extraction
+    # and CBOW word vectors don't use the GPU.
     normalize_and_extract = SSHOperator(
         task_id="normalize_and_extract",
         ssh_conn_id=SSH_CONN_ID,
+        cmd_timeout=None,
         command=(
-            f"{WATCHDOG} {{{{ dag_run.run_id }}}}-normalize "
+            f"{WATCHDOG} {{{{ dag_run.run_id | replace(':', '-') | replace('+', '-') }}}}-normalize "
             "{{ params.timeout_conversion_minutes }} false "
             "scripts/bridge_corpus.py --lang {{ params.lang }} "
             "--conversion-method {{ params.conversion_method }} "
             "--source-documents {{ params.source_documents | join(' ') }} "
-            "--result-json /tmp/{{ dag_run.run_id }}_bridge_result.json"
+            f"--result-json {LANGEMBED_BASE}/{{{{ dag_run.run_id }}}}_bridge_result.json"
         ),
     )
 
@@ -102,35 +132,44 @@ with DAG(
         """Runs natively in the worker (not via SSH) -- see sciparse_bridge.py's
         module docstring for why."""
         import json
-        import subprocess
         from pathlib import Path
+
+        from airflow.providers.ssh.hooks.ssh import SSHHook
 
         params = context["params"]
         run_id = context["dag_run"].run_id
-        result_path = Path(f"/tmp/{run_id}_bridge_result.json")
-        subprocess.run(["scp", f"corpus_host:{result_path}", str(result_path)], check=True)
-        container_pdf_paths = json.loads(result_path.read_text(encoding="utf-8"))["normalized_pdf_paths"]
+        hook = SSHHook(ssh_conn_id=SSH_CONN_ID)
+
+        local_result_json = Path(f"/tmp/{run_id}_bridge_result.json")
+        remote_result_json = f"{LANGEMBED_BASE}/{run_id}_bridge_result.json"
+        with hook.get_conn() as client, client.open_sftp() as sftp:
+            sftp.get(remote_result_json, str(local_result_json))
+        container_pdf_paths = json.loads(local_result_json.read_text(encoding="utf-8"))[
+            "normalized_pdf_paths"
+        ]
 
         from sciparse_bridge import register_and_wait
 
         raw_paths = []
-        for i, container_path in enumerate(container_pdf_paths):
-            # normalize_and_extract ran inside a langembed-ml container with
-            # `-v LANGEMBED_BASE:/app` (see docker_run_watchdog.sh) -- container-internal
-            # paths under /app are the SAME bytes as LANGEMBED_BASE on the host, since
-            # it's a bind mount, not ephemeral container storage. Translate the path
-            # and scp the actual PDF down to the worker, which has no filesystem in
-            # common with either the host or that (already-removed) container.
-            host_path = container_path.replace("/app", LANGEMBED_BASE, 1)
-            local_pdf = Path(f"/tmp/{run_id}_sciparse_src_{i}.pdf")
-            subprocess.run(["scp", f"corpus_host:{host_path}", str(local_pdf)], check=True)
+        with hook.get_conn() as client, client.open_sftp() as sftp:
+            for i, repo_relative_pdf_path in enumerate(container_pdf_paths):
+                remote_pdf = f"{LANGEMBED_BASE}/{repo_relative_pdf_path}"
+                local_pdf = Path(f"/tmp/{run_id}_sciparse_src_{i}.pdf")
+                sftp.get(remote_pdf, str(local_pdf))
 
-            text = register_and_wait(
-                local_pdf, params["lang"], timeout_s=params["timeout_conversion_minutes"] * 60
-            )
-            out_path = f"/tmp/{run_id}_sciparse_{i}.txt"
-            Path(out_path).write_text(text, encoding="utf-8")
-            raw_paths.append(out_path)
+                text = register_and_wait(
+                    local_pdf, params["lang"], timeout_s=params["timeout_conversion_minutes"] * 60
+                )
+
+                repo_relative_out = f"data/bridge_state/{run_id}_sciparse_{i}.txt"
+                remote_out = f"{LANGEMBED_BASE}/{repo_relative_out}"
+                local_out = Path(f"/tmp/{run_id}_sciparse_{i}.txt")
+                local_out.write_text(text, encoding="utf-8")
+                sftp.mkdir(f"{LANGEMBED_BASE}/data/bridge_state") if not _remote_dir_exists(
+                    sftp, f"{LANGEMBED_BASE}/data/bridge_state"
+                ) else None
+                sftp.put(str(local_out), remote_out)
+                raw_paths.append(repo_relative_out)
         return raw_paths
 
     @task(trigger_rule="none_failed_min_one_success")
@@ -139,8 +178,9 @@ with DAG(
         convert_documents+fast, or convert_documents+sciparse), figures out the
         resulting raw-text file paths to feed shared_corpus_prep."""
         import json
-        import subprocess
         from pathlib import Path
+
+        from airflow.providers.ssh.hooks.ssh import SSHHook
 
         params = context["params"]
         ti = context["ti"]
@@ -152,16 +192,20 @@ with DAG(
         if params["conversion_method"] == "sciparse":
             return ti.xcom_pull(task_ids="sciparse_convert")
 
-        result_path = Path(f"/tmp/{run_id}_bridge_result.json")
-        subprocess.run(["scp", f"corpus_host:{result_path}", str(result_path)], check=True)
-        return json.loads(result_path.read_text(encoding="utf-8"))["raw_text_paths"]
+        local_result_json = Path(f"/tmp/{run_id}_bridge_result.json")
+        remote_result_json = f"{LANGEMBED_BASE}/{run_id}_bridge_result.json"
+        hook = SSHHook(ssh_conn_id=SSH_CONN_ID)
+        with hook.get_conn() as client, client.open_sftp() as sftp:
+            sftp.get(remote_result_json, str(local_result_json))
+        return json.loads(local_result_json.read_text(encoding="utf-8"))["raw_text_paths"]
 
     shared_corpus_prep = SSHOperator(
         task_id="shared_corpus_prep",
         ssh_conn_id=SSH_CONN_ID,
+        cmd_timeout=None,
         command=(
             "{{ '' if params.no_clean else 'rm -rf " + LANGEMBED_BASE + "/output/' ~ params.lang ~ ' && ' }}"
-            f"{WATCHDOG} {{{{ dag_run.run_id }}}}-corpus-prep "
+            f"{WATCHDOG} {{{{ dag_run.run_id | replace(':', '-') | replace('+', '-') }}}}-corpus-prep "
             "{{ params.timeout_corpus_prep_minutes }} {{ params.use_gpu | lower }} "
             "scripts/run_pipeline.py --lang {{ params.lang }} "
             "--raw-input {{ ti.xcom_pull(task_ids='corpus_ready') | join(' ') }} "
@@ -177,8 +221,9 @@ with DAG(
     branch_a_finetune = SSHOperator(
         task_id="branch_a_finetune",
         ssh_conn_id=SSH_CONN_ID,
+        cmd_timeout=None,
         command=(
-            f"{WATCHDOG} {{{{ dag_run.run_id }}}}-branch-a "
+            f"{WATCHDOG} {{{{ dag_run.run_id | replace(':', '-') | replace('+', '-') }}}}-branch-a "
             "{{ params.timeout_branch_minutes }} {{ params.use_gpu | lower }} "
             "scripts/supervised_finetune_pass.py --lang {{ params.lang }} "
             "--label-method {{ params.label_method }}"
@@ -188,8 +233,9 @@ with DAG(
     branch_b_finetune = SSHOperator(
         task_id="branch_b_finetune",
         ssh_conn_id=SSH_CONN_ID,
+        cmd_timeout=None,
         command=(
-            f"{WATCHDOG} {{{{ dag_run.run_id }}}}-branch-b "
+            f"{WATCHDOG} {{{{ dag_run.run_id | replace(':', '-') | replace('+', '-') }}}}-branch-b "
             "{{ params.timeout_branch_minutes }} {{ params.use_gpu | lower }} "
             "scripts/supervised_finetune_pass.py --lang {{ params.lang }} "
             "--label-method {{ params.label_method }} "
@@ -200,8 +246,9 @@ with DAG(
     branch_c_lora = SSHOperator(
         task_id="branch_c_lora",
         ssh_conn_id=SSH_CONN_ID,
+        cmd_timeout=None,
         command=(
-            f"{WATCHDOG} {{{{ dag_run.run_id }}}}-branch-c "
+            f"{WATCHDOG} {{{{ dag_run.run_id | replace(':', '-') | replace('+', '-') }}}}-branch-c "
             "{{ params.timeout_branch_minutes }} {{ params.use_gpu | lower }} "
             "scripts/embed_branch_c.py --lang {{ params.lang }} "
             "--label-method {{ params.label_method }} "
@@ -209,11 +256,14 @@ with DAG(
         ),
     )
 
+    # Deliberately CPU-only regardless of use_gpu -- format normalization/extraction
+    # and CBOW word vectors don't use the GPU.
     branch_cbow = SSHOperator(
         task_id="branch_cbow",
         ssh_conn_id=SSH_CONN_ID,
+        cmd_timeout=None,
         command=(
-            f"{WATCHDOG} {{{{ dag_run.run_id }}}}-branch-cbow "
+            f"{WATCHDOG} {{{{ dag_run.run_id | replace(':', '-') | replace('+', '-') }}}}-branch-cbow "
             "{{ params.timeout_branch_minutes }} false "
             "scripts/embed_branch_cbow.py --lang {{ params.lang }} "
             "--embed-sample-size {{ params.embed_sample_size }}"

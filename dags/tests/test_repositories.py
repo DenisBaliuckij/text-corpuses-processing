@@ -3,6 +3,9 @@ import os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
 from unittest.mock import patch, MagicMock
+
+import pytest
+
 from repositories.proxy_repository import ProxyRepository
 
 _CFG = {'ConnectionString': 'Driver={SQL Server};Server=test;'}
@@ -161,6 +164,14 @@ def test_latex_get_latex_location_returns_none_when_row_missing():
         mock_conn.return_value.cursor.return_value.fetchone.return_value = None
         result = LatexRepository.get_latex_location('langembed_bridge/mr/book.pdf')
         assert result is None
+
+
+def test_latex_get_latex_location_raises_on_na_sentinel():
+    with patch('repositories.latex_repository.getConfig', return_value=_CFG), \
+         patch('repositories.latex_repository.pyodbc.connect') as mock_conn:
+        mock_conn.return_value.cursor.return_value.fetchone.return_value = ('NA',)
+        with pytest.raises(RuntimeError, match="NA"):
+            LatexRepository.get_latex_location('langembed_bridge/mr/book.pdf')
 
 
 from repositories.graph_job_repository import GraphJobRepository
