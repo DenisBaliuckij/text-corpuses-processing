@@ -125,6 +125,44 @@ def test_latex_save_location_calls_stored_proc():
         )
 
 
+def test_latex_register_for_conversion_calls_stored_proc():
+    with patch('repositories.latex_repository.getConfig', return_value=_CFG), \
+         patch('repositories.latex_repository.pyodbc.connect') as mock_conn:
+        mock_cur = mock_conn.return_value.cursor.return_value
+        LatexRepository.register_for_conversion(
+            'langembed-bridge:mr/book.pdf', 'langembed_bridge/mr/book.pdf'
+        )
+        mock_cur.execute.assert_called_once_with(
+            "execute [dbo].[RegisterPdfForLatexConversion] @pdfUrl = ?, @locationInFileSystem = ?",
+            ('langembed-bridge:mr/book.pdf', 'langembed_bridge/mr/book.pdf')
+        )
+        mock_conn.return_value.commit.assert_called_once()
+
+
+def test_latex_get_latex_location_returns_path_when_ready():
+    with patch('repositories.latex_repository.getConfig', return_value=_CFG), \
+         patch('repositories.latex_repository.pyodbc.connect') as mock_conn:
+        mock_conn.return_value.cursor.return_value.fetchone.return_value = ('Tex/book.tex',)
+        result = LatexRepository.get_latex_location('langembed_bridge/mr/book.pdf')
+        assert result == 'Tex/book.tex'
+
+
+def test_latex_get_latex_location_returns_none_when_not_ready():
+    with patch('repositories.latex_repository.getConfig', return_value=_CFG), \
+         patch('repositories.latex_repository.pyodbc.connect') as mock_conn:
+        mock_conn.return_value.cursor.return_value.fetchone.return_value = ('',)
+        result = LatexRepository.get_latex_location('langembed_bridge/mr/book.pdf')
+        assert result is None
+
+
+def test_latex_get_latex_location_returns_none_when_row_missing():
+    with patch('repositories.latex_repository.getConfig', return_value=_CFG), \
+         patch('repositories.latex_repository.pyodbc.connect') as mock_conn:
+        mock_conn.return_value.cursor.return_value.fetchone.return_value = None
+        result = LatexRepository.get_latex_location('langembed_bridge/mr/book.pdf')
+        assert result is None
+
+
 from repositories.graph_job_repository import GraphJobRepository
 
 
