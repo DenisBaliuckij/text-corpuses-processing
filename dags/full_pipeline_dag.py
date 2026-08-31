@@ -61,15 +61,21 @@ with DAG(
     @task()
     def wait_for_corpus_size(**context) -> list[str]:
         import time
-        from pathlib import Path
+
+        from airflow.providers.ssh.hooks.ssh import SSHHook
 
         params = context["params"]
         raw_text_path = params["raw_text_path"] or f"data/raw/{params['lang']}_nllb.txt"
-        full_path = Path(LANGEMBED_BASE) / raw_text_path
         min_bytes = params["min_corpus_size_mb"] * 1024 * 1024
+        full_path = f"{LANGEMBED_BASE}/{raw_text_path}"
+
+        hook = SSHHook(ssh_conn_id=SSH_CONN_ID)
         deadline = time.monotonic() + 600
         while time.monotonic() < deadline:
-            if full_path.is_file() and full_path.stat().st_size >= min_bytes:
+            with hook.get_conn() as client:
+                _, stdout, _ = client.exec_command(f"stat -c%s {full_path} 2>/dev/null || echo 0")
+                size = int(stdout.read().decode().strip() or "0")
+            if size >= min_bytes:
                 return [raw_text_path]
             time.sleep(15)
         raise TimeoutError(f"{full_path} did not reach {params['min_corpus_size_mb']}MB within 600s")
@@ -102,17 +108,25 @@ with DAG(
         params = context["params"]
         run_id = context["dag_run"].run_id
         result_path = Path(f"/tmp/{run_id}_bridge_result.json")
-        # normalize_and_extract wrote this over SSH on the host; the worker
-        # container and the host share no filesystem, so fetch it via scp.
         subprocess.run(["scp", f"corpus_host:{result_path}", str(result_path)], check=True)
-        pdf_paths = json.loads(result_path.read_text(encoding="utf-8"))["normalized_pdf_paths"]
+        container_pdf_paths = json.loads(result_path.read_text(encoding="utf-8"))["normalized_pdf_paths"]
 
         from sciparse_bridge import register_and_wait
 
         raw_paths = []
-        for i, pdf_path in enumerate(pdf_paths):
+        for i, container_path in enumerate(container_pdf_paths):
+            # normalize_and_extract ran inside a langembed-ml container with
+            # `-v LANGEMBED_BASE:/app` (see docker_run_watchdog.sh) -- container-internal
+            # paths under /app are the SAME bytes as LANGEMBED_BASE on the host, since
+            # it's a bind mount, not ephemeral container storage. Translate the path
+            # and scp the actual PDF down to the worker, which has no filesystem in
+            # common with either the host or that (already-removed) container.
+            host_path = container_path.replace("/app", LANGEMBED_BASE, 1)
+            local_pdf = Path(f"/tmp/{run_id}_sciparse_src_{i}.pdf")
+            subprocess.run(["scp", f"corpus_host:{host_path}", str(local_pdf)], check=True)
+
             text = register_and_wait(
-                Path(pdf_path), params["lang"], timeout_s=params["timeout_conversion_minutes"] * 60
+                local_pdf, params["lang"], timeout_s=params["timeout_conversion_minutes"] * 60
             )
             out_path = f"/tmp/{run_id}_sciparse_{i}.txt"
             Path(out_path).write_text(text, encoding="utf-8")
@@ -146,6 +160,7 @@ with DAG(
         task_id="shared_corpus_prep",
         ssh_conn_id=SSH_CONN_ID,
         command=(
+            "{{ '' if params.no_clean else 'rm -rf " + LANGEMBED_BASE + "/output/' ~ params.lang ~ ' && ' }}"
             f"{WATCHDOG} {{{{ dag_run.run_id }}}}-corpus-prep "
             "{{ params.timeout_corpus_prep_minutes }} {{ params.use_gpu | lower }} "
             "scripts/run_pipeline.py --lang {{ params.lang }} "
