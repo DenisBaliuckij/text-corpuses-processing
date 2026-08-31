@@ -10,3 +10,4 @@ build/
 *.ipynb
 dags/llm_v2/output/
 dags/hierarchical_llm_version/output/
+.worktrees/
