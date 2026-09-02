@@ -55,6 +55,8 @@ with DAG(
         "base_model_b": Param(default="sentence-transformers/LaBSE", type="string"),
         "use_gpu": Param(default=True, type="boolean"),
         "no_clean": Param(default=False, type="boolean"),
+        "train_llm": Param(default=False, type="boolean"),
+        "llm_minutes": Param(default=25.0, type="number"),
         "timeout_conversion_minutes": Param(default=60, type="integer"),
         "timeout_corpus_prep_minutes": Param(default=240, type="integer"),
         "timeout_branch_minutes": Param(default=480, type="integer"),
@@ -210,7 +212,8 @@ with DAG(
             "scripts/run_pipeline.py --lang {{ params.lang }} "
             "--raw-input {{ ti.xcom_pull(task_ids='corpus_ready') | join(' ') }} "
             "--auto-label --auto-label-method {{ params.label_method }} "
-            "--embed-sample-size {{ params.embed_sample_size }}"
+            "--embed-sample-size {{ params.embed_sample_size }} "
+            "{{ '--train-llm --llm-minutes ' ~ params.llm_minutes if params.train_llm else '' }}"
         ),
     )
 
