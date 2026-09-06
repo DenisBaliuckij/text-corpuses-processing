@@ -36,7 +36,7 @@ def resolve_and_substitute(text: str, mark: bool = False) -> Tuple[str, List[Sub
         head_span = cluster[0]
         antecedent_text = head_span.text
 
-        for mention_span in cluster[1:]:
+        for mention_span in list(cluster)[1:]:
             start = mention_span.start_char
             end = mention_span.end_char
             original = mention_span.text
