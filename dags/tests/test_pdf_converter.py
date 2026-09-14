@@ -2,6 +2,7 @@ import sys
 import os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
+import io
 from unittest.mock import patch, MagicMock
 import pdfConverter
 
@@ -75,3 +76,29 @@ def test_none_page_text_handled():
         result = pdfConverter.run_conversion()
 
     assert result == 1
+
+
+def test_config_enables_docling_table_recognition():
+    """table_primary must be explicitly set to a real backend, same as every
+    other subsystem in this override block -- left at the PipelineConfig
+    default ("stub", a genuine no-op recognizer) meant every conversion
+    silently produced zero table content. Reproduced live: 0/10 sampled
+    arxiv conversions had any [TABLE N] block, despite several explicitly
+    referencing tables by number in their prose."""
+    io_mock = io.BytesIO(b"%PDF-1.4 fake pdf bytes")
+
+    captured_cfg = {}
+
+    def fake_run(pdf_path, out_dir, config=None):
+        captured_cfg["cfg"] = config
+        return MagicMock()
+
+    with patch('pdfConverter.LatexRepository.get_next_to_convert', side_effect=['arxiv/paper.pdf', None, None, None]), \
+         patch('pdfConverter.ftpConnector.getFile', return_value=io_mock), \
+         patch('pdfConverter.run', side_effect=fake_run), \
+         patch('pdfConverter.linearize', return_value="text"), \
+         patch('pdfConverter.ftpConnector.storeFile'), \
+         patch('pdfConverter.LatexRepository.save_location'):
+        pdfConverter.run_conversion()
+
+    assert captured_cfg["cfg"].table_primary == "docling"
