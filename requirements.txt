@@ -19,3 +19,4 @@ ollama
 pytesseract
 pix2tex
 sentencepiece
+docling
