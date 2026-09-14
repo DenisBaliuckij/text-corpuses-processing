@@ -48,9 +48,21 @@ def test_dag_default_params_match_original_ten_article_sample():
 def test_only_embed_units_uses_gpu():
     import semantic_graph_articles_dag
 
-    for task_id in ("extract_sentences", "chunk_sentences", "build_graph"):
+    for task_id in ("chunk_sentences", "build_graph"):
         command = semantic_graph_articles_dag.dag.get_task(task_id).command
         assert " false scripts/" in command, f"{task_id} should run CPU-only"
 
     embed_command = semantic_graph_articles_dag.dag.get_task("embed_units").command
     assert " true scripts/" in embed_command
+
+
+def test_extract_sentences_runs_directly_on_host_not_via_watchdog():
+    """extract_article_sentences.py needs /opt/latex/arxiv, which
+    docker_run_watchdog.sh's container mounts don't include -- it must run
+    as a plain host command, not through the watchdog/langembed-ml wrapper
+    the other three tasks use."""
+    import semantic_graph_articles_dag
+
+    command = semantic_graph_articles_dag.dag.get_task("extract_sentences").command
+    assert "docker_run_watchdog.sh" not in command
+    assert "python3 scripts/extract_article_sentences.py" in command

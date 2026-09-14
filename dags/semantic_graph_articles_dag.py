@@ -49,9 +49,13 @@ with DAG(
         task_id="extract_sentences",
         ssh_conn_id=SSH_CONN_ID,
         cmd_timeout=None,
+        # Runs directly on the host (not via docker_run_watchdog.sh/langembed-ml):
+        # pure text parsing, no ML deps, and needs /opt/latex/arxiv which the
+        # watchdog's container mounts don't include -- same as the original
+        # semantic_graph/ prototype's "Stage 1 (host, no ML deps)" design.
         command=(
-            f"{WATCHDOG} {{{{ dag_run.run_id | replace(':', '-') | replace('+', '-') }}}}-extract "
-            "{{ params.timeout_extract_minutes }} false "
+            f"cd {LANGEMBED_BASE} && timeout "
+            "{{ (params.timeout_extract_minutes * 60) | int }} python3 "
             "scripts/extract_article_sentences.py "
             "--tex-dir {{ params.tex_dir }} "
             "--n-articles {{ params.n_articles }} --seed {{ params.seed }} "
