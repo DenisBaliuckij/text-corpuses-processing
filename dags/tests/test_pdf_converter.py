@@ -78,13 +78,19 @@ def test_none_page_text_handled():
     assert result == 1
 
 
-def test_config_enables_docling_table_recognition():
+def test_config_enables_ollama_table_recognition():
     """table_primary must be explicitly set to a real backend, same as every
     other subsystem in this override block -- left at the PipelineConfig
     default ("stub", a genuine no-op recognizer) meant every conversion
     silently produced zero table content. Reproduced live: 0/10 sampled
     arxiv conversions had any [TABLE N] block, despite several explicitly
-    referencing tables by number in their prose."""
+    referencing tables by number in their prose.
+
+    Uses "ollama" (a local model already running on this host), not
+    "docling" -- docling needs to download its layout/table-structure
+    model weights from HuggingFace on first use, which this host's
+    network cannot reach, and the deployment must not depend on any
+    external network call."""
     io_mock = io.BytesIO(b"%PDF-1.4 fake pdf bytes")
 
     captured_cfg = {}
@@ -101,4 +107,4 @@ def test_config_enables_docling_table_recognition():
          patch('pdfConverter.LatexRepository.save_location'):
         pdfConverter.run_conversion()
 
-    assert captured_cfg["cfg"].table_primary == "docling"
+    assert captured_cfg["cfg"].table_primary == "ollama"
