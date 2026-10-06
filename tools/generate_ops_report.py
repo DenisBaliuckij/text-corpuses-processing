@@ -14,7 +14,9 @@ import html
 import os
 import re
 import socket
+import json
 import subprocess
+from pathlib import Path
 import sys
 from datetime import datetime, timedelta, timezone
 
@@ -366,6 +368,8 @@ def get_disk_stats() -> list[dict]:
     drives = [
         {'device': 'sda', 'label': 'sda — ОС, FTP, подкачка', 'mount': '/'},
         {'device': 'nvme0n1', 'label': 'nvme0n1 — mssql + Docker root', 'mount': '/mnt/nvme-mssql'},
+        # added 2026-09-25: 20 TB HDD for the text corpus (grammar-harvester, DocumentCatalog output)
+        {'device': 'sdb', 'label': 'sdb — корпус текстов (20 ТБ)', 'mount': '/mnt/text-corpus'},
     ]
 
     for d in drives:
@@ -389,7 +393,7 @@ def get_disk_stats() -> list[dict]:
         device_lines = {}
         for line in iostat_out.splitlines():
             parts = line.split()
-            if parts and parts[0] in ('sda', 'nvme0n1'):
+            if parts and parts[0] in ('sda', 'nvme0n1', 'sdb'):
                 device_lines[parts[0]] = parts  # last occurrence wins = 2nd sample
         for d in drives:
             parts = device_lines.get(d['device'])
@@ -418,16 +422,22 @@ def get_disk_stats() -> list[dict]:
 # carries output_dir - added 2026-08-13 alongside a proxy-fallback fix for
 # grammarwatch/lsp-scraper/elp-scraper/glottolog (see their own scripts' db_proxy
 # usage) after several were found IP-blocked or silently stalled on some hosts.
+# Since 2026-10-04 grammarwatch/lsp/elp/glottolog/twirpx write through Docker overlay
+# volumes (grammar-dl-*): the old NVMe dir is the read-only lower layer (frozen),
+# new files land in the upper layer on the 20 TB drive. Such entries list both
+# dirs; files are merged by relative path (a copied-up file counts once).
+TWIRPX_DOWNLOAD_DIRS = ('/home/s939/twirpx_scraper/downloads', '/mnt/text-corpus/corpus/twirpx')
+
 GRAMMAR_CONTAINERS = [
-    {'name': 'grammarwatch', 'output_dir': '/home/s939/grammarwatch/pdf_grammars',
+    {'name': 'grammarwatch', 'output_dir': ('/home/s939/grammarwatch/pdf_grammars', '/mnt/text-corpus/corpus/grammarwatch'),
      'source': 'Zotero-группа lang-science grammars'},
-    {'name': 'lsp-scraper', 'output_dir': '/home/s939/parsing_lsp/lsp_grammars',
+    {'name': 'lsp-scraper', 'output_dir': ('/home/s939/parsing_lsp/lsp_grammars', '/mnt/text-corpus/corpus/lsp'),
      'source': 'langsci-press.org'},
-    {'name': 'elp-scraper', 'output_dir': '/home/s939/parsing_elp/elp_grammars',
+    {'name': 'elp-scraper', 'output_dir': ('/home/s939/parsing_elp/elp_grammars', '/mnt/text-corpus/corpus/elp'),
      'source': 'endangeredlanguages.com'},
-    {'name': 'glottolog', 'output_dir': '/home/s939/glottolog/ia_grammars_all',
+    {'name': 'glottolog', 'output_dir': ('/home/s939/glottolog/ia_grammars_all', '/mnt/text-corpus/corpus/internet_archive'),
      'source': 'archive.org (по списку языков Glottolog)'},
-    {'name': 'twirpx-scraper', 'output_dir': '/home/s939/twirpx_scraper/downloads',
+    {'name': 'twirpx-scraper', 'output_dir': TWIRPX_DOWNLOAD_DIRS,
      'source': 'twirpx.com (реплика 1/8, каталог общий для всех реплик)'},
     {'name': 'twirpx-scraper-2', 'output_dir': None, 'source': 'twirpx.com (реплика 2/8)'},
     {'name': 'twirpx-scraper-3', 'output_dir': None, 'source': 'twirpx.com (реплика 3/8)'},
@@ -436,19 +446,40 @@ GRAMMAR_CONTAINERS = [
     {'name': 'twirpx-scraper-6', 'output_dir': None, 'source': 'twirpx.com (реплика 6/8)'},
     {'name': 'twirpx-scraper-7', 'output_dir': None, 'source': 'twirpx.com (реплика 7/8)'},
     {'name': 'twirpx-scraper-8', 'output_dir': None, 'source': 'twirpx.com (реплика 8/8)'},
+    # added 2026-09-25: open-access grammars on the 20 TB drive, one folder per language
+    {'name': 'grammar-harvester', 'output_dir': '/mnt/text-corpus/corpus/grammars',
+     'source': 'библиография Glottolog + OpenAlex, Zenodo, Europeana, OAPEN (только открытый доступ)'},
 ]
 
 
-def _count_files(path: str) -> int | None:
+def _as_dirs(path: str | tuple[str, ...]) -> tuple[str, ...]:
+    return (path,) if isinstance(path, str) else tuple(path)
+
+
+def _merged_files(path: str | tuple[str, ...], extra: tuple[str, ...] = ()) -> set[str] | None:
+    """Relative paths of files across all layers of path. None if no layer could
+    be listed; a missing upper/lower layer alone is tolerated."""
+    files: set[str] = set()
+    ok = False
+    for d in _as_dirs(path):
+        try:
+            out = subprocess.run(
+                ['find', d, '-type', 'f', *extra, '-printf', '%P\n'],
+                capture_output=True, text=True, timeout=20,
+            )
+        except (subprocess.SubprocessError, OSError):
+            continue
+        if out.returncode == 0 or out.stdout:
+            ok = True
+        files.update(out.stdout.splitlines())
+    return files if ok else None
+
+
+def _count_files(path: str | tuple[str, ...]) -> int | None:
     """None (rendered as "н/д") on any failure - a missing/unreadable directory
     shouldn't break report generation for every other container's row."""
-    try:
-        out = subprocess.run(
-            ['find', path, '-type', 'f'], capture_output=True, text=True, timeout=20,
-        ).stdout
-        return len(out.splitlines())
-    except (subprocess.SubprocessError, OSError):
-        return None
+    files = _merged_files(path)
+    return len(files) if files is not None else None
 
 
 def get_grammar_containers() -> list[dict]:
@@ -502,14 +533,7 @@ def get_grammar_pdf_totals() -> dict:
             continue
         seen_dirs.add(d)
         total_files += _count_files(d) or 0
-        try:
-            out = subprocess.run(
-                ['find', d, '-type', 'f', '-mmin', '-1440'],
-                capture_output=True, text=True, timeout=20,
-            ).stdout
-            recent_24h += len(out.splitlines())
-        except (subprocess.SubprocessError, OSError):
-            pass
+        recent_24h += len(_merged_files(d, ('-mmin', '-1440')) or ())
     return {'total_files': total_files, 'recent_24h': recent_24h, 'sources': len(seen_dirs)}
 
 
@@ -539,27 +563,31 @@ def get_twirpx_details() -> dict:
         except OSError:
             continue
 
-    folders: list[tuple[str, datetime]] = []
-    try:
-        out = subprocess.run(
-            ['find', TWIRPX_DOWNLOADS_DIR, '-mindepth', '1', '-maxdepth', '1', '-type', 'd',
-             '-printf', '%f\t%T@\n'],
-            capture_output=True, text=True, timeout=20,
-        ).stdout
+    latest: dict[str, datetime] = {}
+    for d in TWIRPX_DOWNLOAD_DIRS:
+        try:
+            out = subprocess.run(
+                ['find', d, '-mindepth', '1', '-maxdepth', '1', '-type', 'd',
+                 '-printf', '%f\t%T@\n'],
+                capture_output=True, text=True, timeout=20,
+            ).stdout
+        except (subprocess.SubprocessError, OSError):
+            continue
         for line in out.splitlines():
             parts = line.split('\t')
             if len(parts) == 2:
                 try:
-                    folders.append((parts[0], datetime.fromtimestamp(float(parts[1]), tz=timezone.utc)))
+                    ts = datetime.fromtimestamp(float(parts[1]), tz=timezone.utc)
                 except ValueError:
                     continue
-    except (subprocess.SubprocessError, OSError):
-        pass
+                if parts[0] not in latest or ts > latest[parts[0]]:
+                    latest[parts[0]] = ts
+    folders = list(latest.items())
 
     return {
         'languages_completed': len(completed_languages),
         'folders_created': len(folders),
-        'files_downloaded': _count_files(TWIRPX_DOWNLOADS_DIR),
+        'files_downloaded': _count_files(TWIRPX_DOWNLOAD_DIRS),
         'recent_folders': sorted(folders, key=lambda x: x[1], reverse=True)[:12],
     }
 
@@ -694,10 +722,105 @@ def meter(label: str, used: float, total: float, unit: str, warn_pct: float = 80
             f'<span class="meter-value">{pct:.0f}%</span></div>')
 
 
+CATALOG_CONTAINERS = [
+    ('catalog-prep', 'регистрация, распаковка архивов, конвертация в PDF, извлечение текста (CPU)'),
+    ('catalog-classify', 'классификация локальной моделью: категория, языки, описываемый язык, аннотация (GPU)'),
+    ('catalog-resolve', 'второй проход: язык Glottolog для грамматик/словарей без языка, выбор моделью из кандидатов (GPU, раз в час)'),
+    ('grammar-harvester', 'сбор грамматик открытого доступа (библиография Glottolog, OpenAlex, Zenodo, OAPEN, Europeana)'),
+    ('grammar-harvester-2', 'сбор грамматик: ANU Open Research, ScholarSpace, Rice, UMass, HAL'),
+    ('corpus-browser', 'веб-каталог и REST API /corpus/ (поиск, скачивание; пароль)'),
+]
+CATALOG_DESCRIBES = "('grammar','grammar_sketch','pedagogical_grammar','dictionary','phrasebook')"
+COVERAGE_SUMMARY = '/mnt/text-corpus/corpus/reports/language_coverage_summary.json'
+HARVESTER_STATE = '/mnt/text-corpus/corpus/grammars/state.sqlite'
+
+
+def get_catalog_stats() -> dict:
+    """DocumentCatalog (added 2026-09-25): every document on the server, converted to PDF where
+    needed and classified by the local LLM. Counts per status / category, conversions, languages."""
+    stats = {'status': [], 'categories': [], 'conversions': [], 'total': None, 'described_languages': None,
+             'containers': [], 'classified': None, 'queue': None, 'rate_1h': None, 'rate_3h': None, 'size_gb': None,
+             'desc': None, 'resolve': None, 'top_languages': [], 'pubtypes': [], 'hourly': [], 'coverage': None,
+             'harvester': [], 'harvester_files': None, 'confidence': None}
+    try:
+        stats['status'] = run_sqlcmd("select Status, count(*) from DocumentCatalog.dbo.Documents group by Status "
+                                     "order by count(*) desc")
+        stats['categories'] = run_sqlcmd(
+            "select c.NameRu, count(*) from DocumentCatalog.dbo.Documents d join DocumentCatalog.dbo.Categories c "
+            "on c.CategoryCode=d.CategoryCode where d.Status='classified' and d.ConvertedFromDocumentId is null "
+            "group by c.NameRu order by count(*) desc")
+        stats['conversions'] = run_sqlcmd("select Method, Status, count(*) from DocumentCatalog.dbo.Conversions "
+                                          "group by Method, Status order by count(*) desc")
+        total = run_sqlcmd("select count(*) from DocumentCatalog.dbo.Documents")
+        stats['total'] = int(total[0][0]) if total else None
+        langs = run_sqlcmd("select count(distinct DescribedGlottocode) from DocumentCatalog.dbo.Documents "
+                           "where DescribedGlottocode is not null")
+        stats['described_languages'] = int(langs[0][0]) if langs else None
+        D = 'DocumentCatalog.dbo.Documents'
+        row = run_sqlcmd(
+            f"select sum(case when Status='classified' and ConvertedFromDocumentId is null then 1 else 0 end), "
+            f"sum(case when Status in ('text_extracted','registered') then 1 else 0 end), "
+            f"sum(case when ClassifiedAt > dateadd(hour,-1,getutcdate()) and ConvertedFromDocumentId is null then 1 else 0 end), "
+            f"sum(case when ClassifiedAt > dateadd(hour,-3,getutcdate()) and ConvertedFromDocumentId is null then 1 else 0 end), "
+            f"sum(cast(SizeBytes as bigint))/1073741824 from {D}")[0]
+        stats['classified'], stats['queue'], stats['rate_1h'], stats['rate_3h'], stats['size_gb'] = (int(x or 0) for x in row)
+        stats['desc'] = [int(x or 0) for x in run_sqlcmd(
+            f"select count(*), sum(case when DescribedGlottocode is not null then 1 else 0 end), "
+            f"count(distinct DescribedGlottocode) from {D} where Status='classified' and CategoryCode in {CATALOG_DESCRIBES} "
+            f"and ConvertedFromDocumentId is null")[0]]
+        stats['resolve'] = [int(x or 0) for x in run_sqlcmd(
+            f"select sum(case when ClassifiedBy like '%lang-resolve%' then 1 else 0 end), "
+            f"sum(case when ResolveAttemptedAt is not null and DescribedGlottocode is null then 1 else 0 end), "
+            f"sum(case when ResolveAttemptedAt is null and DescribedGlottocode is null then 1 else 0 end) "
+            f"from {D} where Status='classified' and CategoryCode in {CATALOG_DESCRIBES} and ConvertedFromDocumentId is null")[0]]
+        stats['top_languages'] = run_sqlcmd(
+            f"select top 15 max(DescribedLanguage), DescribedGlottocode, count(*) from {D} where DescribedGlottocode is not null "
+            f"and ConvertedFromDocumentId is null group by DescribedGlottocode order by count(*) desc")
+        stats['pubtypes'] = run_sqlcmd(
+            f"select isnull(PublicationType,'-'), count(*) from {D} where Status='classified' and ConvertedFromDocumentId is null "
+            f"group by PublicationType order by count(*) desc")
+        stats['hourly'] = run_sqlcmd(
+            f"select convert(varchar(13), dateadd(hour,3,ClassifiedAt), 120), count(*) from {D} "
+            f"where ClassifiedAt > dateadd(hour,-12,getutcdate()) and ConvertedFromDocumentId is null "
+            f"group by convert(varchar(13), dateadd(hour,3,ClassifiedAt), 120) order by 1")
+        stats['confidence'] = [int(x or 0) for x in run_sqlcmd(
+            f"select sum(case when CategoryConfidence>=0.8 then 1 else 0 end), sum(case when CategoryConfidence<0.5 then 1 else 0 end) "
+            f"from {D} where Status='classified' and ConvertedFromDocumentId is null")[0]]
+    except (subprocess.SubprocessError, OSError, ValueError, IndexError):
+        pass
+    try:
+        stats['coverage'] = json.loads(Path(COVERAGE_SUMMARY).read_text(encoding='utf-8'))
+    except (OSError, ValueError):
+        pass
+    try:
+        import sqlite3
+        con = sqlite3.connect(f'file:{HARVESTER_STATE}?mode=ro', uri=True, timeout=10)
+        stats['harvester'] = con.execute("select substr(key,1,instr(key,':')-1), status, count(*) from seen "
+                                         "group by 1, 2 order by 1, 3 desc").fetchall()
+        con.close()
+        g = Path(HARVESTER_STATE).parent
+        pdfs = list(g.rglob('*.pdf'))
+        stats['harvester_files'] = {
+            'total': len(pdfs), 'bytes': sum(f.stat().st_size for f in pdfs),
+            'folders': sum(1 for d in g.iterdir() if d.is_dir() and not d.name.startswith('_')),
+            'unmatched': sum(1 for f in pdfs if f.parent.name == '_unmatched')}
+    except Exception:
+        pass
+    for name, role in CATALOG_CONTAINERS:
+        try:
+            out = subprocess.run(['docker', 'inspect', name, '--format', '{{.State.Status}}\t{{.RestartCount}}'],
+                                 capture_output=True, text=True, timeout=15).stdout.strip()
+        except subprocess.TimeoutExpired:
+            out = ''
+        status, restarts = out.split('\t') if out else ('нет данных', '-')
+        stats['containers'].append({'name': name, 'role': role, 'status': status, 'restarts': restarts})
+    return stats
+
+
 def render(sources, grand_total, dag_runs, ftp_stats, host, containers,
            shodhganga_up, paused_states, generated_at, inserted_24h, disks,
            pdf_downloading_runs, recent_throughput, grammar_containers, twirpx_details,
-           grammar_pdf_totals) -> str:
+           grammar_pdf_totals, catalog_stats=None) -> str:
     total_24h_downloads = sum(f['recent_24h'] for f in ftp_stats.values())
     total_dag_success = sum(d['success'] for d in dag_runs.values())
     total_dag_failed = sum(d['failed'] for d in dag_runs.values())
@@ -773,6 +896,66 @@ def render(sources, grand_total, dag_runs, ftp_stats, host, containers,
             f'<td class="num">{html.escape(str(s["restarts"]))}</td>'
             f'<td class="num">{files_cell}</td></tr>'
         )
+
+    catalog_stats = catalog_stats or {'status': [], 'categories': [], 'conversions': [], 'total': None,
+                                      'described_languages': None, 'containers': []}
+    catalog_container_rows = ''.join(
+        f'<tr><td class="name">{html.escape(c["name"])}</td><td>{html.escape(c["role"])}</td>'
+        f'<td>{"<span class=\'pill good\'>работает</span>" if c["status"] == "running" else html.escape(c["status"])}</td>'
+        f'<td class="num">{html.escape(str(c["restarts"]))}</td></tr>' for c in catalog_stats['containers'])
+    catalog_status_rows = ''.join(f'<tr><td class="name">{html.escape(r[0])}</td><td class="num">{int(r[1]):,}</td></tr>'
+                                  for r in catalog_stats['status'] if len(r) == 2)
+    catalog_category_rows = ''.join(f'<tr><td class="name">{html.escape(r[0])}</td><td class="num">{int(r[1]):,}</td></tr>'
+                                    for r in catalog_stats['categories'] if len(r) == 2)
+    catalog_conversion_rows = ''.join(
+        f'<tr><td class="name">{html.escape(r[0])}</td><td>{html.escape(r[1])}</td><td class="num">{int(r[2]):,}</td></tr>'
+        for r in catalog_stats['conversions'] if len(r) == 3)
+    catalog_total = f"{catalog_stats['total']:,}" if catalog_stats['total'] is not None else 'н/д'
+    cs = catalog_stats
+    rate_h = (cs.get('rate_3h') or 0) / 3
+    cat_classified = f"{cs['classified']:,}" if cs.get('classified') is not None else 'н/д'
+    cat_queue = f"{cs['queue']:,}" if cs.get('queue') is not None else 'н/д'
+    cat_eta = f"≈{cs['queue'] / rate_h / 24:.1f} сут. при текущей скорости" if cs.get('queue') and rate_h else 'скорость ещё не измерена'
+    cat_rate = f"{rate_h:,.0f}" if rate_h else '0'
+    cat_rate_sub = f"за последний час: {cs.get('rate_1h') or 0:,}; ≈{rate_h / 60:.0f} в минуту"
+    cat_size = f"{cs['size_gb']:,} ГБ" if cs.get('size_gb') is not None else ''
+    desc = cs.get('desc') or [0, 0, 0]
+    res = cs.get('resolve') or [0, 0, 0]
+    desc_pct = f"{100 * desc[1] / desc[0]:.1f}%" if desc[0] else '—'
+    conf = cs.get('confidence') or [0, 0]
+    cov = cs.get('coverage') or {}
+    llm = cov.get('llm_catalog') or {}
+    cov_docs = f"{cov['languages_with_documents']:,} ({cov['pct_with_documents']}%)" if cov else 'н/д'
+    cov_gram = f"{cov['languages_with_confirmed_grammar']:,} ({cov['pct_with_confirmed_grammar']}%)" if cov else 'н/д'
+    cov_total = f"{cov.get('languages_in_glottolog_list', 0):,}"
+    catalog_top_rows = ''.join(
+        f'<tr><td class="name">{html.escape(r[0])}</td><td>{html.escape(r[1])}</td><td class="num">{int(r[2]):,}</td></tr>'
+        for r in cs.get('top_languages', []) if len(r) == 3)
+    catalog_pubtype_rows = ''.join(f'<tr><td class="name">{html.escape(r[0])}</td><td class="num">{int(r[1]):,}</td></tr>'
+                                   for r in cs.get('pubtypes', []) if len(r) == 2)
+    hourly = [(r[0][-2:] + ':00', int(r[1])) for r in cs.get('hourly', []) if len(r) == 2]
+    hmax = max([c for _, c in hourly] or [1])
+    catalog_hourly_rows = ''.join(
+        f'<tr><td class="name">{h}</td><td><div style="background:var(--accent);height:0.6rem;border-radius:3px;'
+        f'width:{max(2, 100 * c / hmax):.0f}%"></div></td><td class="num">{c:,}</td></tr>' for h, c in hourly)
+    coverage_rows = ''.join(
+        f'<tr><td class="name">{html.escape(k)}</td><td class="num">{v["languages"]:,}</td>'
+        f'<td class="num">{v["with_documents"]:,} ({v["pct_documents"]}%)</td>'
+        f'<td class="num">{v["with_confirmed_grammar"]:,} ({v["pct_grammar"]}%)</td></tr>'
+        for k, v in (cov.get('by_endangerment') or {}).items())
+    coverage_source_rows = ''.join(f'<tr><td class="name">{html.escape(k)}</td><td class="num">{v:,}</td></tr>'
+                                   for k, v in (cov.get('per_source_languages') or {}).items())
+    HARV_LABELS = {'downloaded': 'скачано', 'no_open_pdf': 'нет открытого PDF', 'failed': 'ошибка загрузки',
+                   'skip_high_resource': 'высокоресурсный язык', 'skip_existing_scraper': 'есть у существующих скраперов',
+                   'duplicate_existing': 'дубликат файла скраперов', 'duplicate': 'дубликат', 'skip_llm': 'отклонено моделью',
+                   'skip_same_doi': 'тот же DOI', 'skip_not_target': 'не грамматика', 'rejected': 'отклонено проверкой'}
+    harvester_rows = ''.join(
+        f'<tr><td class="name">{html.escape(src)}</td><td>{html.escape(HARV_LABELS.get(st, st))}</td>'
+        f'<td class="num">{int(n):,}</td></tr>' for src, st, n in cs.get('harvester', []))
+    hf = cs.get('harvester_files') or {}
+    harvester_files = (f"{hf['total']:,} PDF, {hf['bytes'] / 1e9:.2f} ГБ; папок языков — {hf['folders']}; "
+                       f"в _unmatched — {hf['unmatched']}") if hf else 'н/д'
+    catalog_langs = f"{catalog_stats['described_languages']:,}" if catalog_stats['described_languages'] is not None else 'н/д'
 
     twirpx_folder_rows = []
     for lang, mtime in twirpx_details['recent_folders']:
@@ -895,7 +1078,7 @@ def render(sources, grand_total, dag_runs, ftp_stats, host, containers,
   </section>
 
   <section>
-    <h2>Диски <span class="section-note">sda vs nvme0n1 — ёмкость и загрузка в реальном времени (iostat)</span></h2>
+    <h2>Диски <span class="section-note">sda, nvme0n1, sdb — ёмкость и загрузка в реальном времени (iostat)</span></h2>
     <div class="table-wrap"><table>
       <thead><tr><th>Диск</th><th class="num">Занято / Всего</th><th>Загрузка (util%)</th><th class="num">Задержка записи</th></tr></thead>
       <tbody>{''.join(disk_rows)}</tbody>
@@ -952,6 +1135,69 @@ def render(sources, grand_total, dag_runs, ftp_stats, host, containers,
   </section>
 
   <section>
+    <h2>Каталог документов <span class="section-note">DocumentCatalog (MSSQL) — все документы сервера, PDF-конвертация, классификация локальной моделью</span></h2>
+    <div class="stat-grid">
+      <div class="stat-card"><span class="stat-label">Документов в каталоге</span><span class="stat-value">{catalog_total}</span><span class="stat-sub">уникальных по SHA-256; {cat_size}</span></div>
+      <div class="stat-card"><span class="stat-label">Классифицировано</span><span class="stat-value accent">{cat_classified}</span><span class="stat-sub">уверенность ≥ 0,8: {conf[0]:,}; &lt; 0,5: {conf[1]:,}</span></div>
+      <div class="stat-card"><span class="stat-label">Скорость, док./час</span><span class="stat-value">{cat_rate}</span><span class="stat-sub">{cat_rate_sub}</span></div>
+      <div class="stat-card"><span class="stat-label">В очереди</span><span class="stat-value">{cat_queue}</span><span class="stat-sub">{cat_eta}; ELP и корпус pdf_downloading ещё не зарегистрированы</span></div>
+      <div class="stat-card"><span class="stat-label">Описываемых языков</span><span class="stat-value accent">{catalog_langs}</span><span class="stat-sub">язык установлен у {desc[1]:,} из {desc[0]:,} грамматик/словарей/учебников ({desc_pct})</span></div>
+      <div class="stat-card"><span class="stat-label">Покрытие Glottolog ({cov_total} яз.)</span><span class="stat-value">{cov_gram}</span><span class="stat-sub">с грамматикой; с документами — {cov_docs}; моделью добавлено +{llm.get('languages_added_with_confirmed_grammar', 0):,}</span></div>
+    </div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Контейнер</th><th>Задача</th><th>Статус</th><th class="num">Перезапуски</th></tr></thead>
+      <tbody>{catalog_container_rows}</tbody>
+    </table></div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Этап обработки</th><th class="num">Документов</th></tr></thead>
+      <tbody>{catalog_status_rows}</tbody>
+    </table></div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Классифицировано по часам (МСК, 12 ч)</th><th style="width:55%"></th><th class="num">Документов</th></tr></thead>
+      <tbody>{catalog_hourly_rows}</tbody>
+    </table></div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Категория (классифицированные)</th><th class="num">Документов</th></tr></thead>
+      <tbody>{catalog_category_rows}</tbody>
+    </table></div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Тип публикации</th><th class="num">Документов</th></tr></thead>
+      <tbody>{catalog_pubtype_rows}</tbody>
+    </table></div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Определение описываемого языка</th><th class="num">Документов</th></tr></thead>
+      <tbody>
+        <tr><td class="name">Грамматики, очерки, учебники, словари, разговорники</td><td class="num">{desc[0]:,}</td></tr>
+        <tr><td class="name">— язык Glottolog установлен</td><td class="num">{desc[1]:,}</td></tr>
+        <tr><td class="name">— из них вторым проходом (catalog-resolve)</td><td class="num">{res[0]:,}</td></tr>
+        <tr><td class="name">— не сопоставимы с одним языком (семьи, праязыки, сравнительные работы)</td><td class="num">{res[1]:,}</td></tr>
+        <tr><td class="name">— ждут второго прохода</td><td class="num">{res[2]:,}</td></tr>
+      </tbody>
+    </table></div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Чаще всего описываемые языки</th><th>Glottocode</th><th class="num">Документов</th></tr></thead>
+      <tbody>{catalog_top_rows}</tbody>
+    </table></div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Покрытие языков: статус угрозы</th><th class="num">Языков</th><th class="num">С документами</th><th class="num">С грамматикой</th></tr></thead>
+      <tbody>{coverage_rows}</tbody>
+    </table></div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Покрытие: источник (llm_catalog — языки, найденные локальной моделью)</th><th class="num">Языков</th></tr></thead>
+      <tbody>{coverage_source_rows}</tbody>
+    </table></div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>grammar-harvester: этап</th><th>Результат</th><th class="num">Записей</th></tr></thead>
+      <tbody>{harvester_rows}
+        <tr><td class="name">на диске</td><td colspan="2">{harvester_files}</td></tr></tbody>
+    </table></div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Конвертация</th><th>Результат</th><th class="num">Файлов</th></tr></thead>
+      <tbody>{catalog_conversion_rows}</tbody>
+    </table></div>
+  </section>
+
+  <section>
     <h2>Требует внимания</h2>
     <div class="issue-list">{issue_html}</div>
   </section>
@@ -981,11 +1227,12 @@ def main():
     inserted_24h = get_24h_inserted()
     pdf_downloading_runs = get_pdf_downloading_runs()
     recent_throughput = get_recent_throughput()
+    catalog_stats = get_catalog_stats()
 
     output = render(sources, grand_total, dag_runs, ftp_stats, host, containers,
                      shodhganga_up, paused_states, generated_at, inserted_24h, disks,
                      pdf_downloading_runs, recent_throughput, grammar_containers, twirpx_details,
-                     grammar_pdf_totals)
+                     grammar_pdf_totals, catalog_stats)
 
     with open(REPORT_OUTPUT_PATH, 'w', encoding='utf-8') as f:
         f.write(output)
