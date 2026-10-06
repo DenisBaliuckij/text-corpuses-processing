@@ -422,16 +422,22 @@ def get_disk_stats() -> list[dict]:
 # carries output_dir - added 2026-08-13 alongside a proxy-fallback fix for
 # grammarwatch/lsp-scraper/elp-scraper/glottolog (see their own scripts' db_proxy
 # usage) after several were found IP-blocked or silently stalled on some hosts.
+# Since 2026-10-04 grammarwatch/lsp/elp/glottolog/twirpx write through Docker overlay
+# volumes (grammar-dl-*): the old NVMe dir is the read-only lower layer (frozen),
+# new files land in the upper layer on the 20 TB drive. Such entries list both
+# dirs; files are merged by relative path (a copied-up file counts once).
+TWIRPX_DOWNLOAD_DIRS = ('/home/s939/twirpx_scraper/downloads', '/mnt/text-corpus/corpus/twirpx')
+
 GRAMMAR_CONTAINERS = [
-    {'name': 'grammarwatch', 'output_dir': '/home/s939/grammarwatch/pdf_grammars',
+    {'name': 'grammarwatch', 'output_dir': ('/home/s939/grammarwatch/pdf_grammars', '/mnt/text-corpus/corpus/grammarwatch'),
      'source': 'Zotero-группа lang-science grammars'},
-    {'name': 'lsp-scraper', 'output_dir': '/home/s939/parsing_lsp/lsp_grammars',
+    {'name': 'lsp-scraper', 'output_dir': ('/home/s939/parsing_lsp/lsp_grammars', '/mnt/text-corpus/corpus/lsp'),
      'source': 'langsci-press.org'},
-    {'name': 'elp-scraper', 'output_dir': '/home/s939/parsing_elp/elp_grammars',
+    {'name': 'elp-scraper', 'output_dir': ('/home/s939/parsing_elp/elp_grammars', '/mnt/text-corpus/corpus/elp'),
      'source': 'endangeredlanguages.com'},
-    {'name': 'glottolog', 'output_dir': '/home/s939/glottolog/ia_grammars_all',
+    {'name': 'glottolog', 'output_dir': ('/home/s939/glottolog/ia_grammars_all', '/mnt/text-corpus/corpus/internet_archive'),
      'source': 'archive.org (по списку языков Glottolog)'},
-    {'name': 'twirpx-scraper', 'output_dir': '/home/s939/twirpx_scraper/downloads',
+    {'name': 'twirpx-scraper', 'output_dir': TWIRPX_DOWNLOAD_DIRS,
      'source': 'twirpx.com (реплика 1/8, каталог общий для всех реплик)'},
     {'name': 'twirpx-scraper-2', 'output_dir': None, 'source': 'twirpx.com (реплика 2/8)'},
     {'name': 'twirpx-scraper-3', 'output_dir': None, 'source': 'twirpx.com (реплика 3/8)'},
@@ -446,16 +452,34 @@ GRAMMAR_CONTAINERS = [
 ]
 
 
-def _count_files(path: str) -> int | None:
+def _as_dirs(path: str | tuple[str, ...]) -> tuple[str, ...]:
+    return (path,) if isinstance(path, str) else tuple(path)
+
+
+def _merged_files(path: str | tuple[str, ...], extra: tuple[str, ...] = ()) -> set[str] | None:
+    """Relative paths of files across all layers of path. None if no layer could
+    be listed; a missing upper/lower layer alone is tolerated."""
+    files: set[str] = set()
+    ok = False
+    for d in _as_dirs(path):
+        try:
+            out = subprocess.run(
+                ['find', d, '-type', 'f', *extra, '-printf', '%P\n'],
+                capture_output=True, text=True, timeout=20,
+            )
+        except (subprocess.SubprocessError, OSError):
+            continue
+        if out.returncode == 0 or out.stdout:
+            ok = True
+        files.update(out.stdout.splitlines())
+    return files if ok else None
+
+
+def _count_files(path: str | tuple[str, ...]) -> int | None:
     """None (rendered as "н/д") on any failure - a missing/unreadable directory
     shouldn't break report generation for every other container's row."""
-    try:
-        out = subprocess.run(
-            ['find', path, '-type', 'f'], capture_output=True, text=True, timeout=20,
-        ).stdout
-        return len(out.splitlines())
-    except (subprocess.SubprocessError, OSError):
-        return None
+    files = _merged_files(path)
+    return len(files) if files is not None else None
 
 
 def get_grammar_containers() -> list[dict]:
@@ -509,14 +533,7 @@ def get_grammar_pdf_totals() -> dict:
             continue
         seen_dirs.add(d)
         total_files += _count_files(d) or 0
-        try:
-            out = subprocess.run(
-                ['find', d, '-type', 'f', '-mmin', '-1440'],
-                capture_output=True, text=True, timeout=20,
-            ).stdout
-            recent_24h += len(out.splitlines())
-        except (subprocess.SubprocessError, OSError):
-            pass
+        recent_24h += len(_merged_files(d, ('-mmin', '-1440')) or ())
     return {'total_files': total_files, 'recent_24h': recent_24h, 'sources': len(seen_dirs)}
 
 
@@ -546,27 +563,31 @@ def get_twirpx_details() -> dict:
         except OSError:
             continue
 
-    folders: list[tuple[str, datetime]] = []
-    try:
-        out = subprocess.run(
-            ['find', TWIRPX_DOWNLOADS_DIR, '-mindepth', '1', '-maxdepth', '1', '-type', 'd',
-             '-printf', '%f\t%T@\n'],
-            capture_output=True, text=True, timeout=20,
-        ).stdout
+    latest: dict[str, datetime] = {}
+    for d in TWIRPX_DOWNLOAD_DIRS:
+        try:
+            out = subprocess.run(
+                ['find', d, '-mindepth', '1', '-maxdepth', '1', '-type', 'd',
+                 '-printf', '%f\t%T@\n'],
+                capture_output=True, text=True, timeout=20,
+            ).stdout
+        except (subprocess.SubprocessError, OSError):
+            continue
         for line in out.splitlines():
             parts = line.split('\t')
             if len(parts) == 2:
                 try:
-                    folders.append((parts[0], datetime.fromtimestamp(float(parts[1]), tz=timezone.utc)))
+                    ts = datetime.fromtimestamp(float(parts[1]), tz=timezone.utc)
                 except ValueError:
                     continue
-    except (subprocess.SubprocessError, OSError):
-        pass
+                if parts[0] not in latest or ts > latest[parts[0]]:
+                    latest[parts[0]] = ts
+    folders = list(latest.items())
 
     return {
         'languages_completed': len(completed_languages),
         'folders_created': len(folders),
-        'files_downloaded': _count_files(TWIRPX_DOWNLOADS_DIR),
+        'files_downloaded': _count_files(TWIRPX_DOWNLOAD_DIRS),
         'recent_folders': sorted(folders, key=lambda x: x[1], reverse=True)[:12],
     }
 
