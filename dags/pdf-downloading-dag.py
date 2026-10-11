@@ -30,6 +30,7 @@ with DAG(
     @task(execution_timeout=timedelta(hours=3))
     def downloadPdfFiles():
         # -*- coding: utf-8 -*-
+        import re
         import requests
         import time
         import uuid
@@ -104,6 +105,18 @@ with DAG(
                     filename = 'arxiv3/'
                 if 'pubmed' in url:
                     filename = 'pubmed3/'
+                # PMC article pages (www.ncbi.nlm.nih.gov/pmc/articles/PMC<id>/pdf/, found by
+                # download_pubmed) answer this host with a reCAPTCHA / "Preparing to download" page,
+                # and the URL has no 'pubmed' in it, so until 2026-10-11 those pages were stored in
+                # the FTP root as .pdf. The article text is in the PMC open-data bucket (as for
+                # download_medical_pmc): fetch it from there, directly, into pubmed3/.
+                pmc_match = re.match(r'https?://(?:www\.ncbi\.nlm\.nih\.gov/pmc|pmc\.ncbi\.nlm\.nih\.gov)'
+                                     r'/articles/(PMC\d+)', url)
+                if pmc_match:
+                    pmcid = pmc_match.group(1)
+                    url = f'https://pmc-oa-opendata.s3.amazonaws.com/{pmcid}.1/{pmcid}.1.txt'
+                    filename = 'pubmed3/'
+                    ext = 'txt'
                 if 'lenin' in url:
                     filename = 'cyberleninka3/'
                 if 'springer' in url:
@@ -194,8 +207,10 @@ with DAG(
                            'https': proxieProtocol.strip() + '://' + str(proxieIp).strip() + ':' + str(proxiePort)}
                 # Open archives (PMC S3, Wellcome IIIF, Internet Archive, Gutenberg) don't block this
                 # host, but the pool proxies fail on their large files (Wellcome builds 100 MB PDFs on
-                # the fly), so medical/science downloads go direct; CyberLeninka keeps the proxy.
-                if (medical_match or science_match) and folder != 'cyberleninka':
+                # the fly), so medical/science downloads go direct; CyberLeninka keeps the proxy, and
+                # so does Gutenberg - www.gutenberg.org is unreachable from this host without one.
+                if pmc_match or ((medical_match or science_match) and folder != 'cyberleninka'
+                                 and not folder.startswith('gutenberg')):
                     proxies = None
                     proxieIp = None
                 print(proxies)
@@ -207,9 +222,10 @@ with DAG(
                                     proxies=proxies,
                                     timeout=30,
                                     stream=True)
-                if (response.status_code == 200 and (medical_match or science_match) and ext != 'html'
+                if (response.status_code == 200 and ext != 'html'
+                        and (medical_match or science_match or pmc_match or 'ncbi.nlm.nih.gov' in url)
                         and 'text/html' in response.headers.get('Content-Type', '')):
-                    if folder == 'cyberleninka':
+                    if (medical_match or science_match) and folder == 'cyberleninka':
                         # a captcha page served to this proxy: leave the URL unsaved - its claim
                         # expires after 5 minutes and it is retried through another proxy
                         print(f'[pdf_downloading] HTML page via proxy, retrying later: {initialUrl}')
