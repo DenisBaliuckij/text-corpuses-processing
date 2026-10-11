@@ -436,7 +436,11 @@ GRAMMAR_CONTAINERS = [
     {'name': 'elp-scraper', 'output_dir': ('/home/s939/parsing_elp/elp_grammars', '/mnt/text-corpus/corpus/elp'),
      'source': 'endangeredlanguages.com'},
     {'name': 'glottolog', 'output_dir': ('/home/s939/glottolog/ia_grammars_all', '/mnt/text-corpus/corpus/internet_archive'),
-     'source': 'archive.org (по списку языков Glottolog)'},
+     'source': 'archive.org (по списку языков Glottolog), шард 1/4, каталог общий для 4 шардов'},
+    # since 2026-10-07 four instances, each taking every 4th language (IA_SHARD=k/4), sharing one download dir
+    {'name': 'glottolog-2', 'output_dir': None, 'source': 'archive.org, шард 2/4'},
+    {'name': 'glottolog-3', 'output_dir': None, 'source': 'archive.org, шард 3/4'},
+    {'name': 'glottolog-4', 'output_dir': None, 'source': 'archive.org, шард 4/4'},
     {'name': 'twirpx-scraper', 'output_dir': TWIRPX_DOWNLOAD_DIRS,
      'source': 'twirpx.com (реплика 1/8, каталог общий для всех реплик)'},
     {'name': 'twirpx-scraper-2', 'output_dir': None, 'source': 'twirpx.com (реплика 2/8)'},
@@ -461,7 +465,17 @@ def _merged_files(path: str | tuple[str, ...], extra: tuple[str, ...] = ()) -> s
     be listed; a missing upper/lower layer alone is tolerated."""
     files: set[str] = set()
     ok = False
-    for d in _as_dirs(path):
+    dirs = _as_dirs(path)
+    # overlay whiteouts: a lower-layer file removed through the merged view (e.g. moved to quarantine) is a 0/0
+    # character device in the upper layer -- the lower file still exists on disk but is no longer in the volume
+    hidden: set[str] = set()
+    if len(dirs) == 2:
+        try:
+            hidden = set(subprocess.run(['find', dirs[1], '-type', 'c', '-printf', '%P\n'], capture_output=True,
+                                        text=True, timeout=20).stdout.splitlines())
+        except (subprocess.SubprocessError, OSError):
+            pass
+    for i, d in enumerate(dirs):
         try:
             out = subprocess.run(
                 ['find', d, '-type', 'f', *extra, '-printf', '%P\n'],
@@ -471,7 +485,8 @@ def _merged_files(path: str | tuple[str, ...], extra: tuple[str, ...] = ()) -> s
             continue
         if out.returncode == 0 or out.stdout:
             ok = True
-        files.update(out.stdout.splitlines())
+        listed = out.stdout.splitlines()
+        files.update(listed if i else (f for f in listed if f not in hidden))
     return files if ok else None
 
 
