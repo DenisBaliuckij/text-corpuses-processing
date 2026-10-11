@@ -1158,7 +1158,7 @@ def render(sources, grand_total, dag_runs, ftp_stats, host, containers,
         <tr><td class="name">Свободно</td><td>{guard_free}</td></tr>
         <tr><td class="name">Состояние</td><td><span class="pill {guard_class}">{guard_state}</span></td></tr>
         <tr><td class="name">Пороги</td><td>&lt; {guard_heavy_min:.0f}% - пауза Wellcome и Internet Archive (медицина/наука); &lt; {guard_all_min:.0f}% - pdf_downloading не загружает ничего</td></tr>
-        <tr><td class="name">Прокси</td><td>медицина/наука из открытых архивов (PMC, Wellcome, IA, Gutenberg) - напрямую; CyberLeninka - через пул прокси, капча - повтор позже</td></tr>
+        <tr><td class="name">Прокси</td><td>медицина/наука из открытых архивов (PMC, Wellcome, IA) - напрямую; Gutenberg (gutenberg.org недоступен с сервера напрямую) и CyberLeninka - через пул прокси, капча CyberLeninka - повтор позже</td></tr>
       </tbody>
     </table></div>"""
 
