@@ -114,7 +114,34 @@ FTP_FOLDERS = [
     'gutenberg/science', 'gutenberg/social_science', 'gutenberg/law',
     'gutenberg/history', 'gutenberg/philosophy_religion', 'gutenberg/poetry_drama',
     'gutenberg/children', 'gutenberg/literature',
+    # Added 2026-10-11: new downloads go to '<source>3/' folders on the 20 TB drive
+    # (sdb, /mnt/text-corpus/ftp_pdfs/<source>3, symlinked from the FTP root /opt/pdfs)
+    # because nvme0n1 ran full; the '<source>2/' folders above stay where they are.
+    'arxiv3', 'pubmed3', 'cyberleninka3', 'springer3',
+    'gujarati3/literature', 'gujarati3/news', 'gujarati3/science_natural',
+    'gujarati3/science_social', 'gujarati3/law', 'gujarati3/official',
+    'gujarati3/dictionary',
+    'russian3/science', 'russian3/literature_modern', 'russian3/literature_classic',
+    'russian3/news', 'russian3/law', 'russian3/social_science',
+    'english3/science', 'english3/literature_modern', 'english3/literature_classic',
+    'english3/news', 'english3/law', 'english3/social_science',
+    'gutenberg3/science', 'gutenberg3/social_science', 'gutenberg3/law',
+    'gutenberg3/history', 'gutenberg3/philosophy_religion', 'gutenberg3/poetry_drama',
+    'gutenberg3/children', 'gutenberg3/literature',
 ]
+
+FTP_ROOT = '/opt/pdfs'  # FileZilla mount point of the 'airflow' FTP user
+
+
+def ftp_folder_disk(folder: str) -> str:
+    """Physical drive of an FTP folder, resolved through the /opt/pdfs symlinks
+    (folders get moved between drives with rsync + symlink, so this is not static)."""
+    real = os.path.realpath(os.path.join(FTP_ROOT, folder))
+    if real.startswith('/mnt/text-corpus/'):
+        return 'sdb'
+    if real.startswith('/mnt/nvme-mssql/'):
+        return 'nvme0n1'
+    return 'sda'
 
 DAG_IDS = [
     'download_arxiv_scientific', 'download_pubmed', 'download_semantic_scholar',
@@ -320,9 +347,10 @@ def get_ftp_stats() -> dict:
                 if facts.get('modify', '')[:14] >= cutoff:
                     recent_files += 1
             folders[folder] = {'files': total_files, 'size_mb': total_size / 1024 / 1024,
-                                'recent_24h': recent_files}
+                                'recent_24h': recent_files, 'disk': ftp_folder_disk(folder)}
         except ftplib.error_perm:
-            folders[folder] = {'files': 0, 'size_mb': 0.0, 'recent_24h': 0}
+            folders[folder] = {'files': 0, 'size_mb': 0.0, 'recent_24h': 0,
+                               'disk': ftp_folder_disk(folder)}
     ftp.quit()
     return folders
 
@@ -367,9 +395,9 @@ def get_disk_stats() -> list[dict]:
     """
     drives = [
         {'device': 'sda', 'label': 'sda — ОС, FTP, подкачка', 'mount': '/'},
-        {'device': 'nvme0n1', 'label': 'nvme0n1 — mssql + Docker root', 'mount': '/mnt/nvme-mssql'},
+        {'device': 'nvme0n1', 'label': 'nvme0n1 — mssql + Docker root + загрузки Airflow до 2026-10-11 (*2)', 'mount': '/mnt/nvme-mssql'},
         # added 2026-09-25: 20 TB HDD for the text corpus (grammar-harvester, DocumentCatalog output)
-        {'device': 'sdb', 'label': 'sdb — корпус текстов (20 ТБ)', 'mount': '/mnt/text-corpus'},
+        {'device': 'sdb', 'label': 'sdb — корпус текстов + загрузки Airflow с 2026-10-11 (*3) (20 ТБ)', 'mount': '/mnt/text-corpus'},
     ]
 
     for d in drives:
@@ -872,7 +900,8 @@ def render(sources, grand_total, dag_runs, ftp_stats, host, containers,
     ftp_rows = []
     for folder, f in sorted(ftp_stats.items(), key=lambda kv: -kv[1]['size_mb']):
         ftp_rows.append(
-            f'<tr><td class="name">{html.escape(folder)}</td><td class="num">{f["files"]:,}</td>'
+            f'<tr><td class="name">{html.escape(folder)}</td><td>{html.escape(f.get("disk", ""))}</td>'
+            f'<td class="num">{f["files"]:,}</td>'
             f'<td class="num">{f["size_mb"]:,.1f} MB</td><td class="num">{f["recent_24h"]:,}</td></tr>'
         )
 
@@ -1079,9 +1108,15 @@ def render(sources, grand_total, dag_runs, ftp_stats, host, containers,
   <section>
     <h2>Хранилище на FTP</h2>
     <div class="table-wrap"><table>
-      <thead><tr><th>Папка</th><th class="num">Файлов</th><th class="num">Размер</th><th class="num">Добавлено (24ч)</th></tr></thead>
+      <thead><tr><th>Папка</th><th>Диск</th><th class="num">Файлов</th><th class="num">Размер</th><th class="num">Добавлено (24ч)</th></tr></thead>
       <tbody>{''.join(ftp_rows)}</tbody>
     </table></div>
+    <p style="font-size:0.82rem;color:var(--text-dim);max-width:70ch;">
+      С 2026-10-11 новые загрузки Airflow пишутся в папки &lt;источник&gt;3/ на диске sdb
+      (/mnt/text-corpus/ftp_pdfs), т.к. nvme0n1 заполнился до 100%. Папки &lt;источник&gt;2/
+      остаются на nvme0n1, кроме перенесённых на sdb (rsync + симлинк); путь на FTP не меняется.
+      Колонка «Диск» определяется по реальному пути папки.
+    </p>
   </section>
 
   <section>
