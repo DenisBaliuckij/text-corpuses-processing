@@ -37,6 +37,7 @@ with DAG(
         from repositories.pdf_repository import PdfRepository
         from repositories.proxy_repository import ProxyRepository
         from gutenbergDownloader import parse_download_tag
+        from medicalDownloader import parse_medical_tag
         import ftpConnector
         from ftpConnector import ftpConnector
 
@@ -156,6 +157,11 @@ with DAG(
                 if gutenberg_match:
                     folder, ext, url = gutenberg_match
                     filename = f'gutenberg3/{folder}/'
+                # medical sources (added 2026-10-11, see medicalDownloader.py)
+                medical_match = parse_medical_tag(url)
+                if medical_match:
+                    folder, ext, url = medical_match
+                    filename = f'medical3/{folder}/'
                 filename += str(uuid.uuid4())
                 filename += '.' + ext
                 proxieResult = ProxyRepository.get_latest()
@@ -173,7 +179,11 @@ with DAG(
                                     proxies=proxies,
                                     timeout=30,
                                     stream=True)
-                if response.status_code == 200:
+                if (response.status_code == 200 and medical_match and ext != 'html'
+                        and 'text/html' in response.headers.get('Content-Type', '')):
+                    print(f'[pdf_downloading] HTML page instead of a .{ext} file, marking NA: {initialUrl}')
+                    PdfRepository.save_location(initialUrl, "NA")
+                elif response.status_code == 200:
                     # stream=True + response.raw (not response.content) so the file
                     # body is never fully buffered in process memory - it's read in
                     # chunks straight into the FTP upload (ftpConnector.storeFile ->

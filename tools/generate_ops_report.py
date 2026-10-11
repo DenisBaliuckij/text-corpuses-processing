@@ -71,6 +71,13 @@ SOURCE_PATTERNS = [
     ('pubmed', '%ncbi%'),
     ('semantic_scholar', '%semanticscholar%'),
     ('springer', '%springer%'),
+    # medical sources (2026-10-11): URLs tagged '#medical_<folder>.<ext>' (dags/medicalDownloader.py);
+    # medical_cyberleninka URLs are also counted under 'cyberleninka' (%lenin%)
+    ('medical_pmc', '%#medical_pmc%'),
+    ('medical_wellcome', '%#medical_wellcome%'),
+    ('medical_ia', '%#medical_ia%'),
+    ('medical_gutenberg', '%#medical_gutenberg%'),
+    ('medical_cyberleninka', '%#medical_cyberleninka%'),
 ]
 
 # Updated 2026-08-19: pdf-downloading-dag.py's downloadOne() writes into
@@ -128,6 +135,9 @@ FTP_FOLDERS = [
     'gutenberg3/science', 'gutenberg3/social_science', 'gutenberg3/law',
     'gutenberg3/history', 'gutenberg3/philosophy_religion', 'gutenberg3/poetry_drama',
     'gutenberg3/children', 'gutenberg3/literature',
+    # medical sources (2026-10-11), also on sdb
+    'medical3/pmc', 'medical3/pmc_historical', 'medical3/wellcome', 'medical3/ia',
+    'medical3/gutenberg', 'medical3/cyberleninka',
 ]
 
 FTP_ROOT = '/opt/pdfs'  # FileZilla mount point of the 'airflow' FTP user
@@ -159,6 +169,8 @@ DAG_IDS = [
     'download_gutenberg_law', 'download_gutenberg_history',
     'download_gutenberg_philosophy_religion', 'download_gutenberg_poetry_drama',
     'download_gutenberg_children', 'download_gutenberg_literature',
+    'download_medical_pmc', 'download_medical_wellcome', 'download_medical_ia',
+    'download_medical_gutenberg', 'download_medical_cyberleninka',
 ]
 
 
