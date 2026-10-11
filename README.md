@@ -492,7 +492,7 @@ New downloads land on the 20 TB drive (`/mnt/text-corpus`, the `<source>3/` FTP 
 - below **5%** free, `pdf_downloading` downloads nothing;
 - a missing or stale (>2 h) status file pauses the large-file sources only.
 
-Medical/science downloads from the open archives (PMC S3, Wellcome IIIF, Internet Archive, Gutenberg) go direct, without a proxy. CyberLeninka still goes through the proxy pool; when a proxy is served a captcha page, the URL is retried later instead of being marked NA.
+Medical/science downloads from the open archives (PMC S3, Wellcome IIIF, Internet Archive) go direct, without a proxy. Gutenberg (www.gutenberg.org is unreachable from the host without one) and CyberLeninka still go through the proxy pool; for CyberLeninka, when a proxy is served a captcha page, the URL is retried later instead of being marked NA.
 
 ## Database
 
@@ -1066,7 +1066,7 @@ python dags/tools/generate_metrics_report.py <job_id>
 - при свободном месте ниже **5%** `pdf_downloading` ничего не загружает;
 - если файл статуса отсутствует или устарел (более 2 ч), приостанавливаются только источники с крупными файлами.
 
-Медицинские и научные файлы из открытых архивов (PMC S3, Wellcome IIIF, Internet Archive, Gutenberg) загружаются напрямую, без прокси. CyberLeninka по-прежнему идёт через пул прокси; если прокси получил страницу с капчей, URL повторяется позже, а не помечается как NA.
+Медицинские и научные файлы из открытых архивов (PMC S3, Wellcome IIIF, Internet Archive) загружаются напрямую, без прокси. Gutenberg (www.gutenberg.org недоступен с сервера без прокси) и CyberLeninka по-прежнему идут через пул прокси; для CyberLeninka: если прокси получил страницу с капчей, URL повторяется позже, а не помечается как NA.
 
 ## База данных
 

@@ -194,8 +194,10 @@ with DAG(
                            'https': proxieProtocol.strip() + '://' + str(proxieIp).strip() + ':' + str(proxiePort)}
                 # Open archives (PMC S3, Wellcome IIIF, Internet Archive, Gutenberg) don't block this
                 # host, but the pool proxies fail on their large files (Wellcome builds 100 MB PDFs on
-                # the fly), so medical/science downloads go direct; CyberLeninka keeps the proxy.
-                if (medical_match or science_match) and folder != 'cyberleninka':
+                # the fly), so medical/science downloads go direct; CyberLeninka keeps the proxy, and
+                # so does Gutenberg - www.gutenberg.org is unreachable from this host without one.
+                if ((medical_match or science_match) and folder != 'cyberleninka'
+                        and not folder.startswith('gutenberg')):
                     proxies = None
                     proxieIp = None
                 print(proxies)
