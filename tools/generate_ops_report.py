@@ -252,6 +252,25 @@ def get_disk_guard() -> dict | None:
     }
 
 
+def get_quarantine_stats() -> list[dict]:
+    """Files moved out of the corpus into quarantine (DocumentCatalog.QuarantinedFiles, the
+    catalog's own convention), grouped by reason. 2026-10-11: first use for the 31,452 PubMed
+    captcha pages that had been saved as .pdf in the FTP root."""
+    rows = run_sqlcmd("""SELECT Reason, COUNT(*), CONVERT(varchar(16), MAX(MovedAt), 120)
+        FROM DocumentCatalog.dbo.QuarantinedFiles GROUP BY Reason ORDER BY COUNT(*) DESC""", timeout=120)
+    return [{'reason': r[0], 'files': int(r[1]), 'last': r[2]} for r in rows if len(r) == 3]
+
+
+def get_root_saves_24h() -> int:
+    """Downloads of the last 24 h stored directly in the FTP root (no source folder): how the
+    PubMed captcha pages piled up unnoticed until 2026-10-11 - every source has a folder now."""
+    rows = run_sqlcmd("""SELECT COUNT(*) FROM TextCorpuses.dbo.PdfDocuments
+        WHERE ClaimedAt > DATEADD(hour, -24, SYSUTCDATETIME())
+          AND LocationInFileSystem NOT IN ('', 'NA') AND CHARINDEX('/', LocationInFileSystem) = 0""",
+                      timeout=240)
+    return int(rows[0][0]) if rows and rows[0] and rows[0][0].isdigit() else -1
+
+
 def run_sqlcmd(query: str, timeout: int = 60) -> list[list[str]]:
     cmd = [
         'docker', 'exec', MSSQL_CONTAINER,
@@ -957,7 +976,8 @@ def get_catalog_stats() -> dict:
 def render(sources, grand_total, dag_runs, ftp_stats, host, containers,
            shodhganga_up, paused_states, generated_at, inserted_24h, disks,
            pdf_downloading_runs, recent_throughput, grammar_containers, twirpx_details,
-           grammar_pdf_totals, catalog_stats=None, disk_guard=None) -> str:
+           grammar_pdf_totals, catalog_stats=None, disk_guard=None, quarantine=None,
+           root_saves_24h=0) -> str:
     total_24h_downloads = sum(f['recent_24h'] for f in ftp_stats.values())
     total_dag_success = sum(d['success'] for d in dag_runs.values())
     total_dag_failed = sum(d['failed'] for d in dag_runs.values())
@@ -1133,6 +1153,10 @@ def render(sources, grand_total, dag_runs, ftp_stats, host, containers,
         issues.append(('warn', f"Wellcome / Internet Archive приостановлены ({disk_guard['free_pct']:.1f}% свободно на sdb)",
                         f"Ниже {disk_guard['heavy_min']:.0f}% свободного места источники с крупными файлами не ищут и не загружают новые файлы; "
                         'остальные источники продолжают работу. Возобновится автоматически, когда место освободится.'))
+    if root_saves_24h and root_saves_24h > 0:
+        issues.append(('warn', f'{root_saves_24h} загрузок за 24ч сохранено в корень FTP',
+                        'URL не подошёл ни под одно правило папки в pdf_downloading (так копились страницы капчи '
+                        'PubMed до 2026-10-11). Проверьте источник этих URL в PdfDocuments.'))
     swap_pct = (host['swap_used_gb'] / host['swap_total_gb'] * 100) if host['swap_total_gb'] else 0
     if swap_pct >= 50:
         issues.append(('warn', f'Повышенное использование подкачки (swap) ({swap_pct:.0f}%)',
@@ -1161,6 +1185,22 @@ def render(sources, grand_total, dag_runs, ftp_stats, host, containers,
         <tr><td class="name">Прокси</td><td>медицина/наука из открытых архивов (PMC, Wellcome, IA) - напрямую; Gutenberg (gutenberg.org недоступен с сервера напрямую) и CyberLeninka - через пул прокси, капча CyberLeninka - повтор позже</td></tr>
       </tbody>
     </table></div>"""
+
+    q_rows = ''.join(
+        f"<tr><td class=\"name\">{html.escape(q['reason'])}</td><td class=\"num\">{q['files']:,}</td>"
+        f"<td class=\"num\">{q['last']}</td></tr>"
+        for q in (quarantine or [])
+    ) or '<tr><td class="name" colspan="3">нет файлов в карантине</td></tr>'
+    quarantine_html = f"""<div class="table-wrap"><table>
+      <thead><tr><th>Карантин (DocumentCatalog.QuarantinedFiles)</th><th class="num">Файлов</th><th class="num">Перемещено</th></tr></thead>
+      <tbody>{q_rows}</tbody>
+    </table></div>
+    <p style="font-size:0.82rem;color:var(--text-dim);max-width:70ch;">
+      PubMed/PMC: с 2026-10-11 статьи берутся текстом из открытого бакета PMC (pmc-oa-opendata, PMC&lt;id&gt;.1.txt)
+      в pubmed3/ — www.ncbi.nlm.nih.gov отдаёт серверу капчу. 31&nbsp;452 сохранённые ранее страницы капчи/ошибок
+      (в корне FTP как .pdf) перенесены в /mnt/text-corpus/quarantine/pubmed_captcha_20261011/, их статьи
+      поставлены на повторную загрузку из бакета. Загрузок в корень FTP за 24ч: {root_saves_24h if root_saves_24h >= 0 else '—'}.
+    </p>"""
 
     issue_html = ''.join(
         f'<div class="issue {level}"><div class="issue-head"><span class="issue-title">{html.escape(title)}</span></div>'
@@ -1245,6 +1285,7 @@ def render(sources, grand_total, dag_runs, ftp_stats, host, containers,
       Колонка «Диск» определяется по реальному пути папки.
     </p>
     {disk_guard_html}
+    {quarantine_html}
   </section>
 
   <section>
@@ -1407,11 +1448,13 @@ def main():
     recent_throughput = get_recent_throughput()
     catalog_stats = get_catalog_stats()
     disk_guard = get_disk_guard()
+    quarantine = get_quarantine_stats()
+    root_saves_24h = get_root_saves_24h()
 
     output = render(sources, grand_total, dag_runs, ftp_stats, host, containers,
                      shodhganga_up, paused_states, generated_at, inserted_24h, disks,
                      pdf_downloading_runs, recent_throughput, grammar_containers, twirpx_details,
-                     grammar_pdf_totals, catalog_stats, disk_guard)
+                     grammar_pdf_totals, catalog_stats, disk_guard, quarantine, root_saves_24h)
 
     with open(REPORT_OUTPUT_PATH, 'w', encoding='utf-8') as f:
         f.write(output)
