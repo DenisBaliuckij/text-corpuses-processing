@@ -71,6 +71,16 @@ SOURCE_PATTERNS = [
     ('pubmed', '%ncbi%'),
     ('semantic_scholar', '%semanticscholar%'),
     ('springer', '%springer%'),
+    # medical sources (2026-10-11): URLs tagged '#medical_<folder>.<ext>' (dags/medicalDownloader.py);
+    # medical_cyberleninka URLs are also counted under 'cyberleninka' (%lenin%)
+    ('medical_pmc', '%#medical_pmc%'),
+    ('medical_wellcome', '%#medical_wellcome%'),
+    ('medical_ia', '%#medical_ia%'),
+    ('medical_gutenberg', '%#medical_gutenberg%'),
+    ('medical_cyberleninka', '%#medical_cyberleninka%'),
+    # multilingual science sources (2026-10-11), dags/scienceDownloader.py
+    ('science_ia', '%#science_ia%'),
+    ('science_gutenberg', '%#science_gutenberg%'),
 ]
 
 # Updated 2026-08-19: pdf-downloading-dag.py's downloadOne() writes into
@@ -114,7 +124,88 @@ FTP_FOLDERS = [
     'gutenberg/science', 'gutenberg/social_science', 'gutenberg/law',
     'gutenberg/history', 'gutenberg/philosophy_religion', 'gutenberg/poetry_drama',
     'gutenberg/children', 'gutenberg/literature',
+    # Added 2026-10-11: new downloads go to '<source>3/' folders on the 20 TB drive
+    # (sdb, /mnt/text-corpus/ftp_pdfs/<source>3, symlinked from the FTP root /opt/pdfs)
+    # because nvme0n1 ran full; the '<source>2/' folders above stay where they are.
+    'arxiv3', 'pubmed3', 'cyberleninka3', 'springer3',
+    'gujarati3/literature', 'gujarati3/news', 'gujarati3/science_natural',
+    'gujarati3/science_social', 'gujarati3/law', 'gujarati3/official',
+    'gujarati3/dictionary',
+    'russian3/science', 'russian3/literature_modern', 'russian3/literature_classic',
+    'russian3/news', 'russian3/law', 'russian3/social_science',
+    'english3/science', 'english3/literature_modern', 'english3/literature_classic',
+    'english3/news', 'english3/law', 'english3/social_science',
+    'gutenberg3/science', 'gutenberg3/social_science', 'gutenberg3/law',
+    'gutenberg3/history', 'gutenberg3/philosophy_religion', 'gutenberg3/poetry_drama',
+    'gutenberg3/children', 'gutenberg3/literature',
+    # medical sources (2026-10-11), also on sdb
+    'medical3/pmc', 'medical3/pmc_historical', 'medical3/wellcome', 'medical3/ia',
+    'medical3/gutenberg', 'medical3/cyberleninka',
+    # multilingual science sources (2026-10-11): science3/<source>_<language>
+    'science3/gutenberg_ca',
+    'science3/gutenberg_da',
+    'science3/gutenberg_de',
+    'science3/gutenberg_eo',
+    'science3/gutenberg_es',
+    'science3/gutenberg_fi',
+    'science3/gutenberg_fr',
+    'science3/gutenberg_hu',
+    'science3/gutenberg_it',
+    'science3/gutenberg_la',
+    'science3/gutenberg_nl',
+    'science3/gutenberg_pl',
+    'science3/gutenberg_pt',
+    'science3/gutenberg_sv',
+    'science3/ia_ara',
+    'science3/ia_arm',
+    'science3/ia_ben',
+    'science3/ia_bul',
+    'science3/ia_chi',
+    'science3/ia_cze',
+    'science3/ia_dan',
+    'science3/ia_dut',
+    'science3/ia_fin',
+    'science3/ia_fre',
+    'science3/ia_geo',
+    'science3/ia_ger',
+    'science3/ia_gre',
+    'science3/ia_guj',
+    'science3/ia_heb',
+    'science3/ia_hin',
+    'science3/ia_hun',
+    'science3/ia_ita',
+    'science3/ia_jpn',
+    'science3/ia_kaz',
+    'science3/ia_kor',
+    'science3/ia_lat',
+    'science3/ia_mar',
+    'science3/ia_nor',
+    'science3/ia_per',
+    'science3/ia_pol',
+    'science3/ia_por',
+    'science3/ia_rum',
+    'science3/ia_rus',
+    'science3/ia_spa',
+    'science3/ia_swe',
+    'science3/ia_tam',
+    'science3/ia_tur',
+    'science3/ia_ukr',
+    'science3/ia_urd',
+    'science3/ia_uzb',
 ]
+
+FTP_ROOT = '/opt/pdfs'  # FileZilla mount point of the 'airflow' FTP user
+
+
+def ftp_folder_disk(folder: str) -> str:
+    """Physical drive of an FTP folder, resolved through the /opt/pdfs symlinks
+    (folders get moved between drives with rsync + symlink, so this is not static)."""
+    real = os.path.realpath(os.path.join(FTP_ROOT, folder))
+    if real.startswith('/mnt/text-corpus/'):
+        return 'sdb'
+    if real.startswith('/mnt/nvme-mssql/'):
+        return 'nvme0n1'
+    return 'sda'
 
 DAG_IDS = [
     'download_arxiv_scientific', 'download_pubmed', 'download_semantic_scholar',
@@ -132,10 +223,13 @@ DAG_IDS = [
     'download_gutenberg_law', 'download_gutenberg_history',
     'download_gutenberg_philosophy_religion', 'download_gutenberg_poetry_drama',
     'download_gutenberg_children', 'download_gutenberg_literature',
+    'download_medical_pmc', 'download_medical_wellcome', 'download_medical_ia',
+    'download_medical_gutenberg', 'download_medical_cyberleninka',
+    'download_science_ia', 'download_science_gutenberg',
 ]
 
 
-def run_sqlcmd(query: str) -> list[list[str]]:
+def run_sqlcmd(query: str, timeout: int = 60) -> list[list[str]]:
     cmd = [
         'docker', 'exec', MSSQL_CONTAINER,
         '/opt/mssql-tools18/bin/sqlcmd',
@@ -143,7 +237,7 @@ def run_sqlcmd(query: str) -> list[list[str]]:
         '-h', '-1', '-W', '-s', '|',
         '-Q', f'SET NOCOUNT ON; {query}',
     ]
-    result = subprocess.run(cmd, capture_output=True, text=True, timeout=60)
+    result = subprocess.run(cmd, capture_output=True, text=True, timeout=timeout)
     rows = []
     for line in result.stdout.splitlines():
         line = line.strip()
@@ -173,16 +267,20 @@ def get_source_breakdown() -> list[dict]:
     case_expr = 'CASE ' + ' '.join(
         f"WHEN PDFUrl LIKE '{pattern}' THEN '{name}'" for name, pattern in SOURCE_PATTERNS
     ) + " ELSE 'other' END"
+    # 2026-10-11: the CASE (one LIKE '%...%' per source over nvarchar(max) PDFUrl) is computed
+    # once in a derived table instead of twice (SELECT + GROUP BY); with the medical/science
+    # sources added the old form ran past the 60 s sqlcmd timeout and every report run failed.
     query = f"""
-        SELECT {case_expr} AS Source, COUNT(*) AS Total,
+        SELECT Source, COUNT(*) AS Total,
           SUM(CASE WHEN LocationInFileSystem NOT IN ('','NA') THEN 1 ELSE 0 END) AS Downloaded,
           SUM(CASE WHEN LocationInFileSystem = '' THEN 1 ELSE 0 END) AS Pending,
           SUM(CASE WHEN LocationInFileSystem = 'NA' THEN 1 ELSE 0 END) AS NotAvailable
-        FROM TextCorpuses.dbo.PdfDocuments
-        GROUP BY {case_expr}
+        FROM (SELECT {case_expr} AS Source, LocationInFileSystem
+              FROM TextCorpuses.dbo.PdfDocuments) AS t
+        GROUP BY Source
         ORDER BY Downloaded DESC;
     """
-    rows = run_sqlcmd(query)
+    rows = run_sqlcmd(query, timeout=240)
     return [
         {'source': r[0], 'total': int(r[1]), 'downloaded': int(r[2]),
          'pending': int(r[3]), 'na': int(r[4])}
@@ -320,9 +418,10 @@ def get_ftp_stats() -> dict:
                 if facts.get('modify', '')[:14] >= cutoff:
                     recent_files += 1
             folders[folder] = {'files': total_files, 'size_mb': total_size / 1024 / 1024,
-                                'recent_24h': recent_files}
+                                'recent_24h': recent_files, 'disk': ftp_folder_disk(folder)}
         except ftplib.error_perm:
-            folders[folder] = {'files': 0, 'size_mb': 0.0, 'recent_24h': 0}
+            folders[folder] = {'files': 0, 'size_mb': 0.0, 'recent_24h': 0,
+                               'disk': ftp_folder_disk(folder)}
     ftp.quit()
     return folders
 
@@ -367,9 +466,9 @@ def get_disk_stats() -> list[dict]:
     """
     drives = [
         {'device': 'sda', 'label': 'sda — ОС, FTP, подкачка', 'mount': '/'},
-        {'device': 'nvme0n1', 'label': 'nvme0n1 — mssql + Docker root', 'mount': '/mnt/nvme-mssql'},
+        {'device': 'nvme0n1', 'label': 'nvme0n1 — mssql + Docker root + загрузки Airflow до 2026-10-11 (*2)', 'mount': '/mnt/nvme-mssql'},
         # added 2026-09-25: 20 TB HDD for the text corpus (grammar-harvester, DocumentCatalog output)
-        {'device': 'sdb', 'label': 'sdb — корпус текстов (20 ТБ)', 'mount': '/mnt/text-corpus'},
+        {'device': 'sdb', 'label': 'sdb — корпус текстов + загрузки Airflow с 2026-10-11 (*3) (20 ТБ)', 'mount': '/mnt/text-corpus'},
     ]
 
     for d in drives:
@@ -436,7 +535,11 @@ GRAMMAR_CONTAINERS = [
     {'name': 'elp-scraper', 'output_dir': ('/home/s939/parsing_elp/elp_grammars', '/mnt/text-corpus/corpus/elp'),
      'source': 'endangeredlanguages.com'},
     {'name': 'glottolog', 'output_dir': ('/home/s939/glottolog/ia_grammars_all', '/mnt/text-corpus/corpus/internet_archive'),
-     'source': 'archive.org (по списку языков Glottolog)'},
+     'source': 'archive.org (по списку языков Glottolog), шард 1/4, каталог общий для 4 шардов'},
+    # since 2026-10-07 four instances, each taking every 4th language (IA_SHARD=k/4), sharing one download dir
+    {'name': 'glottolog-2', 'output_dir': None, 'source': 'archive.org, шард 2/4'},
+    {'name': 'glottolog-3', 'output_dir': None, 'source': 'archive.org, шард 3/4'},
+    {'name': 'glottolog-4', 'output_dir': None, 'source': 'archive.org, шард 4/4'},
     {'name': 'twirpx-scraper', 'output_dir': TWIRPX_DOWNLOAD_DIRS,
      'source': 'twirpx.com (реплика 1/8, каталог общий для всех реплик)'},
     {'name': 'twirpx-scraper-2', 'output_dir': None, 'source': 'twirpx.com (реплика 2/8)'},
@@ -461,7 +564,17 @@ def _merged_files(path: str | tuple[str, ...], extra: tuple[str, ...] = ()) -> s
     be listed; a missing upper/lower layer alone is tolerated."""
     files: set[str] = set()
     ok = False
-    for d in _as_dirs(path):
+    dirs = _as_dirs(path)
+    # overlay whiteouts: a lower-layer file removed through the merged view (e.g. moved to quarantine) is a 0/0
+    # character device in the upper layer -- the lower file still exists on disk but is no longer in the volume
+    hidden: set[str] = set()
+    if len(dirs) == 2:
+        try:
+            hidden = set(subprocess.run(['find', dirs[1], '-type', 'c', '-printf', '%P\n'], capture_output=True,
+                                        text=True, timeout=20).stdout.splitlines())
+        except (subprocess.SubprocessError, OSError):
+            pass
+    for i, d in enumerate(dirs):
         try:
             out = subprocess.run(
                 ['find', d, '-type', 'f', *extra, '-printf', '%P\n'],
@@ -471,7 +584,8 @@ def _merged_files(path: str | tuple[str, ...], extra: tuple[str, ...] = ()) -> s
             continue
         if out.returncode == 0 or out.stdout:
             ok = True
-        files.update(out.stdout.splitlines())
+        listed = out.stdout.splitlines()
+        files.update(listed if i else (f for f in listed if f not in hidden))
     return files if ok else None
 
 
@@ -857,7 +971,8 @@ def render(sources, grand_total, dag_runs, ftp_stats, host, containers,
     ftp_rows = []
     for folder, f in sorted(ftp_stats.items(), key=lambda kv: -kv[1]['size_mb']):
         ftp_rows.append(
-            f'<tr><td class="name">{html.escape(folder)}</td><td class="num">{f["files"]:,}</td>'
+            f'<tr><td class="name">{html.escape(folder)}</td><td>{html.escape(f.get("disk", ""))}</td>'
+            f'<td class="num">{f["files"]:,}</td>'
             f'<td class="num">{f["size_mb"]:,.1f} MB</td><td class="num">{f["recent_24h"]:,}</td></tr>'
         )
 
@@ -1064,9 +1179,15 @@ def render(sources, grand_total, dag_runs, ftp_stats, host, containers,
   <section>
     <h2>Хранилище на FTP</h2>
     <div class="table-wrap"><table>
-      <thead><tr><th>Папка</th><th class="num">Файлов</th><th class="num">Размер</th><th class="num">Добавлено (24ч)</th></tr></thead>
+      <thead><tr><th>Папка</th><th>Диск</th><th class="num">Файлов</th><th class="num">Размер</th><th class="num">Добавлено (24ч)</th></tr></thead>
       <tbody>{''.join(ftp_rows)}</tbody>
     </table></div>
+    <p style="font-size:0.82rem;color:var(--text-dim);max-width:70ch;">
+      С 2026-10-11 новые загрузки Airflow пишутся в папки &lt;источник&gt;3/ на диске sdb
+      (/mnt/text-corpus/ftp_pdfs), т.к. nvme0n1 заполнился до 100%. Папки &lt;источник&gt;2/
+      остаются на nvme0n1, кроме перенесённых на sdb (rsync + симлинк); путь на FTP не меняется.
+      Колонка «Диск» определяется по реальному пути папки.
+    </p>
   </section>
 
   <section>

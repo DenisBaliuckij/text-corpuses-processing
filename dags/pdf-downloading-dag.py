@@ -37,6 +37,9 @@ with DAG(
         from repositories.pdf_repository import PdfRepository
         from repositories.proxy_repository import ProxyRepository
         from gutenbergDownloader import parse_download_tag
+        from medicalDownloader import parse_medical_tag
+        from scienceDownloader import parse_science_tag
+        import diskGuard
         import ftpConnector
         from ftpConnector import ftpConnector
 
@@ -59,6 +62,18 @@ with DAG(
             ftpConnector.storeFile(filename, file)
             PdfRepository.save_location(initialUrl, filename)
 
+        # Free-space guard (2026-10-11, see diskGuard.py): nothing is downloaded when the 20 TB
+        # download disk is nearly full; the large-file sources stop earlier.
+        free_pct = diskGuard.free_pct()
+        if not diskGuard.all_allowed(free_pct):
+            print(f'[pdf_downloading] download disk {diskGuard.describe()} - below '
+                  f'{diskGuard.ALL_MIN_FREE_PCT}%, not downloading; backing off {QUEUE_EMPTY_BACKOFF_SECONDS}s')
+            time.sleep(QUEUE_EMPTY_BACKOFF_SECONDS)
+            return
+        heavy_allowed = diskGuard.heavy_allowed(free_pct)
+        if not heavy_allowed:
+            print(f'[pdf_downloading] download disk {diskGuard.describe()} - Wellcome/IA downloads paused')
+
         def downloadOne():
             # Returns whether a URL was actually claimed from the queue (True),
             # as opposed to the queue having nothing left to give out (False) -
@@ -80,82 +95,95 @@ with DAG(
                     # Left pending (not marked NA) so it resumes automatically
                     # once re-enabled.
                     return True
+                if not heavy_allowed and diskGuard.is_heavy_url(url):
+                    # left unsaved: the claim expires and the URL is downloaded once space is freed
+                    return True
                 filename = ""
                 ext = 'pdf'
                 if 'arxiv' in url:
-                    filename = 'arxiv2/'
+                    filename = 'arxiv3/'
                 if 'pubmed' in url:
-                    filename = 'pubmed2/'
+                    filename = 'pubmed3/'
                 if 'lenin' in url:
-                    filename = 'cyberleninka2/'
+                    filename = 'cyberleninka3/'
                 if 'springer' in url:
-                    filename = 'springer2/'
+                    filename = 'springer3/'
                     url = url.replace('/article', 'content/pdf')
                 if '#gujarati_literature' in url:
-                    filename = 'gujarati2/literature/'
+                    filename = 'gujarati3/literature/'
                     url = url.rsplit('#', 1)[0]
                 if '#gujarati_news' in url:
-                    filename = 'gujarati2/news/'
+                    filename = 'gujarati3/news/'
                     url = url.rsplit('#', 1)[0]
                 if '#gujarati_science_natural' in url:
-                    filename = 'gujarati2/science_natural/'
+                    filename = 'gujarati3/science_natural/'
                     url = url.rsplit('#', 1)[0]
                 if '#gujarati_science_social' in url:
-                    filename = 'gujarati2/science_social/'
+                    filename = 'gujarati3/science_social/'
                     url = url.rsplit('#', 1)[0]
                 if '#gujarati_law' in url:
-                    filename = 'gujarati2/law/'
+                    filename = 'gujarati3/law/'
                     url = url.rsplit('#', 1)[0]
                 if '#gujarati_official' in url:
-                    filename = 'gujarati2/official/'
+                    filename = 'gujarati3/official/'
                     url = url.rsplit('#', 1)[0]
                 if '#gujarati_dictionary' in url:
-                    filename = 'gujarati2/dictionary/'
+                    filename = 'gujarati3/dictionary/'
                     url = url.rsplit('#', 1)[0]
                 if '#russian_science' in url:
-                    filename = 'russian2/science/'
+                    filename = 'russian3/science/'
                     url = url.rsplit('#', 1)[0]
                 if '#russian_literature_modern' in url:
-                    filename = 'russian2/literature_modern/'
+                    filename = 'russian3/literature_modern/'
                     url = url.rsplit('#', 1)[0]
                 if '#russian_literature_classic' in url:
-                    filename = 'russian2/literature_classic/'
+                    filename = 'russian3/literature_classic/'
                     url = url.rsplit('#', 1)[0]
                 if '#russian_news' in url:
-                    filename = 'russian2/news/'
+                    filename = 'russian3/news/'
                     url = url.rsplit('#', 1)[0]
                 if '#russian_law' in url:
-                    filename = 'russian2/law/'
+                    filename = 'russian3/law/'
                     url = url.rsplit('#', 1)[0]
                 if '#russian_social_science' in url:
-                    filename = 'russian2/social_science/'
+                    filename = 'russian3/social_science/'
                     url = url.rsplit('#', 1)[0]
                 if '#english_science' in url:
-                    filename = 'english2/science/'
+                    filename = 'english3/science/'
                     url = url.rsplit('#', 1)[0]
                 if '#english_literature_modern' in url:
-                    filename = 'english2/literature_modern/'
+                    filename = 'english3/literature_modern/'
                     url = url.rsplit('#', 1)[0]
                 if '#english_literature_classic' in url:
-                    filename = 'english2/literature_classic/'
+                    filename = 'english3/literature_classic/'
                     url = url.rsplit('#', 1)[0]
                 if '#english_news' in url:
-                    filename = 'english2/news/'
+                    filename = 'english3/news/'
                     url = url.rsplit('#', 1)[0]
                 if '#english_law' in url:
-                    filename = 'english2/law/'
+                    filename = 'english3/law/'
                     url = url.rsplit('#', 1)[0]
                 if '#english_social_science' in url:
-                    filename = 'english2/social_science/'
+                    filename = 'english3/social_science/'
                     url = url.rsplit('#', 1)[0]
                 if '#customquery_' in url:
                     tag = url.rsplit('#customquery_', 1)[1]
-                    filename = f'custom2/{tag}/'
+                    filename = f'custom3/{tag}/'
                     url = url.rsplit('#', 1)[0]
                 gutenberg_match = parse_download_tag(url)
                 if gutenberg_match:
                     folder, ext, url = gutenberg_match
-                    filename = f'gutenberg2/{folder}/'
+                    filename = f'gutenberg3/{folder}/'
+                # medical sources (added 2026-10-11, see medicalDownloader.py)
+                medical_match = parse_medical_tag(url)
+                if medical_match:
+                    folder, ext, url = medical_match
+                    filename = f'medical3/{folder}/'
+                # multilingual science sources (added 2026-10-11, see scienceDownloader.py)
+                science_match = parse_science_tag(url)
+                if science_match:
+                    folder, ext, url = science_match
+                    filename = f'science3/{folder}/'
                 filename += str(uuid.uuid4())
                 filename += '.' + ext
                 proxieResult = ProxyRepository.get_latest()
@@ -164,6 +192,12 @@ with DAG(
                 proxieProtocol = proxieResult["proxieProtocol"]
                 proxies = {'http': proxieProtocol.strip() + '://' + str(proxieIp).strip() + ':' + str(proxiePort),
                            'https': proxieProtocol.strip() + '://' + str(proxieIp).strip() + ':' + str(proxiePort)}
+                # Open archives (PMC S3, Wellcome IIIF, Internet Archive, Gutenberg) don't block this
+                # host, but the pool proxies fail on their large files (Wellcome builds 100 MB PDFs on
+                # the fly), so medical/science downloads go direct; CyberLeninka keeps the proxy.
+                if (medical_match or science_match) and folder != 'cyberleninka':
+                    proxies = None
+                    proxieIp = None
                 print(proxies)
                 response = requests.get(url,
                                     data=None,
@@ -173,7 +207,16 @@ with DAG(
                                     proxies=proxies,
                                     timeout=30,
                                     stream=True)
-                if response.status_code == 200:
+                if (response.status_code == 200 and (medical_match or science_match) and ext != 'html'
+                        and 'text/html' in response.headers.get('Content-Type', '')):
+                    if folder == 'cyberleninka':
+                        # a captcha page served to this proxy: leave the URL unsaved - its claim
+                        # expires after 5 minutes and it is retried through another proxy
+                        print(f'[pdf_downloading] HTML page via proxy, retrying later: {initialUrl}')
+                    else:
+                        print(f'[pdf_downloading] HTML page instead of a .{ext} file, marking NA: {initialUrl}')
+                        PdfRepository.save_location(initialUrl, "NA")
+                elif response.status_code == 200:
                     # stream=True + response.raw (not response.content) so the file
                     # body is never fully buffered in process memory - it's read in
                     # chunks straight into the FTP upload (ftpConnector.storeFile ->
@@ -184,7 +227,7 @@ with DAG(
                     # 2026-07-19 zero-throughput report, §3.1/3.3).
                     response.raw.decode_content = True
                     storeFile(initialUrl, filename, response.raw)
-                    ProxyRepository.mark_success(str(proxieIp).strip())
+                    proxieIp and ProxyRepository.mark_success(str(proxieIp).strip())
 
                 else:
                     response = requests.get(url.replace('.pdf', '_reference.pdf'),
@@ -198,7 +241,7 @@ with DAG(
                     if response.status_code == 200:
                         response.raw.decode_content = True
                         storeFile(initialUrl, filename, response.raw)
-                        ProxyRepository.mark_success(str(proxieIp).strip())
+                        proxieIp and ProxyRepository.mark_success(str(proxieIp).strip())
                     else:
                         PdfRepository.save_location(initialUrl, "NA")
             except Exception as e:

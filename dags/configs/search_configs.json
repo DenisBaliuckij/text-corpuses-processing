@@ -2,7 +2,10 @@
   "arxiv": [
     {
       "query": "graph neural networks",
-      "categories": ["cs.LG", "cs.AI"],
+      "categories": [
+        "cs.LG",
+        "cs.AI"
+      ],
       "date_from": "2022-01-01",
       "open_access_only": true,
       "max_results": 500,
@@ -10,7 +13,10 @@
     },
     {
       "query": "large language model",
-      "categories": ["cs.CL", "cs.AI"],
+      "categories": [
+        "cs.CL",
+        "cs.AI"
+      ],
       "date_from": "2023-01-01",
       "max_results": 300,
       "repeat": false
@@ -35,7 +41,9 @@
   "semantic_scholar": [
     {
       "query": "knowledge graph reasoning",
-      "fields_of_study": ["Computer Science"],
+      "fields_of_study": [
+        "Computer Science"
+      ],
       "date_from": "2021-01-01",
       "open_access_only": true,
       "min_citations": 10,
@@ -44,7 +52,10 @@
     },
     {
       "query": "protein structure prediction",
-      "fields_of_study": ["Biology", "Computer Science"],
+      "fields_of_study": [
+        "Biology",
+        "Computer Science"
+      ],
       "date_from": "2020-01-01",
       "open_access_only": true,
       "min_citations": 5,
@@ -302,6 +313,3595 @@
       "query": "fiction",
       "max_results": 5000,
       "repeat": true
+    }
+  ],
+  "medical_pmc": [
+    {
+      "date_from": "1781-01-01",
+      "date_to": "1950-12-31",
+      "window_days": 3650,
+      "folder": "pmc_historical",
+      "repeat": false
+    },
+    {
+      "date_from": "1951-01-01",
+      "date_to": "1999-12-31",
+      "window_days": 365,
+      "folder": "pmc",
+      "repeat": false
+    },
+    {
+      "date_from": "2000-01-01",
+      "date_to": "2024-12-31",
+      "window_days": 7,
+      "folder": "pmc",
+      "repeat": false
+    },
+    {
+      "date_from": "2025-01-01",
+      "date_to": "2026-12-31",
+      "window_days": 7,
+      "folder": "pmc",
+      "repeat": true
+    }
+  ],
+  "medical_wellcome": [
+    {
+      "date_to": "1500-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "1501-01-01",
+      "date_to": "1550-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "1551-01-01",
+      "date_to": "1575-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "1576-01-01",
+      "date_to": "1600-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "1601-01-01",
+      "date_to": "1610-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "1611-01-01",
+      "date_to": "1620-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "1621-01-01",
+      "date_to": "1630-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "1631-01-01",
+      "date_to": "1640-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "1641-01-01",
+      "date_to": "1650-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "1651-01-01",
+      "date_to": "1660-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "1661-01-01",
+      "date_to": "1670-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "1671-01-01",
+      "date_to": "1680-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "1681-01-01",
+      "date_to": "1690-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "1691-01-01",
+      "date_to": "1700-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "1701-01-01",
+      "date_to": "1710-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "1711-01-01",
+      "date_to": "1720-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "1721-01-01",
+      "date_to": "1730-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "1731-01-01",
+      "date_to": "1740-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "1741-01-01",
+      "date_to": "1750-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "1751-01-01",
+      "date_to": "1760-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "1761-01-01",
+      "date_to": "1770-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "1771-01-01",
+      "date_to": "1780-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "1781-01-01",
+      "date_to": "1790-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "1791-01-01",
+      "date_to": "1800-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "1800-01-01",
+      "date_to": "1800-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "1801-01-01",
+      "date_to": "1801-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "1802-01-01",
+      "date_to": "1802-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "1803-01-01",
+      "date_to": "1803-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "1804-01-01",
+      "date_to": "1804-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "1805-01-01",
+      "date_to": "1805-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "1806-01-01",
+      "date_to": "1806-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "1807-01-01",
+      "date_to": "1807-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "1808-01-01",
+      "date_to": "1808-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "1809-01-01",
+      "date_to": "1809-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "1810-01-01",
+      "date_to": "1810-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "1811-01-01",
+      "date_to": "1811-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "1812-01-01",
+      "date_to": "1812-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "1813-01-01",
+      "date_to": "1813-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "1814-01-01",
+      "date_to": "1814-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "1815-01-01",
+      "date_to": "1815-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "1816-01-01",
+      "date_to": "1816-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "1817-01-01",
+      "date_to": "1817-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "1818-01-01",
+      "date_to": "1818-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "1819-01-01",
+      "date_to": "1819-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "1820-01-01",
+      "date_to": "1820-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "1821-01-01",
+      "date_to": "1821-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "1822-01-01",
+      "date_to": "1822-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "1823-01-01",
+      "date_to": "1823-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "1824-01-01",
+      "date_to": "1824-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "1825-01-01",
+      "date_to": "1825-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "1826-01-01",
+      "date_to": "1826-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "1827-01-01",
+      "date_to": "1827-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "1828-01-01",
+      "date_to": "1828-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "1829-01-01",
+      "date_to": "1829-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "1830-01-01",
+      "date_to": "1830-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "1831-01-01",
+      "date_to": "1831-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "1832-01-01",
+      "date_to": "1832-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "1833-01-01",
+      "date_to": "1833-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "1834-01-01",
+      "date_to": "1834-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "1835-01-01",
+      "date_to": "1835-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "1836-01-01",
+      "date_to": "1836-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "1837-01-01",
+      "date_to": "1837-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "1838-01-01",
+      "date_to": "1838-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "1839-01-01",
+      "date_to": "1839-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "1840-01-01",
+      "date_to": "1840-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "1841-01-01",
+      "date_to": "1841-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "1842-01-01",
+      "date_to": "1842-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "1843-01-01",
+      "date_to": "1843-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "1844-01-01",
+      "date_to": "1844-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "1845-01-01",
+      "date_to": "1845-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "1846-01-01",
+      "date_to": "1846-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "1847-01-01",
+      "date_to": "1847-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "1848-01-01",
+      "date_to": "1848-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "1849-01-01",
+      "date_to": "1849-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "1850-01-01",
+      "date_to": "1850-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "1851-01-01",
+      "date_to": "1851-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "1852-01-01",
+      "date_to": "1852-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "1853-01-01",
+      "date_to": "1853-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "1854-01-01",
+      "date_to": "1854-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "1855-01-01",
+      "date_to": "1855-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "1856-01-01",
+      "date_to": "1856-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "1857-01-01",
+      "date_to": "1857-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "1858-01-01",
+      "date_to": "1858-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "1859-01-01",
+      "date_to": "1859-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "1860-01-01",
+      "date_to": "1860-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "1861-01-01",
+      "date_to": "1861-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "1862-01-01",
+      "date_to": "1862-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "1863-01-01",
+      "date_to": "1863-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "1864-01-01",
+      "date_to": "1864-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "1865-01-01",
+      "date_to": "1865-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "1866-01-01",
+      "date_to": "1866-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "1867-01-01",
+      "date_to": "1867-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "1868-01-01",
+      "date_to": "1868-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "1869-01-01",
+      "date_to": "1869-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "1870-01-01",
+      "date_to": "1870-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "1871-01-01",
+      "date_to": "1871-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "1872-01-01",
+      "date_to": "1872-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "1873-01-01",
+      "date_to": "1873-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "1874-01-01",
+      "date_to": "1874-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "1875-01-01",
+      "date_to": "1875-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "1876-01-01",
+      "date_to": "1876-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "1877-01-01",
+      "date_to": "1877-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "1878-01-01",
+      "date_to": "1878-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "1879-01-01",
+      "date_to": "1879-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "1880-01-01",
+      "date_to": "1880-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "1881-01-01",
+      "date_to": "1881-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "1882-01-01",
+      "date_to": "1882-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "1883-01-01",
+      "date_to": "1883-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "1884-01-01",
+      "date_to": "1884-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "1885-01-01",
+      "date_to": "1885-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "1886-01-01",
+      "date_to": "1886-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "1887-01-01",
+      "date_to": "1887-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "1888-01-01",
+      "date_to": "1888-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "1889-01-01",
+      "date_to": "1889-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "1890-01-01",
+      "date_to": "1890-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "1891-01-01",
+      "date_to": "1891-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "1892-01-01",
+      "date_to": "1892-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "1893-01-01",
+      "date_to": "1893-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "1894-01-01",
+      "date_to": "1894-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "1895-01-01",
+      "date_to": "1895-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "1896-01-01",
+      "date_to": "1896-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "1897-01-01",
+      "date_to": "1897-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "1898-01-01",
+      "date_to": "1898-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "1899-01-01",
+      "date_to": "1899-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "1900-01-01",
+      "date_to": "1900-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "1901-01-01",
+      "date_to": "1901-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "1902-01-01",
+      "date_to": "1902-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "1903-01-01",
+      "date_to": "1903-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "1904-01-01",
+      "date_to": "1904-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "1905-01-01",
+      "date_to": "1905-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "1906-01-01",
+      "date_to": "1906-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "1907-01-01",
+      "date_to": "1907-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "1908-01-01",
+      "date_to": "1908-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "1909-01-01",
+      "date_to": "1909-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "1910-01-01",
+      "date_to": "1910-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "1911-01-01",
+      "date_to": "1911-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "1912-01-01",
+      "date_to": "1912-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "1913-01-01",
+      "date_to": "1913-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "1914-01-01",
+      "date_to": "1914-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "1915-01-01",
+      "date_to": "1915-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "1916-01-01",
+      "date_to": "1916-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "1917-01-01",
+      "date_to": "1917-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "1918-01-01",
+      "date_to": "1918-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "1919-01-01",
+      "date_to": "1919-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "1920-01-01",
+      "date_to": "1920-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "1921-01-01",
+      "date_to": "1921-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "1922-01-01",
+      "date_to": "1922-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "1923-01-01",
+      "date_to": "1923-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "1924-01-01",
+      "date_to": "1924-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "1925-01-01",
+      "date_to": "1925-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "1926-01-01",
+      "date_to": "1926-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "1927-01-01",
+      "date_to": "1927-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "1928-01-01",
+      "date_to": "1928-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "1929-01-01",
+      "date_to": "1929-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "1930-01-01",
+      "date_to": "1930-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "1931-01-01",
+      "date_to": "1931-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "1932-01-01",
+      "date_to": "1932-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "1933-01-01",
+      "date_to": "1933-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "1934-01-01",
+      "date_to": "1934-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "1935-01-01",
+      "date_to": "1935-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "1936-01-01",
+      "date_to": "1936-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "1937-01-01",
+      "date_to": "1937-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "1938-01-01",
+      "date_to": "1938-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "1939-01-01",
+      "date_to": "1939-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "1940-01-01",
+      "date_to": "1940-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "1941-01-01",
+      "date_to": "1941-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "1942-01-01",
+      "date_to": "1942-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "1943-01-01",
+      "date_to": "1943-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "1944-01-01",
+      "date_to": "1944-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "1945-01-01",
+      "date_to": "1945-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "1946-01-01",
+      "date_to": "1946-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "1947-01-01",
+      "date_to": "1947-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "1948-01-01",
+      "date_to": "1948-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "1949-01-01",
+      "date_to": "1949-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "1950-01-01",
+      "date_to": "1950-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "1951-01-01",
+      "date_to": "1955-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "1956-01-01",
+      "date_to": "1960-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "1961-01-01",
+      "date_to": "1965-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "1966-01-01",
+      "date_to": "1970-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "1971-01-01",
+      "date_to": "1975-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "1976-01-01",
+      "date_to": "1980-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "1981-01-01",
+      "date_to": "1985-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "1986-01-01",
+      "date_to": "1990-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "1991-01-01",
+      "date_to": "1995-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "1996-01-01",
+      "date_to": "2000-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "2001-01-01",
+      "date_to": "2005-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "2006-01-01",
+      "date_to": "2010-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "2011-01-01",
+      "date_to": "2015-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "2016-01-01",
+      "date_to": "2020-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "2021-01-01",
+      "date_to": "2025-12-31",
+      "repeat": false
+    },
+    {
+      "date_from": "2026-01-01",
+      "date_to": "2030-12-31",
+      "repeat": false
+    }
+  ],
+  "medical_ia": [
+    {
+      "query": "collection:(medicalheritagelibrary) AND mediatype:(texts) AND format:(\"Text PDF\") AND year:[1000 TO 1699]",
+      "folder": "ia",
+      "repeat": false
+    },
+    {
+      "query": "collection:(medicalheritagelibrary) AND mediatype:(texts) AND format:(\"Text PDF\") AND year:[1700 TO 1709]",
+      "folder": "ia",
+      "repeat": false
+    },
+    {
+      "query": "collection:(medicalheritagelibrary) AND mediatype:(texts) AND format:(\"Text PDF\") AND year:[1710 TO 1719]",
+      "folder": "ia",
+      "repeat": false
+    },
+    {
+      "query": "collection:(medicalheritagelibrary) AND mediatype:(texts) AND format:(\"Text PDF\") AND year:[1720 TO 1729]",
+      "folder": "ia",
+      "repeat": false
+    },
+    {
+      "query": "collection:(medicalheritagelibrary) AND mediatype:(texts) AND format:(\"Text PDF\") AND year:[1730 TO 1739]",
+      "folder": "ia",
+      "repeat": false
+    },
+    {
+      "query": "collection:(medicalheritagelibrary) AND mediatype:(texts) AND format:(\"Text PDF\") AND year:[1740 TO 1749]",
+      "folder": "ia",
+      "repeat": false
+    },
+    {
+      "query": "collection:(medicalheritagelibrary) AND mediatype:(texts) AND format:(\"Text PDF\") AND year:[1750 TO 1759]",
+      "folder": "ia",
+      "repeat": false
+    },
+    {
+      "query": "collection:(medicalheritagelibrary) AND mediatype:(texts) AND format:(\"Text PDF\") AND year:[1760 TO 1769]",
+      "folder": "ia",
+      "repeat": false
+    },
+    {
+      "query": "collection:(medicalheritagelibrary) AND mediatype:(texts) AND format:(\"Text PDF\") AND year:[1770 TO 1779]",
+      "folder": "ia",
+      "repeat": false
+    },
+    {
+      "query": "collection:(medicalheritagelibrary) AND mediatype:(texts) AND format:(\"Text PDF\") AND year:[1780 TO 1789]",
+      "folder": "ia",
+      "repeat": false
+    },
+    {
+      "query": "collection:(medicalheritagelibrary) AND mediatype:(texts) AND format:(\"Text PDF\") AND year:[1790 TO 1799]",
+      "folder": "ia",
+      "repeat": false
+    },
+    {
+      "query": "collection:(medicalheritagelibrary) AND mediatype:(texts) AND format:(\"Text PDF\") AND year:1800",
+      "folder": "ia",
+      "repeat": false
+    },
+    {
+      "query": "collection:(medicalheritagelibrary) AND mediatype:(texts) AND format:(\"Text PDF\") AND year:1801",
+      "folder": "ia",
+      "repeat": false
+    },
+    {
+      "query": "collection:(medicalheritagelibrary) AND mediatype:(texts) AND format:(\"Text PDF\") AND year:1802",
+      "folder": "ia",
+      "repeat": false
+    },
+    {
+      "query": "collection:(medicalheritagelibrary) AND mediatype:(texts) AND format:(\"Text PDF\") AND year:1803",
+      "folder": "ia",
+      "repeat": false
+    },
+    {
+      "query": "collection:(medicalheritagelibrary) AND mediatype:(texts) AND format:(\"Text PDF\") AND year:1804",
+      "folder": "ia",
+      "repeat": false
+    },
+    {
+      "query": "collection:(medicalheritagelibrary) AND mediatype:(texts) AND format:(\"Text PDF\") AND year:1805",
+      "folder": "ia",
+      "repeat": false
+    },
+    {
+      "query": "collection:(medicalheritagelibrary) AND mediatype:(texts) AND format:(\"Text PDF\") AND year:1806",
+      "folder": "ia",
+      "repeat": false
+    },
+    {
+      "query": "collection:(medicalheritagelibrary) AND mediatype:(texts) AND format:(\"Text PDF\") AND year:1807",
+      "folder": "ia",
+      "repeat": false
+    },
+    {
+      "query": "collection:(medicalheritagelibrary) AND mediatype:(texts) AND format:(\"Text PDF\") AND year:1808",
+      "folder": "ia",
+      "repeat": false
+    },
+    {
+      "query": "collection:(medicalheritagelibrary) AND mediatype:(texts) AND format:(\"Text PDF\") AND year:1809",
+      "folder": "ia",
+      "repeat": false
+    },
+    {
+      "query": "collection:(medicalheritagelibrary) AND mediatype:(texts) AND format:(\"Text PDF\") AND year:1810",
+      "folder": "ia",
+      "repeat": false
+    },
+    {
+      "query": "collection:(medicalheritagelibrary) AND mediatype:(texts) AND format:(\"Text PDF\") AND year:1811",
+      "folder": "ia",
+      "repeat": false
+    },
+    {
+      "query": "collection:(medicalheritagelibrary) AND mediatype:(texts) AND format:(\"Text PDF\") AND year:1812",
+      "folder": "ia",
+      "repeat": false
+    },
+    {
+      "query": "collection:(medicalheritagelibrary) AND mediatype:(texts) AND format:(\"Text PDF\") AND year:1813",
+      "folder": "ia",
+      "repeat": false
+    },
+    {
+      "query": "collection:(medicalheritagelibrary) AND mediatype:(texts) AND format:(\"Text PDF\") AND year:1814",
+      "folder": "ia",
+      "repeat": false
+    },
+    {
+      "query": "collection:(medicalheritagelibrary) AND mediatype:(texts) AND format:(\"Text PDF\") AND year:1815",
+      "folder": "ia",
+      "repeat": false
+    },
+    {
+      "query": "collection:(medicalheritagelibrary) AND mediatype:(texts) AND format:(\"Text PDF\") AND year:1816",
+      "folder": "ia",
+      "repeat": false
+    },
+    {
+      "query": "collection:(medicalheritagelibrary) AND mediatype:(texts) AND format:(\"Text PDF\") AND year:1817",
+      "folder": "ia",
+      "repeat": false
+    },
+    {
+      "query": "collection:(medicalheritagelibrary) AND mediatype:(texts) AND format:(\"Text PDF\") AND year:1818",
+      "folder": "ia",
+      "repeat": false
+    },
+    {
+      "query": "collection:(medicalheritagelibrary) AND mediatype:(texts) AND format:(\"Text PDF\") AND year:1819",
+      "folder": "ia",
+      "repeat": false
+    },
+    {
+      "query": "collection:(medicalheritagelibrary) AND mediatype:(texts) AND format:(\"Text PDF\") AND year:1820",
+      "folder": "ia",
+      "repeat": false
+    },
+    {
+      "query": "collection:(medicalheritagelibrary) AND mediatype:(texts) AND format:(\"Text PDF\") AND year:1821",
+      "folder": "ia",
+      "repeat": false
+    },
+    {
+      "query": "collection:(medicalheritagelibrary) AND mediatype:(texts) AND format:(\"Text PDF\") AND year:1822",
+      "folder": "ia",
+      "repeat": false
+    },
+    {
+      "query": "collection:(medicalheritagelibrary) AND mediatype:(texts) AND format:(\"Text PDF\") AND year:1823",
+      "folder": "ia",
+      "repeat": false
+    },
+    {
+      "query": "collection:(medicalheritagelibrary) AND mediatype:(texts) AND format:(\"Text PDF\") AND year:1824",
+      "folder": "ia",
+      "repeat": false
+    },
+    {
+      "query": "collection:(medicalheritagelibrary) AND mediatype:(texts) AND format:(\"Text PDF\") AND year:1825",
+      "folder": "ia",
+      "repeat": false
+    },
+    {
+      "query": "collection:(medicalheritagelibrary) AND mediatype:(texts) AND format:(\"Text PDF\") AND year:1826",
+      "folder": "ia",
+      "repeat": false
+    },
+    {
+      "query": "collection:(medicalheritagelibrary) AND mediatype:(texts) AND format:(\"Text PDF\") AND year:1827",
+      "folder": "ia",
+      "repeat": false
+    },
+    {
+      "query": "collection:(medicalheritagelibrary) AND mediatype:(texts) AND format:(\"Text PDF\") AND year:1828",
+      "folder": "ia",
+      "repeat": false
+    },
+    {
+      "query": "collection:(medicalheritagelibrary) AND mediatype:(texts) AND format:(\"Text PDF\") AND year:1829",
+      "folder": "ia",
+      "repeat": false
+    },
+    {
+      "query": "collection:(medicalheritagelibrary) AND mediatype:(texts) AND format:(\"Text PDF\") AND year:1830",
+      "folder": "ia",
+      "repeat": false
+    },
+    {
+      "query": "collection:(medicalheritagelibrary) AND mediatype:(texts) AND format:(\"Text PDF\") AND year:1831",
+      "folder": "ia",
+      "repeat": false
+    },
+    {
+      "query": "collection:(medicalheritagelibrary) AND mediatype:(texts) AND format:(\"Text PDF\") AND year:1832",
+      "folder": "ia",
+      "repeat": false
+    },
+    {
+      "query": "collection:(medicalheritagelibrary) AND mediatype:(texts) AND format:(\"Text PDF\") AND year:1833",
+      "folder": "ia",
+      "repeat": false
+    },
+    {
+      "query": "collection:(medicalheritagelibrary) AND mediatype:(texts) AND format:(\"Text PDF\") AND year:1834",
+      "folder": "ia",
+      "repeat": false
+    },
+    {
+      "query": "collection:(medicalheritagelibrary) AND mediatype:(texts) AND format:(\"Text PDF\") AND year:1835",
+      "folder": "ia",
+      "repeat": false
+    },
+    {
+      "query": "collection:(medicalheritagelibrary) AND mediatype:(texts) AND format:(\"Text PDF\") AND year:1836",
+      "folder": "ia",
+      "repeat": false
+    },
+    {
+      "query": "collection:(medicalheritagelibrary) AND mediatype:(texts) AND format:(\"Text PDF\") AND year:1837",
+      "folder": "ia",
+      "repeat": false
+    },
+    {
+      "query": "collection:(medicalheritagelibrary) AND mediatype:(texts) AND format:(\"Text PDF\") AND year:1838",
+      "folder": "ia",
+      "repeat": false
+    },
+    {
+      "query": "collection:(medicalheritagelibrary) AND mediatype:(texts) AND format:(\"Text PDF\") AND year:1839",
+      "folder": "ia",
+      "repeat": false
+    },
+    {
+      "query": "collection:(medicalheritagelibrary) AND mediatype:(texts) AND format:(\"Text PDF\") AND year:1840",
+      "folder": "ia",
+      "repeat": false
+    },
+    {
+      "query": "collection:(medicalheritagelibrary) AND mediatype:(texts) AND format:(\"Text PDF\") AND year:1841",
+      "folder": "ia",
+      "repeat": false
+    },
+    {
+      "query": "collection:(medicalheritagelibrary) AND mediatype:(texts) AND format:(\"Text PDF\") AND year:1842",
+      "folder": "ia",
+      "repeat": false
+    },
+    {
+      "query": "collection:(medicalheritagelibrary) AND mediatype:(texts) AND format:(\"Text PDF\") AND year:1843",
+      "folder": "ia",
+      "repeat": false
+    },
+    {
+      "query": "collection:(medicalheritagelibrary) AND mediatype:(texts) AND format:(\"Text PDF\") AND year:1844",
+      "folder": "ia",
+      "repeat": false
+    },
+    {
+      "query": "collection:(medicalheritagelibrary) AND mediatype:(texts) AND format:(\"Text PDF\") AND year:1845",
+      "folder": "ia",
+      "repeat": false
+    },
+    {
+      "query": "collection:(medicalheritagelibrary) AND mediatype:(texts) AND format:(\"Text PDF\") AND year:1846",
+      "folder": "ia",
+      "repeat": false
+    },
+    {
+      "query": "collection:(medicalheritagelibrary) AND mediatype:(texts) AND format:(\"Text PDF\") AND year:1847",
+      "folder": "ia",
+      "repeat": false
+    },
+    {
+      "query": "collection:(medicalheritagelibrary) AND mediatype:(texts) AND format:(\"Text PDF\") AND year:1848",
+      "folder": "ia",
+      "repeat": false
+    },
+    {
+      "query": "collection:(medicalheritagelibrary) AND mediatype:(texts) AND format:(\"Text PDF\") AND year:1849",
+      "folder": "ia",
+      "repeat": false
+    },
+    {
+      "query": "collection:(medicalheritagelibrary) AND mediatype:(texts) AND format:(\"Text PDF\") AND year:1850",
+      "folder": "ia",
+      "repeat": false
+    },
+    {
+      "query": "collection:(medicalheritagelibrary) AND mediatype:(texts) AND format:(\"Text PDF\") AND year:1851",
+      "folder": "ia",
+      "repeat": false
+    },
+    {
+      "query": "collection:(medicalheritagelibrary) AND mediatype:(texts) AND format:(\"Text PDF\") AND year:1852",
+      "folder": "ia",
+      "repeat": false
+    },
+    {
+      "query": "collection:(medicalheritagelibrary) AND mediatype:(texts) AND format:(\"Text PDF\") AND year:1853",
+      "folder": "ia",
+      "repeat": false
+    },
+    {
+      "query": "collection:(medicalheritagelibrary) AND mediatype:(texts) AND format:(\"Text PDF\") AND year:1854",
+      "folder": "ia",
+      "repeat": false
+    },
+    {
+      "query": "collection:(medicalheritagelibrary) AND mediatype:(texts) AND format:(\"Text PDF\") AND year:1855",
+      "folder": "ia",
+      "repeat": false
+    },
+    {
+      "query": "collection:(medicalheritagelibrary) AND mediatype:(texts) AND format:(\"Text PDF\") AND year:1856",
+      "folder": "ia",
+      "repeat": false
+    },
+    {
+      "query": "collection:(medicalheritagelibrary) AND mediatype:(texts) AND format:(\"Text PDF\") AND year:1857",
+      "folder": "ia",
+      "repeat": false
+    },
+    {
+      "query": "collection:(medicalheritagelibrary) AND mediatype:(texts) AND format:(\"Text PDF\") AND year:1858",
+      "folder": "ia",
+      "repeat": false
+    },
+    {
+      "query": "collection:(medicalheritagelibrary) AND mediatype:(texts) AND format:(\"Text PDF\") AND year:1859",
+      "folder": "ia",
+      "repeat": false
+    },
+    {
+      "query": "collection:(medicalheritagelibrary) AND mediatype:(texts) AND format:(\"Text PDF\") AND year:1860",
+      "folder": "ia",
+      "repeat": false
+    },
+    {
+      "query": "collection:(medicalheritagelibrary) AND mediatype:(texts) AND format:(\"Text PDF\") AND year:1861",
+      "folder": "ia",
+      "repeat": false
+    },
+    {
+      "query": "collection:(medicalheritagelibrary) AND mediatype:(texts) AND format:(\"Text PDF\") AND year:1862",
+      "folder": "ia",
+      "repeat": false
+    },
+    {
+      "query": "collection:(medicalheritagelibrary) AND mediatype:(texts) AND format:(\"Text PDF\") AND year:1863",
+      "folder": "ia",
+      "repeat": false
+    },
+    {
+      "query": "collection:(medicalheritagelibrary) AND mediatype:(texts) AND format:(\"Text PDF\") AND year:1864",
+      "folder": "ia",
+      "repeat": false
+    },
+    {
+      "query": "collection:(medicalheritagelibrary) AND mediatype:(texts) AND format:(\"Text PDF\") AND year:1865",
+      "folder": "ia",
+      "repeat": false
+    },
+    {
+      "query": "collection:(medicalheritagelibrary) AND mediatype:(texts) AND format:(\"Text PDF\") AND year:1866",
+      "folder": "ia",
+      "repeat": false
+    },
+    {
+      "query": "collection:(medicalheritagelibrary) AND mediatype:(texts) AND format:(\"Text PDF\") AND year:1867",
+      "folder": "ia",
+      "repeat": false
+    },
+    {
+      "query": "collection:(medicalheritagelibrary) AND mediatype:(texts) AND format:(\"Text PDF\") AND year:1868",
+      "folder": "ia",
+      "repeat": false
+    },
+    {
+      "query": "collection:(medicalheritagelibrary) AND mediatype:(texts) AND format:(\"Text PDF\") AND year:1869",
+      "folder": "ia",
+      "repeat": false
+    },
+    {
+      "query": "collection:(medicalheritagelibrary) AND mediatype:(texts) AND format:(\"Text PDF\") AND year:1870",
+      "folder": "ia",
+      "repeat": false
+    },
+    {
+      "query": "collection:(medicalheritagelibrary) AND mediatype:(texts) AND format:(\"Text PDF\") AND year:1871",
+      "folder": "ia",
+      "repeat": false
+    },
+    {
+      "query": "collection:(medicalheritagelibrary) AND mediatype:(texts) AND format:(\"Text PDF\") AND year:1872",
+      "folder": "ia",
+      "repeat": false
+    },
+    {
+      "query": "collection:(medicalheritagelibrary) AND mediatype:(texts) AND format:(\"Text PDF\") AND year:1873",
+      "folder": "ia",
+      "repeat": false
+    },
+    {
+      "query": "collection:(medicalheritagelibrary) AND mediatype:(texts) AND format:(\"Text PDF\") AND year:1874",
+      "folder": "ia",
+      "repeat": false
+    },
+    {
+      "query": "collection:(medicalheritagelibrary) AND mediatype:(texts) AND format:(\"Text PDF\") AND year:1875",
+      "folder": "ia",
+      "repeat": false
+    },
+    {
+      "query": "collection:(medicalheritagelibrary) AND mediatype:(texts) AND format:(\"Text PDF\") AND year:1876",
+      "folder": "ia",
+      "repeat": false
+    },
+    {
+      "query": "collection:(medicalheritagelibrary) AND mediatype:(texts) AND format:(\"Text PDF\") AND year:1877",
+      "folder": "ia",
+      "repeat": false
+    },
+    {
+      "query": "collection:(medicalheritagelibrary) AND mediatype:(texts) AND format:(\"Text PDF\") AND year:1878",
+      "folder": "ia",
+      "repeat": false
+    },
+    {
+      "query": "collection:(medicalheritagelibrary) AND mediatype:(texts) AND format:(\"Text PDF\") AND year:1879",
+      "folder": "ia",
+      "repeat": false
+    },
+    {
+      "query": "collection:(medicalheritagelibrary) AND mediatype:(texts) AND format:(\"Text PDF\") AND year:1880",
+      "folder": "ia",
+      "repeat": false
+    },
+    {
+      "query": "collection:(medicalheritagelibrary) AND mediatype:(texts) AND format:(\"Text PDF\") AND year:1881",
+      "folder": "ia",
+      "repeat": false
+    },
+    {
+      "query": "collection:(medicalheritagelibrary) AND mediatype:(texts) AND format:(\"Text PDF\") AND year:1882",
+      "folder": "ia",
+      "repeat": false
+    },
+    {
+      "query": "collection:(medicalheritagelibrary) AND mediatype:(texts) AND format:(\"Text PDF\") AND year:1883",
+      "folder": "ia",
+      "repeat": false
+    },
+    {
+      "query": "collection:(medicalheritagelibrary) AND mediatype:(texts) AND format:(\"Text PDF\") AND year:1884",
+      "folder": "ia",
+      "repeat": false
+    },
+    {
+      "query": "collection:(medicalheritagelibrary) AND mediatype:(texts) AND format:(\"Text PDF\") AND year:1885",
+      "folder": "ia",
+      "repeat": false
+    },
+    {
+      "query": "collection:(medicalheritagelibrary) AND mediatype:(texts) AND format:(\"Text PDF\") AND year:1886",
+      "folder": "ia",
+      "repeat": false
+    },
+    {
+      "query": "collection:(medicalheritagelibrary) AND mediatype:(texts) AND format:(\"Text PDF\") AND year:1887",
+      "folder": "ia",
+      "repeat": false
+    },
+    {
+      "query": "collection:(medicalheritagelibrary) AND mediatype:(texts) AND format:(\"Text PDF\") AND year:1888",
+      "folder": "ia",
+      "repeat": false
+    },
+    {
+      "query": "collection:(medicalheritagelibrary) AND mediatype:(texts) AND format:(\"Text PDF\") AND year:1889",
+      "folder": "ia",
+      "repeat": false
+    },
+    {
+      "query": "collection:(medicalheritagelibrary) AND mediatype:(texts) AND format:(\"Text PDF\") AND year:1890",
+      "folder": "ia",
+      "repeat": false
+    },
+    {
+      "query": "collection:(medicalheritagelibrary) AND mediatype:(texts) AND format:(\"Text PDF\") AND year:1891",
+      "folder": "ia",
+      "repeat": false
+    },
+    {
+      "query": "collection:(medicalheritagelibrary) AND mediatype:(texts) AND format:(\"Text PDF\") AND year:1892",
+      "folder": "ia",
+      "repeat": false
+    },
+    {
+      "query": "collection:(medicalheritagelibrary) AND mediatype:(texts) AND format:(\"Text PDF\") AND year:1893",
+      "folder": "ia",
+      "repeat": false
+    },
+    {
+      "query": "collection:(medicalheritagelibrary) AND mediatype:(texts) AND format:(\"Text PDF\") AND year:1894",
+      "folder": "ia",
+      "repeat": false
+    },
+    {
+      "query": "collection:(medicalheritagelibrary) AND mediatype:(texts) AND format:(\"Text PDF\") AND year:1895",
+      "folder": "ia",
+      "repeat": false
+    },
+    {
+      "query": "collection:(medicalheritagelibrary) AND mediatype:(texts) AND format:(\"Text PDF\") AND year:1896",
+      "folder": "ia",
+      "repeat": false
+    },
+    {
+      "query": "collection:(medicalheritagelibrary) AND mediatype:(texts) AND format:(\"Text PDF\") AND year:1897",
+      "folder": "ia",
+      "repeat": false
+    },
+    {
+      "query": "collection:(medicalheritagelibrary) AND mediatype:(texts) AND format:(\"Text PDF\") AND year:1898",
+      "folder": "ia",
+      "repeat": false
+    },
+    {
+      "query": "collection:(medicalheritagelibrary) AND mediatype:(texts) AND format:(\"Text PDF\") AND year:1899",
+      "folder": "ia",
+      "repeat": false
+    },
+    {
+      "query": "collection:(medicalheritagelibrary) AND mediatype:(texts) AND format:(\"Text PDF\") AND year:1900",
+      "folder": "ia",
+      "repeat": false
+    },
+    {
+      "query": "collection:(medicalheritagelibrary) AND mediatype:(texts) AND format:(\"Text PDF\") AND year:1901",
+      "folder": "ia",
+      "repeat": false
+    },
+    {
+      "query": "collection:(medicalheritagelibrary) AND mediatype:(texts) AND format:(\"Text PDF\") AND year:1902",
+      "folder": "ia",
+      "repeat": false
+    },
+    {
+      "query": "collection:(medicalheritagelibrary) AND mediatype:(texts) AND format:(\"Text PDF\") AND year:1903",
+      "folder": "ia",
+      "repeat": false
+    },
+    {
+      "query": "collection:(medicalheritagelibrary) AND mediatype:(texts) AND format:(\"Text PDF\") AND year:1904",
+      "folder": "ia",
+      "repeat": false
+    },
+    {
+      "query": "collection:(medicalheritagelibrary) AND mediatype:(texts) AND format:(\"Text PDF\") AND year:1905",
+      "folder": "ia",
+      "repeat": false
+    },
+    {
+      "query": "collection:(medicalheritagelibrary) AND mediatype:(texts) AND format:(\"Text PDF\") AND year:1906",
+      "folder": "ia",
+      "repeat": false
+    },
+    {
+      "query": "collection:(medicalheritagelibrary) AND mediatype:(texts) AND format:(\"Text PDF\") AND year:1907",
+      "folder": "ia",
+      "repeat": false
+    },
+    {
+      "query": "collection:(medicalheritagelibrary) AND mediatype:(texts) AND format:(\"Text PDF\") AND year:1908",
+      "folder": "ia",
+      "repeat": false
+    },
+    {
+      "query": "collection:(medicalheritagelibrary) AND mediatype:(texts) AND format:(\"Text PDF\") AND year:1909",
+      "folder": "ia",
+      "repeat": false
+    },
+    {
+      "query": "collection:(medicalheritagelibrary) AND mediatype:(texts) AND format:(\"Text PDF\") AND year:1910",
+      "folder": "ia",
+      "repeat": false
+    },
+    {
+      "query": "collection:(medicalheritagelibrary) AND mediatype:(texts) AND format:(\"Text PDF\") AND year:1911",
+      "folder": "ia",
+      "repeat": false
+    },
+    {
+      "query": "collection:(medicalheritagelibrary) AND mediatype:(texts) AND format:(\"Text PDF\") AND year:1912",
+      "folder": "ia",
+      "repeat": false
+    },
+    {
+      "query": "collection:(medicalheritagelibrary) AND mediatype:(texts) AND format:(\"Text PDF\") AND year:1913",
+      "folder": "ia",
+      "repeat": false
+    },
+    {
+      "query": "collection:(medicalheritagelibrary) AND mediatype:(texts) AND format:(\"Text PDF\") AND year:1914",
+      "folder": "ia",
+      "repeat": false
+    },
+    {
+      "query": "collection:(medicalheritagelibrary) AND mediatype:(texts) AND format:(\"Text PDF\") AND year:1915",
+      "folder": "ia",
+      "repeat": false
+    },
+    {
+      "query": "collection:(medicalheritagelibrary) AND mediatype:(texts) AND format:(\"Text PDF\") AND year:1916",
+      "folder": "ia",
+      "repeat": false
+    },
+    {
+      "query": "collection:(medicalheritagelibrary) AND mediatype:(texts) AND format:(\"Text PDF\") AND year:1917",
+      "folder": "ia",
+      "repeat": false
+    },
+    {
+      "query": "collection:(medicalheritagelibrary) AND mediatype:(texts) AND format:(\"Text PDF\") AND year:1918",
+      "folder": "ia",
+      "repeat": false
+    },
+    {
+      "query": "collection:(medicalheritagelibrary) AND mediatype:(texts) AND format:(\"Text PDF\") AND year:1919",
+      "folder": "ia",
+      "repeat": false
+    },
+    {
+      "query": "collection:(medicalheritagelibrary) AND mediatype:(texts) AND format:(\"Text PDF\") AND year:1920",
+      "folder": "ia",
+      "repeat": false
+    },
+    {
+      "query": "collection:(medicalheritagelibrary) AND mediatype:(texts) AND format:(\"Text PDF\") AND year:1921",
+      "folder": "ia",
+      "repeat": false
+    },
+    {
+      "query": "collection:(medicalheritagelibrary) AND mediatype:(texts) AND format:(\"Text PDF\") AND year:1922",
+      "folder": "ia",
+      "repeat": false
+    },
+    {
+      "query": "collection:(medicalheritagelibrary) AND mediatype:(texts) AND format:(\"Text PDF\") AND year:1923",
+      "folder": "ia",
+      "repeat": false
+    },
+    {
+      "query": "collection:(medicalheritagelibrary) AND mediatype:(texts) AND format:(\"Text PDF\") AND year:1924",
+      "folder": "ia",
+      "repeat": false
+    },
+    {
+      "query": "collection:(medicalheritagelibrary) AND mediatype:(texts) AND format:(\"Text PDF\") AND year:1925",
+      "folder": "ia",
+      "repeat": false
+    },
+    {
+      "query": "collection:(medicalheritagelibrary) AND mediatype:(texts) AND format:(\"Text PDF\") AND year:1926",
+      "folder": "ia",
+      "repeat": false
+    },
+    {
+      "query": "collection:(medicalheritagelibrary) AND mediatype:(texts) AND format:(\"Text PDF\") AND year:1927",
+      "folder": "ia",
+      "repeat": false
+    },
+    {
+      "query": "collection:(medicalheritagelibrary) AND mediatype:(texts) AND format:(\"Text PDF\") AND year:1928",
+      "folder": "ia",
+      "repeat": false
+    },
+    {
+      "query": "collection:(medicalheritagelibrary) AND mediatype:(texts) AND format:(\"Text PDF\") AND year:1929",
+      "folder": "ia",
+      "repeat": false
+    },
+    {
+      "query": "collection:(medicalheritagelibrary) AND mediatype:(texts) AND format:(\"Text PDF\") AND year:1930",
+      "folder": "ia",
+      "repeat": false
+    },
+    {
+      "query": "collection:(medicalheritagelibrary) AND mediatype:(texts) AND format:(\"Text PDF\") AND year:1931",
+      "folder": "ia",
+      "repeat": false
+    },
+    {
+      "query": "collection:(medicalheritagelibrary) AND mediatype:(texts) AND format:(\"Text PDF\") AND year:1932",
+      "folder": "ia",
+      "repeat": false
+    },
+    {
+      "query": "collection:(medicalheritagelibrary) AND mediatype:(texts) AND format:(\"Text PDF\") AND year:1933",
+      "folder": "ia",
+      "repeat": false
+    },
+    {
+      "query": "collection:(medicalheritagelibrary) AND mediatype:(texts) AND format:(\"Text PDF\") AND year:1934",
+      "folder": "ia",
+      "repeat": false
+    },
+    {
+      "query": "collection:(medicalheritagelibrary) AND mediatype:(texts) AND format:(\"Text PDF\") AND year:1935",
+      "folder": "ia",
+      "repeat": false
+    },
+    {
+      "query": "collection:(medicalheritagelibrary) AND mediatype:(texts) AND format:(\"Text PDF\") AND year:1936",
+      "folder": "ia",
+      "repeat": false
+    },
+    {
+      "query": "collection:(medicalheritagelibrary) AND mediatype:(texts) AND format:(\"Text PDF\") AND year:1937",
+      "folder": "ia",
+      "repeat": false
+    },
+    {
+      "query": "collection:(medicalheritagelibrary) AND mediatype:(texts) AND format:(\"Text PDF\") AND year:1938",
+      "folder": "ia",
+      "repeat": false
+    },
+    {
+      "query": "collection:(medicalheritagelibrary) AND mediatype:(texts) AND format:(\"Text PDF\") AND year:1939",
+      "folder": "ia",
+      "repeat": false
+    },
+    {
+      "query": "collection:(medicalheritagelibrary) AND mediatype:(texts) AND format:(\"Text PDF\") AND year:1940",
+      "folder": "ia",
+      "repeat": false
+    },
+    {
+      "query": "collection:(medicalheritagelibrary) AND mediatype:(texts) AND format:(\"Text PDF\") AND year:1941",
+      "folder": "ia",
+      "repeat": false
+    },
+    {
+      "query": "collection:(medicalheritagelibrary) AND mediatype:(texts) AND format:(\"Text PDF\") AND year:1942",
+      "folder": "ia",
+      "repeat": false
+    },
+    {
+      "query": "collection:(medicalheritagelibrary) AND mediatype:(texts) AND format:(\"Text PDF\") AND year:1943",
+      "folder": "ia",
+      "repeat": false
+    },
+    {
+      "query": "collection:(medicalheritagelibrary) AND mediatype:(texts) AND format:(\"Text PDF\") AND year:1944",
+      "folder": "ia",
+      "repeat": false
+    },
+    {
+      "query": "collection:(medicalheritagelibrary) AND mediatype:(texts) AND format:(\"Text PDF\") AND year:1945",
+      "folder": "ia",
+      "repeat": false
+    },
+    {
+      "query": "collection:(medicalheritagelibrary) AND mediatype:(texts) AND format:(\"Text PDF\") AND year:1946",
+      "folder": "ia",
+      "repeat": false
+    },
+    {
+      "query": "collection:(medicalheritagelibrary) AND mediatype:(texts) AND format:(\"Text PDF\") AND year:1947",
+      "folder": "ia",
+      "repeat": false
+    },
+    {
+      "query": "collection:(medicalheritagelibrary) AND mediatype:(texts) AND format:(\"Text PDF\") AND year:1948",
+      "folder": "ia",
+      "repeat": false
+    },
+    {
+      "query": "collection:(medicalheritagelibrary) AND mediatype:(texts) AND format:(\"Text PDF\") AND year:1949",
+      "folder": "ia",
+      "repeat": false
+    },
+    {
+      "query": "collection:(medicalheritagelibrary) AND mediatype:(texts) AND format:(\"Text PDF\") AND year:1950",
+      "folder": "ia",
+      "repeat": false
+    },
+    {
+      "query": "collection:(medicalheritagelibrary) AND mediatype:(texts) AND format:(\"Text PDF\") AND year:[1951 TO 2100]",
+      "folder": "ia",
+      "repeat": false
+    },
+    {
+      "query": "collection:(medicalheritagelibrary) AND mediatype:(texts) AND format:(\"Text PDF\") AND NOT year:[0 TO 3000]",
+      "folder": "ia",
+      "repeat": false
+    }
+  ],
+  "medical_gutenberg": [
+    {
+      "topic": "medicine",
+      "repeat": false
+    },
+    {
+      "topic": "surgery",
+      "repeat": false
+    },
+    {
+      "topic": "anatomy",
+      "repeat": false
+    },
+    {
+      "topic": "physiology",
+      "repeat": false
+    },
+    {
+      "topic": "nursing",
+      "repeat": false
+    },
+    {
+      "topic": "hygiene",
+      "repeat": false
+    },
+    {
+      "topic": "diseases",
+      "repeat": false
+    },
+    {
+      "topic": "pharmacology",
+      "repeat": false
+    },
+    {
+      "topic": "psychiatry",
+      "repeat": false
+    }
+  ],
+  "medical_cyberleninka": [
+    {
+      "rubric": "clinical-medicine",
+      "repeat": false
+    },
+    {
+      "rubric": "basic-medicine",
+      "repeat": false
+    },
+    {
+      "rubric": "health-sciences",
+      "repeat": false
+    }
+  ],
+  "science_ia": [
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(ger) AND year:[0 TO 1850]",
+      "folder": "ia_ger",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(ger) AND year:[1851 TO 1900]",
+      "folder": "ia_ger",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(ger) AND year:[1901 TO 1950]",
+      "folder": "ia_ger",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(ger) AND year:[1951 TO 2100]",
+      "folder": "ia_ger",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(ger) AND NOT year:[0 TO 3000]",
+      "folder": "ia_ger",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(fre) AND year:[0 TO 1850]",
+      "folder": "ia_fre",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(fre) AND year:[1851 TO 1900]",
+      "folder": "ia_fre",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(fre) AND year:[1901 TO 1950]",
+      "folder": "ia_fre",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(fre) AND year:[1951 TO 2100]",
+      "folder": "ia_fre",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(fre) AND NOT year:[0 TO 3000]",
+      "folder": "ia_fre",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(spa) AND year:[0 TO 1850]",
+      "folder": "ia_spa",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(spa) AND year:[1851 TO 1900]",
+      "folder": "ia_spa",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(spa) AND year:[1901 TO 1950]",
+      "folder": "ia_spa",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(spa) AND year:[1951 TO 2100]",
+      "folder": "ia_spa",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(spa) AND NOT year:[0 TO 3000]",
+      "folder": "ia_spa",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(ita) AND year:[0 TO 1850]",
+      "folder": "ia_ita",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(ita) AND year:[1851 TO 1900]",
+      "folder": "ia_ita",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(ita) AND year:[1901 TO 1950]",
+      "folder": "ia_ita",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(ita) AND year:[1951 TO 2100]",
+      "folder": "ia_ita",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(ita) AND NOT year:[0 TO 3000]",
+      "folder": "ia_ita",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(por) AND year:[0 TO 1850]",
+      "folder": "ia_por",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(por) AND year:[1851 TO 1900]",
+      "folder": "ia_por",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(por) AND year:[1901 TO 1950]",
+      "folder": "ia_por",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(por) AND year:[1951 TO 2100]",
+      "folder": "ia_por",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(por) AND NOT year:[0 TO 3000]",
+      "folder": "ia_por",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(per) AND year:[0 TO 1850]",
+      "folder": "ia_per",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(per) AND year:[1851 TO 1900]",
+      "folder": "ia_per",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(per) AND year:[1901 TO 1950]",
+      "folder": "ia_per",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(per) AND year:[1951 TO 2100]",
+      "folder": "ia_per",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(per) AND NOT year:[0 TO 3000]",
+      "folder": "ia_per",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(lat) AND year:[0 TO 1850]",
+      "folder": "ia_lat",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(lat) AND year:[1851 TO 1900]",
+      "folder": "ia_lat",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(lat) AND year:[1901 TO 1950]",
+      "folder": "ia_lat",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(lat) AND year:[1951 TO 2100]",
+      "folder": "ia_lat",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(lat) AND NOT year:[0 TO 3000]",
+      "folder": "ia_lat",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(dut) AND year:[0 TO 1850]",
+      "folder": "ia_dut",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(dut) AND year:[1851 TO 1900]",
+      "folder": "ia_dut",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(dut) AND year:[1901 TO 1950]",
+      "folder": "ia_dut",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(dut) AND year:[1951 TO 2100]",
+      "folder": "ia_dut",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(dut) AND NOT year:[0 TO 3000]",
+      "folder": "ia_dut",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(chi) AND year:[0 TO 1850]",
+      "folder": "ia_chi",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(chi) AND year:[1851 TO 1900]",
+      "folder": "ia_chi",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(chi) AND year:[1901 TO 1950]",
+      "folder": "ia_chi",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(chi) AND year:[1951 TO 2100]",
+      "folder": "ia_chi",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(chi) AND NOT year:[0 TO 3000]",
+      "folder": "ia_chi",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(hin) AND year:[0 TO 1850]",
+      "folder": "ia_hin",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(hin) AND year:[1851 TO 1900]",
+      "folder": "ia_hin",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(hin) AND year:[1901 TO 1950]",
+      "folder": "ia_hin",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(hin) AND year:[1951 TO 2100]",
+      "folder": "ia_hin",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(hin) AND NOT year:[0 TO 3000]",
+      "folder": "ia_hin",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(ara) AND year:[0 TO 1850]",
+      "folder": "ia_ara",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(ara) AND year:[1851 TO 1900]",
+      "folder": "ia_ara",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(ara) AND year:[1901 TO 1950]",
+      "folder": "ia_ara",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(ara) AND year:[1951 TO 2100]",
+      "folder": "ia_ara",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(ara) AND NOT year:[0 TO 3000]",
+      "folder": "ia_ara",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(pol) AND year:[0 TO 1850]",
+      "folder": "ia_pol",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(pol) AND year:[1851 TO 1900]",
+      "folder": "ia_pol",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(pol) AND year:[1901 TO 1950]",
+      "folder": "ia_pol",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(pol) AND year:[1951 TO 2100]",
+      "folder": "ia_pol",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(pol) AND NOT year:[0 TO 3000]",
+      "folder": "ia_pol",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(ukr) AND year:[0 TO 1850]",
+      "folder": "ia_ukr",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(ukr) AND year:[1851 TO 1900]",
+      "folder": "ia_ukr",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(ukr) AND year:[1901 TO 1950]",
+      "folder": "ia_ukr",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(ukr) AND year:[1951 TO 2100]",
+      "folder": "ia_ukr",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(ukr) AND NOT year:[0 TO 3000]",
+      "folder": "ia_ukr",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(tur) AND year:[0 TO 1850]",
+      "folder": "ia_tur",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(tur) AND year:[1851 TO 1900]",
+      "folder": "ia_tur",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(tur) AND year:[1901 TO 1950]",
+      "folder": "ia_tur",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(tur) AND year:[1951 TO 2100]",
+      "folder": "ia_tur",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(tur) AND NOT year:[0 TO 3000]",
+      "folder": "ia_tur",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(tam) AND year:[0 TO 1850]",
+      "folder": "ia_tam",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(tam) AND year:[1851 TO 1900]",
+      "folder": "ia_tam",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(tam) AND year:[1901 TO 1950]",
+      "folder": "ia_tam",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(tam) AND year:[1951 TO 2100]",
+      "folder": "ia_tam",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(tam) AND NOT year:[0 TO 3000]",
+      "folder": "ia_tam",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(urd) AND year:[0 TO 1850]",
+      "folder": "ia_urd",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(urd) AND year:[1851 TO 1900]",
+      "folder": "ia_urd",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(urd) AND year:[1901 TO 1950]",
+      "folder": "ia_urd",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(urd) AND year:[1951 TO 2100]",
+      "folder": "ia_urd",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(urd) AND NOT year:[0 TO 3000]",
+      "folder": "ia_urd",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(swe) AND year:[0 TO 1850]",
+      "folder": "ia_swe",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(swe) AND year:[1851 TO 1900]",
+      "folder": "ia_swe",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(swe) AND year:[1901 TO 1950]",
+      "folder": "ia_swe",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(swe) AND year:[1951 TO 2100]",
+      "folder": "ia_swe",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(swe) AND NOT year:[0 TO 3000]",
+      "folder": "ia_swe",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(jpn) AND year:[0 TO 1850]",
+      "folder": "ia_jpn",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(jpn) AND year:[1851 TO 1900]",
+      "folder": "ia_jpn",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(jpn) AND year:[1901 TO 1950]",
+      "folder": "ia_jpn",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(jpn) AND year:[1951 TO 2100]",
+      "folder": "ia_jpn",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(jpn) AND NOT year:[0 TO 3000]",
+      "folder": "ia_jpn",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(dan) AND year:[0 TO 1850]",
+      "folder": "ia_dan",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(dan) AND year:[1851 TO 1900]",
+      "folder": "ia_dan",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(dan) AND year:[1901 TO 1950]",
+      "folder": "ia_dan",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(dan) AND year:[1951 TO 2100]",
+      "folder": "ia_dan",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(dan) AND NOT year:[0 TO 3000]",
+      "folder": "ia_dan",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(hun) AND year:[0 TO 1850]",
+      "folder": "ia_hun",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(hun) AND year:[1851 TO 1900]",
+      "folder": "ia_hun",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(hun) AND year:[1901 TO 1950]",
+      "folder": "ia_hun",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(hun) AND year:[1951 TO 2100]",
+      "folder": "ia_hun",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(hun) AND NOT year:[0 TO 3000]",
+      "folder": "ia_hun",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(gre) AND year:[0 TO 1850]",
+      "folder": "ia_gre",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(gre) AND year:[1851 TO 1900]",
+      "folder": "ia_gre",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(gre) AND year:[1901 TO 1950]",
+      "folder": "ia_gre",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(gre) AND year:[1951 TO 2100]",
+      "folder": "ia_gre",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(gre) AND NOT year:[0 TO 3000]",
+      "folder": "ia_gre",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(ben) AND year:[0 TO 1850]",
+      "folder": "ia_ben",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(ben) AND year:[1851 TO 1900]",
+      "folder": "ia_ben",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(ben) AND year:[1901 TO 1950]",
+      "folder": "ia_ben",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(ben) AND year:[1951 TO 2100]",
+      "folder": "ia_ben",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(ben) AND NOT year:[0 TO 3000]",
+      "folder": "ia_ben",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(mar) AND year:[0 TO 1850]",
+      "folder": "ia_mar",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(mar) AND year:[1851 TO 1900]",
+      "folder": "ia_mar",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(mar) AND year:[1901 TO 1950]",
+      "folder": "ia_mar",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(mar) AND year:[1951 TO 2100]",
+      "folder": "ia_mar",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(mar) AND NOT year:[0 TO 3000]",
+      "folder": "ia_mar",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(nor) AND year:[0 TO 1850]",
+      "folder": "ia_nor",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(nor) AND year:[1851 TO 1900]",
+      "folder": "ia_nor",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(nor) AND year:[1901 TO 1950]",
+      "folder": "ia_nor",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(nor) AND year:[1951 TO 2100]",
+      "folder": "ia_nor",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(nor) AND NOT year:[0 TO 3000]",
+      "folder": "ia_nor",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(cze) AND year:[0 TO 1850]",
+      "folder": "ia_cze",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(cze) AND year:[1851 TO 1900]",
+      "folder": "ia_cze",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(cze) AND year:[1901 TO 1950]",
+      "folder": "ia_cze",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(cze) AND year:[1951 TO 2100]",
+      "folder": "ia_cze",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(cze) AND NOT year:[0 TO 3000]",
+      "folder": "ia_cze",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(rum) AND year:[0 TO 1850]",
+      "folder": "ia_rum",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(rum) AND year:[1851 TO 1900]",
+      "folder": "ia_rum",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(rum) AND year:[1901 TO 1950]",
+      "folder": "ia_rum",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(rum) AND year:[1951 TO 2100]",
+      "folder": "ia_rum",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(rum) AND NOT year:[0 TO 3000]",
+      "folder": "ia_rum",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(geo) AND year:[0 TO 1850]",
+      "folder": "ia_geo",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(geo) AND year:[1851 TO 1900]",
+      "folder": "ia_geo",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(geo) AND year:[1901 TO 1950]",
+      "folder": "ia_geo",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(geo) AND year:[1951 TO 2100]",
+      "folder": "ia_geo",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(geo) AND NOT year:[0 TO 3000]",
+      "folder": "ia_geo",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(heb) AND year:[0 TO 1850]",
+      "folder": "ia_heb",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(heb) AND year:[1851 TO 1900]",
+      "folder": "ia_heb",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(heb) AND year:[1901 TO 1950]",
+      "folder": "ia_heb",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(heb) AND year:[1951 TO 2100]",
+      "folder": "ia_heb",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(heb) AND NOT year:[0 TO 3000]",
+      "folder": "ia_heb",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(guj) AND year:[0 TO 1850]",
+      "folder": "ia_guj",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(guj) AND year:[1851 TO 1900]",
+      "folder": "ia_guj",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(guj) AND year:[1901 TO 1950]",
+      "folder": "ia_guj",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(guj) AND year:[1951 TO 2100]",
+      "folder": "ia_guj",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(guj) AND NOT year:[0 TO 3000]",
+      "folder": "ia_guj",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(kor) AND year:[0 TO 1850]",
+      "folder": "ia_kor",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(kor) AND year:[1851 TO 1900]",
+      "folder": "ia_kor",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(kor) AND year:[1901 TO 1950]",
+      "folder": "ia_kor",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(kor) AND year:[1951 TO 2100]",
+      "folder": "ia_kor",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(kor) AND NOT year:[0 TO 3000]",
+      "folder": "ia_kor",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(fin) AND year:[0 TO 1850]",
+      "folder": "ia_fin",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(fin) AND year:[1851 TO 1900]",
+      "folder": "ia_fin",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(fin) AND year:[1901 TO 1950]",
+      "folder": "ia_fin",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(fin) AND year:[1951 TO 2100]",
+      "folder": "ia_fin",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(fin) AND NOT year:[0 TO 3000]",
+      "folder": "ia_fin",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(bul) AND year:[0 TO 1850]",
+      "folder": "ia_bul",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(bul) AND year:[1851 TO 1900]",
+      "folder": "ia_bul",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(bul) AND year:[1901 TO 1950]",
+      "folder": "ia_bul",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(bul) AND year:[1951 TO 2100]",
+      "folder": "ia_bul",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(bul) AND NOT year:[0 TO 3000]",
+      "folder": "ia_bul",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(kaz) AND year:[0 TO 1850]",
+      "folder": "ia_kaz",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(kaz) AND year:[1851 TO 1900]",
+      "folder": "ia_kaz",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(kaz) AND year:[1901 TO 1950]",
+      "folder": "ia_kaz",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(kaz) AND year:[1951 TO 2100]",
+      "folder": "ia_kaz",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(kaz) AND NOT year:[0 TO 3000]",
+      "folder": "ia_kaz",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(arm) AND year:[0 TO 1850]",
+      "folder": "ia_arm",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(arm) AND year:[1851 TO 1900]",
+      "folder": "ia_arm",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(arm) AND year:[1901 TO 1950]",
+      "folder": "ia_arm",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(arm) AND year:[1951 TO 2100]",
+      "folder": "ia_arm",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(arm) AND NOT year:[0 TO 3000]",
+      "folder": "ia_arm",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(uzb) AND year:[0 TO 1850]",
+      "folder": "ia_uzb",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(uzb) AND year:[1851 TO 1900]",
+      "folder": "ia_uzb",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(uzb) AND year:[1901 TO 1950]",
+      "folder": "ia_uzb",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(uzb) AND year:[1951 TO 2100]",
+      "folder": "ia_uzb",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(uzb) AND NOT year:[0 TO 3000]",
+      "folder": "ia_uzb",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(rus) AND year:[1930 TO 2100]",
+      "folder": "ia_rus",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(rus) AND NOT year:[0 TO 3000]",
+      "folder": "ia_rus",
+      "repeat": false
+    }
+  ],
+  "science_gutenberg": [
+    {
+      "topic": "science",
+      "languages": "de",
+      "folder": "gutenberg_de",
+      "repeat": false
+    },
+    {
+      "topic": "mathematics",
+      "languages": "de",
+      "folder": "gutenberg_de",
+      "repeat": false
+    },
+    {
+      "topic": "physics",
+      "languages": "de",
+      "folder": "gutenberg_de",
+      "repeat": false
+    },
+    {
+      "topic": "chemistry",
+      "languages": "de",
+      "folder": "gutenberg_de",
+      "repeat": false
+    },
+    {
+      "topic": "biology",
+      "languages": "de",
+      "folder": "gutenberg_de",
+      "repeat": false
+    },
+    {
+      "topic": "astronomy",
+      "languages": "de",
+      "folder": "gutenberg_de",
+      "repeat": false
+    },
+    {
+      "topic": "geology",
+      "languages": "de",
+      "folder": "gutenberg_de",
+      "repeat": false
+    },
+    {
+      "topic": "botany",
+      "languages": "de",
+      "folder": "gutenberg_de",
+      "repeat": false
+    },
+    {
+      "topic": "zoology",
+      "languages": "de",
+      "folder": "gutenberg_de",
+      "repeat": false
+    },
+    {
+      "topic": "engineering",
+      "languages": "de",
+      "folder": "gutenberg_de",
+      "repeat": false
+    },
+    {
+      "topic": "science",
+      "languages": "fr",
+      "folder": "gutenberg_fr",
+      "repeat": false
+    },
+    {
+      "topic": "mathematics",
+      "languages": "fr",
+      "folder": "gutenberg_fr",
+      "repeat": false
+    },
+    {
+      "topic": "physics",
+      "languages": "fr",
+      "folder": "gutenberg_fr",
+      "repeat": false
+    },
+    {
+      "topic": "chemistry",
+      "languages": "fr",
+      "folder": "gutenberg_fr",
+      "repeat": false
+    },
+    {
+      "topic": "biology",
+      "languages": "fr",
+      "folder": "gutenberg_fr",
+      "repeat": false
+    },
+    {
+      "topic": "astronomy",
+      "languages": "fr",
+      "folder": "gutenberg_fr",
+      "repeat": false
+    },
+    {
+      "topic": "geology",
+      "languages": "fr",
+      "folder": "gutenberg_fr",
+      "repeat": false
+    },
+    {
+      "topic": "botany",
+      "languages": "fr",
+      "folder": "gutenberg_fr",
+      "repeat": false
+    },
+    {
+      "topic": "zoology",
+      "languages": "fr",
+      "folder": "gutenberg_fr",
+      "repeat": false
+    },
+    {
+      "topic": "engineering",
+      "languages": "fr",
+      "folder": "gutenberg_fr",
+      "repeat": false
+    },
+    {
+      "topic": "science",
+      "languages": "es",
+      "folder": "gutenberg_es",
+      "repeat": false
+    },
+    {
+      "topic": "mathematics",
+      "languages": "es",
+      "folder": "gutenberg_es",
+      "repeat": false
+    },
+    {
+      "topic": "physics",
+      "languages": "es",
+      "folder": "gutenberg_es",
+      "repeat": false
+    },
+    {
+      "topic": "chemistry",
+      "languages": "es",
+      "folder": "gutenberg_es",
+      "repeat": false
+    },
+    {
+      "topic": "biology",
+      "languages": "es",
+      "folder": "gutenberg_es",
+      "repeat": false
+    },
+    {
+      "topic": "astronomy",
+      "languages": "es",
+      "folder": "gutenberg_es",
+      "repeat": false
+    },
+    {
+      "topic": "geology",
+      "languages": "es",
+      "folder": "gutenberg_es",
+      "repeat": false
+    },
+    {
+      "topic": "botany",
+      "languages": "es",
+      "folder": "gutenberg_es",
+      "repeat": false
+    },
+    {
+      "topic": "zoology",
+      "languages": "es",
+      "folder": "gutenberg_es",
+      "repeat": false
+    },
+    {
+      "topic": "engineering",
+      "languages": "es",
+      "folder": "gutenberg_es",
+      "repeat": false
+    },
+    {
+      "topic": "science",
+      "languages": "it",
+      "folder": "gutenberg_it",
+      "repeat": false
+    },
+    {
+      "topic": "mathematics",
+      "languages": "it",
+      "folder": "gutenberg_it",
+      "repeat": false
+    },
+    {
+      "topic": "physics",
+      "languages": "it",
+      "folder": "gutenberg_it",
+      "repeat": false
+    },
+    {
+      "topic": "chemistry",
+      "languages": "it",
+      "folder": "gutenberg_it",
+      "repeat": false
+    },
+    {
+      "topic": "biology",
+      "languages": "it",
+      "folder": "gutenberg_it",
+      "repeat": false
+    },
+    {
+      "topic": "astronomy",
+      "languages": "it",
+      "folder": "gutenberg_it",
+      "repeat": false
+    },
+    {
+      "topic": "geology",
+      "languages": "it",
+      "folder": "gutenberg_it",
+      "repeat": false
+    },
+    {
+      "topic": "botany",
+      "languages": "it",
+      "folder": "gutenberg_it",
+      "repeat": false
+    },
+    {
+      "topic": "zoology",
+      "languages": "it",
+      "folder": "gutenberg_it",
+      "repeat": false
+    },
+    {
+      "topic": "engineering",
+      "languages": "it",
+      "folder": "gutenberg_it",
+      "repeat": false
+    },
+    {
+      "topic": "science",
+      "languages": "nl",
+      "folder": "gutenberg_nl",
+      "repeat": false
+    },
+    {
+      "topic": "mathematics",
+      "languages": "nl",
+      "folder": "gutenberg_nl",
+      "repeat": false
+    },
+    {
+      "topic": "physics",
+      "languages": "nl",
+      "folder": "gutenberg_nl",
+      "repeat": false
+    },
+    {
+      "topic": "chemistry",
+      "languages": "nl",
+      "folder": "gutenberg_nl",
+      "repeat": false
+    },
+    {
+      "topic": "biology",
+      "languages": "nl",
+      "folder": "gutenberg_nl",
+      "repeat": false
+    },
+    {
+      "topic": "astronomy",
+      "languages": "nl",
+      "folder": "gutenberg_nl",
+      "repeat": false
+    },
+    {
+      "topic": "geology",
+      "languages": "nl",
+      "folder": "gutenberg_nl",
+      "repeat": false
+    },
+    {
+      "topic": "botany",
+      "languages": "nl",
+      "folder": "gutenberg_nl",
+      "repeat": false
+    },
+    {
+      "topic": "zoology",
+      "languages": "nl",
+      "folder": "gutenberg_nl",
+      "repeat": false
+    },
+    {
+      "topic": "engineering",
+      "languages": "nl",
+      "folder": "gutenberg_nl",
+      "repeat": false
+    },
+    {
+      "topic": "science",
+      "languages": "pt",
+      "folder": "gutenberg_pt",
+      "repeat": false
+    },
+    {
+      "topic": "mathematics",
+      "languages": "pt",
+      "folder": "gutenberg_pt",
+      "repeat": false
+    },
+    {
+      "topic": "physics",
+      "languages": "pt",
+      "folder": "gutenberg_pt",
+      "repeat": false
+    },
+    {
+      "topic": "chemistry",
+      "languages": "pt",
+      "folder": "gutenberg_pt",
+      "repeat": false
+    },
+    {
+      "topic": "biology",
+      "languages": "pt",
+      "folder": "gutenberg_pt",
+      "repeat": false
+    },
+    {
+      "topic": "astronomy",
+      "languages": "pt",
+      "folder": "gutenberg_pt",
+      "repeat": false
+    },
+    {
+      "topic": "geology",
+      "languages": "pt",
+      "folder": "gutenberg_pt",
+      "repeat": false
+    },
+    {
+      "topic": "botany",
+      "languages": "pt",
+      "folder": "gutenberg_pt",
+      "repeat": false
+    },
+    {
+      "topic": "zoology",
+      "languages": "pt",
+      "folder": "gutenberg_pt",
+      "repeat": false
+    },
+    {
+      "topic": "engineering",
+      "languages": "pt",
+      "folder": "gutenberg_pt",
+      "repeat": false
+    },
+    {
+      "topic": "science",
+      "languages": "fi",
+      "folder": "gutenberg_fi",
+      "repeat": false
+    },
+    {
+      "topic": "mathematics",
+      "languages": "fi",
+      "folder": "gutenberg_fi",
+      "repeat": false
+    },
+    {
+      "topic": "physics",
+      "languages": "fi",
+      "folder": "gutenberg_fi",
+      "repeat": false
+    },
+    {
+      "topic": "chemistry",
+      "languages": "fi",
+      "folder": "gutenberg_fi",
+      "repeat": false
+    },
+    {
+      "topic": "biology",
+      "languages": "fi",
+      "folder": "gutenberg_fi",
+      "repeat": false
+    },
+    {
+      "topic": "astronomy",
+      "languages": "fi",
+      "folder": "gutenberg_fi",
+      "repeat": false
+    },
+    {
+      "topic": "geology",
+      "languages": "fi",
+      "folder": "gutenberg_fi",
+      "repeat": false
+    },
+    {
+      "topic": "botany",
+      "languages": "fi",
+      "folder": "gutenberg_fi",
+      "repeat": false
+    },
+    {
+      "topic": "zoology",
+      "languages": "fi",
+      "folder": "gutenberg_fi",
+      "repeat": false
+    },
+    {
+      "topic": "engineering",
+      "languages": "fi",
+      "folder": "gutenberg_fi",
+      "repeat": false
+    },
+    {
+      "topic": "science",
+      "languages": "sv",
+      "folder": "gutenberg_sv",
+      "repeat": false
+    },
+    {
+      "topic": "mathematics",
+      "languages": "sv",
+      "folder": "gutenberg_sv",
+      "repeat": false
+    },
+    {
+      "topic": "physics",
+      "languages": "sv",
+      "folder": "gutenberg_sv",
+      "repeat": false
+    },
+    {
+      "topic": "chemistry",
+      "languages": "sv",
+      "folder": "gutenberg_sv",
+      "repeat": false
+    },
+    {
+      "topic": "biology",
+      "languages": "sv",
+      "folder": "gutenberg_sv",
+      "repeat": false
+    },
+    {
+      "topic": "astronomy",
+      "languages": "sv",
+      "folder": "gutenberg_sv",
+      "repeat": false
+    },
+    {
+      "topic": "geology",
+      "languages": "sv",
+      "folder": "gutenberg_sv",
+      "repeat": false
+    },
+    {
+      "topic": "botany",
+      "languages": "sv",
+      "folder": "gutenberg_sv",
+      "repeat": false
+    },
+    {
+      "topic": "zoology",
+      "languages": "sv",
+      "folder": "gutenberg_sv",
+      "repeat": false
+    },
+    {
+      "topic": "engineering",
+      "languages": "sv",
+      "folder": "gutenberg_sv",
+      "repeat": false
+    },
+    {
+      "topic": "science",
+      "languages": "da",
+      "folder": "gutenberg_da",
+      "repeat": false
+    },
+    {
+      "topic": "mathematics",
+      "languages": "da",
+      "folder": "gutenberg_da",
+      "repeat": false
+    },
+    {
+      "topic": "physics",
+      "languages": "da",
+      "folder": "gutenberg_da",
+      "repeat": false
+    },
+    {
+      "topic": "chemistry",
+      "languages": "da",
+      "folder": "gutenberg_da",
+      "repeat": false
+    },
+    {
+      "topic": "biology",
+      "languages": "da",
+      "folder": "gutenberg_da",
+      "repeat": false
+    },
+    {
+      "topic": "astronomy",
+      "languages": "da",
+      "folder": "gutenberg_da",
+      "repeat": false
+    },
+    {
+      "topic": "geology",
+      "languages": "da",
+      "folder": "gutenberg_da",
+      "repeat": false
+    },
+    {
+      "topic": "botany",
+      "languages": "da",
+      "folder": "gutenberg_da",
+      "repeat": false
+    },
+    {
+      "topic": "zoology",
+      "languages": "da",
+      "folder": "gutenberg_da",
+      "repeat": false
+    },
+    {
+      "topic": "engineering",
+      "languages": "da",
+      "folder": "gutenberg_da",
+      "repeat": false
+    },
+    {
+      "topic": "science",
+      "languages": "la",
+      "folder": "gutenberg_la",
+      "repeat": false
+    },
+    {
+      "topic": "mathematics",
+      "languages": "la",
+      "folder": "gutenberg_la",
+      "repeat": false
+    },
+    {
+      "topic": "physics",
+      "languages": "la",
+      "folder": "gutenberg_la",
+      "repeat": false
+    },
+    {
+      "topic": "chemistry",
+      "languages": "la",
+      "folder": "gutenberg_la",
+      "repeat": false
+    },
+    {
+      "topic": "biology",
+      "languages": "la",
+      "folder": "gutenberg_la",
+      "repeat": false
+    },
+    {
+      "topic": "astronomy",
+      "languages": "la",
+      "folder": "gutenberg_la",
+      "repeat": false
+    },
+    {
+      "topic": "geology",
+      "languages": "la",
+      "folder": "gutenberg_la",
+      "repeat": false
+    },
+    {
+      "topic": "botany",
+      "languages": "la",
+      "folder": "gutenberg_la",
+      "repeat": false
+    },
+    {
+      "topic": "zoology",
+      "languages": "la",
+      "folder": "gutenberg_la",
+      "repeat": false
+    },
+    {
+      "topic": "engineering",
+      "languages": "la",
+      "folder": "gutenberg_la",
+      "repeat": false
+    },
+    {
+      "topic": "science",
+      "languages": "pl",
+      "folder": "gutenberg_pl",
+      "repeat": false
+    },
+    {
+      "topic": "mathematics",
+      "languages": "pl",
+      "folder": "gutenberg_pl",
+      "repeat": false
+    },
+    {
+      "topic": "physics",
+      "languages": "pl",
+      "folder": "gutenberg_pl",
+      "repeat": false
+    },
+    {
+      "topic": "chemistry",
+      "languages": "pl",
+      "folder": "gutenberg_pl",
+      "repeat": false
+    },
+    {
+      "topic": "biology",
+      "languages": "pl",
+      "folder": "gutenberg_pl",
+      "repeat": false
+    },
+    {
+      "topic": "astronomy",
+      "languages": "pl",
+      "folder": "gutenberg_pl",
+      "repeat": false
+    },
+    {
+      "topic": "geology",
+      "languages": "pl",
+      "folder": "gutenberg_pl",
+      "repeat": false
+    },
+    {
+      "topic": "botany",
+      "languages": "pl",
+      "folder": "gutenberg_pl",
+      "repeat": false
+    },
+    {
+      "topic": "zoology",
+      "languages": "pl",
+      "folder": "gutenberg_pl",
+      "repeat": false
+    },
+    {
+      "topic": "engineering",
+      "languages": "pl",
+      "folder": "gutenberg_pl",
+      "repeat": false
+    },
+    {
+      "topic": "science",
+      "languages": "hu",
+      "folder": "gutenberg_hu",
+      "repeat": false
+    },
+    {
+      "topic": "mathematics",
+      "languages": "hu",
+      "folder": "gutenberg_hu",
+      "repeat": false
+    },
+    {
+      "topic": "physics",
+      "languages": "hu",
+      "folder": "gutenberg_hu",
+      "repeat": false
+    },
+    {
+      "topic": "chemistry",
+      "languages": "hu",
+      "folder": "gutenberg_hu",
+      "repeat": false
+    },
+    {
+      "topic": "biology",
+      "languages": "hu",
+      "folder": "gutenberg_hu",
+      "repeat": false
+    },
+    {
+      "topic": "astronomy",
+      "languages": "hu",
+      "folder": "gutenberg_hu",
+      "repeat": false
+    },
+    {
+      "topic": "geology",
+      "languages": "hu",
+      "folder": "gutenberg_hu",
+      "repeat": false
+    },
+    {
+      "topic": "botany",
+      "languages": "hu",
+      "folder": "gutenberg_hu",
+      "repeat": false
+    },
+    {
+      "topic": "zoology",
+      "languages": "hu",
+      "folder": "gutenberg_hu",
+      "repeat": false
+    },
+    {
+      "topic": "engineering",
+      "languages": "hu",
+      "folder": "gutenberg_hu",
+      "repeat": false
+    },
+    {
+      "topic": "science",
+      "languages": "ca",
+      "folder": "gutenberg_ca",
+      "repeat": false
+    },
+    {
+      "topic": "mathematics",
+      "languages": "ca",
+      "folder": "gutenberg_ca",
+      "repeat": false
+    },
+    {
+      "topic": "physics",
+      "languages": "ca",
+      "folder": "gutenberg_ca",
+      "repeat": false
+    },
+    {
+      "topic": "chemistry",
+      "languages": "ca",
+      "folder": "gutenberg_ca",
+      "repeat": false
+    },
+    {
+      "topic": "biology",
+      "languages": "ca",
+      "folder": "gutenberg_ca",
+      "repeat": false
+    },
+    {
+      "topic": "astronomy",
+      "languages": "ca",
+      "folder": "gutenberg_ca",
+      "repeat": false
+    },
+    {
+      "topic": "geology",
+      "languages": "ca",
+      "folder": "gutenberg_ca",
+      "repeat": false
+    },
+    {
+      "topic": "botany",
+      "languages": "ca",
+      "folder": "gutenberg_ca",
+      "repeat": false
+    },
+    {
+      "topic": "zoology",
+      "languages": "ca",
+      "folder": "gutenberg_ca",
+      "repeat": false
+    },
+    {
+      "topic": "engineering",
+      "languages": "ca",
+      "folder": "gutenberg_ca",
+      "repeat": false
+    },
+    {
+      "topic": "science",
+      "languages": "eo",
+      "folder": "gutenberg_eo",
+      "repeat": false
+    },
+    {
+      "topic": "mathematics",
+      "languages": "eo",
+      "folder": "gutenberg_eo",
+      "repeat": false
+    },
+    {
+      "topic": "physics",
+      "languages": "eo",
+      "folder": "gutenberg_eo",
+      "repeat": false
+    },
+    {
+      "topic": "chemistry",
+      "languages": "eo",
+      "folder": "gutenberg_eo",
+      "repeat": false
+    },
+    {
+      "topic": "biology",
+      "languages": "eo",
+      "folder": "gutenberg_eo",
+      "repeat": false
+    },
+    {
+      "topic": "astronomy",
+      "languages": "eo",
+      "folder": "gutenberg_eo",
+      "repeat": false
+    },
+    {
+      "topic": "geology",
+      "languages": "eo",
+      "folder": "gutenberg_eo",
+      "repeat": false
+    },
+    {
+      "topic": "botany",
+      "languages": "eo",
+      "folder": "gutenberg_eo",
+      "repeat": false
+    },
+    {
+      "topic": "zoology",
+      "languages": "eo",
+      "folder": "gutenberg_eo",
+      "repeat": false
+    },
+    {
+      "topic": "engineering",
+      "languages": "eo",
+      "folder": "gutenberg_eo",
+      "repeat": false
     }
   ]
 }
