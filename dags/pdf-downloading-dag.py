@@ -38,6 +38,7 @@ with DAG(
         from repositories.proxy_repository import ProxyRepository
         from gutenbergDownloader import parse_download_tag
         from medicalDownloader import parse_medical_tag
+        from scienceDownloader import parse_science_tag
         import ftpConnector
         from ftpConnector import ftpConnector
 
@@ -162,6 +163,11 @@ with DAG(
                 if medical_match:
                     folder, ext, url = medical_match
                     filename = f'medical3/{folder}/'
+                # multilingual science sources (added 2026-10-11, see scienceDownloader.py)
+                science_match = parse_science_tag(url)
+                if science_match:
+                    folder, ext, url = science_match
+                    filename = f'science3/{folder}/'
                 filename += str(uuid.uuid4())
                 filename += '.' + ext
                 proxieResult = ProxyRepository.get_latest()
@@ -179,7 +185,7 @@ with DAG(
                                     proxies=proxies,
                                     timeout=30,
                                     stream=True)
-                if (response.status_code == 200 and medical_match and ext != 'html'
+                if (response.status_code == 200 and (medical_match or science_match) and ext != 'html'
                         and 'text/html' in response.headers.get('Content-Type', '')):
                     print(f'[pdf_downloading] HTML page instead of a .{ext} file, marking NA: {initialUrl}')
                     PdfRepository.save_location(initialUrl, "NA")

@@ -2174,5 +2174,1734 @@
       "rubric": "health-sciences",
       "repeat": false
     }
+  ],
+  "science_ia": [
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(ger) AND year:[0 TO 1850]",
+      "folder": "ia_ger",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(ger) AND year:[1851 TO 1900]",
+      "folder": "ia_ger",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(ger) AND year:[1901 TO 1950]",
+      "folder": "ia_ger",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(ger) AND year:[1951 TO 2100]",
+      "folder": "ia_ger",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(ger) AND NOT year:[0 TO 3000]",
+      "folder": "ia_ger",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(fre) AND year:[0 TO 1850]",
+      "folder": "ia_fre",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(fre) AND year:[1851 TO 1900]",
+      "folder": "ia_fre",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(fre) AND year:[1901 TO 1950]",
+      "folder": "ia_fre",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(fre) AND year:[1951 TO 2100]",
+      "folder": "ia_fre",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(fre) AND NOT year:[0 TO 3000]",
+      "folder": "ia_fre",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(spa) AND year:[0 TO 1850]",
+      "folder": "ia_spa",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(spa) AND year:[1851 TO 1900]",
+      "folder": "ia_spa",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(spa) AND year:[1901 TO 1950]",
+      "folder": "ia_spa",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(spa) AND year:[1951 TO 2100]",
+      "folder": "ia_spa",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(spa) AND NOT year:[0 TO 3000]",
+      "folder": "ia_spa",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(ita) AND year:[0 TO 1850]",
+      "folder": "ia_ita",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(ita) AND year:[1851 TO 1900]",
+      "folder": "ia_ita",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(ita) AND year:[1901 TO 1950]",
+      "folder": "ia_ita",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(ita) AND year:[1951 TO 2100]",
+      "folder": "ia_ita",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(ita) AND NOT year:[0 TO 3000]",
+      "folder": "ia_ita",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(por) AND year:[0 TO 1850]",
+      "folder": "ia_por",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(por) AND year:[1851 TO 1900]",
+      "folder": "ia_por",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(por) AND year:[1901 TO 1950]",
+      "folder": "ia_por",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(por) AND year:[1951 TO 2100]",
+      "folder": "ia_por",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(por) AND NOT year:[0 TO 3000]",
+      "folder": "ia_por",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(per) AND year:[0 TO 1850]",
+      "folder": "ia_per",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(per) AND year:[1851 TO 1900]",
+      "folder": "ia_per",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(per) AND year:[1901 TO 1950]",
+      "folder": "ia_per",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(per) AND year:[1951 TO 2100]",
+      "folder": "ia_per",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(per) AND NOT year:[0 TO 3000]",
+      "folder": "ia_per",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(lat) AND year:[0 TO 1850]",
+      "folder": "ia_lat",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(lat) AND year:[1851 TO 1900]",
+      "folder": "ia_lat",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(lat) AND year:[1901 TO 1950]",
+      "folder": "ia_lat",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(lat) AND year:[1951 TO 2100]",
+      "folder": "ia_lat",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(lat) AND NOT year:[0 TO 3000]",
+      "folder": "ia_lat",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(dut) AND year:[0 TO 1850]",
+      "folder": "ia_dut",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(dut) AND year:[1851 TO 1900]",
+      "folder": "ia_dut",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(dut) AND year:[1901 TO 1950]",
+      "folder": "ia_dut",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(dut) AND year:[1951 TO 2100]",
+      "folder": "ia_dut",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(dut) AND NOT year:[0 TO 3000]",
+      "folder": "ia_dut",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(chi) AND year:[0 TO 1850]",
+      "folder": "ia_chi",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(chi) AND year:[1851 TO 1900]",
+      "folder": "ia_chi",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(chi) AND year:[1901 TO 1950]",
+      "folder": "ia_chi",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(chi) AND year:[1951 TO 2100]",
+      "folder": "ia_chi",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(chi) AND NOT year:[0 TO 3000]",
+      "folder": "ia_chi",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(hin) AND year:[0 TO 1850]",
+      "folder": "ia_hin",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(hin) AND year:[1851 TO 1900]",
+      "folder": "ia_hin",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(hin) AND year:[1901 TO 1950]",
+      "folder": "ia_hin",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(hin) AND year:[1951 TO 2100]",
+      "folder": "ia_hin",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(hin) AND NOT year:[0 TO 3000]",
+      "folder": "ia_hin",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(ara) AND year:[0 TO 1850]",
+      "folder": "ia_ara",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(ara) AND year:[1851 TO 1900]",
+      "folder": "ia_ara",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(ara) AND year:[1901 TO 1950]",
+      "folder": "ia_ara",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(ara) AND year:[1951 TO 2100]",
+      "folder": "ia_ara",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(ara) AND NOT year:[0 TO 3000]",
+      "folder": "ia_ara",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(pol) AND year:[0 TO 1850]",
+      "folder": "ia_pol",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(pol) AND year:[1851 TO 1900]",
+      "folder": "ia_pol",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(pol) AND year:[1901 TO 1950]",
+      "folder": "ia_pol",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(pol) AND year:[1951 TO 2100]",
+      "folder": "ia_pol",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(pol) AND NOT year:[0 TO 3000]",
+      "folder": "ia_pol",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(ukr) AND year:[0 TO 1850]",
+      "folder": "ia_ukr",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(ukr) AND year:[1851 TO 1900]",
+      "folder": "ia_ukr",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(ukr) AND year:[1901 TO 1950]",
+      "folder": "ia_ukr",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(ukr) AND year:[1951 TO 2100]",
+      "folder": "ia_ukr",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(ukr) AND NOT year:[0 TO 3000]",
+      "folder": "ia_ukr",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(tur) AND year:[0 TO 1850]",
+      "folder": "ia_tur",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(tur) AND year:[1851 TO 1900]",
+      "folder": "ia_tur",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(tur) AND year:[1901 TO 1950]",
+      "folder": "ia_tur",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(tur) AND year:[1951 TO 2100]",
+      "folder": "ia_tur",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(tur) AND NOT year:[0 TO 3000]",
+      "folder": "ia_tur",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(tam) AND year:[0 TO 1850]",
+      "folder": "ia_tam",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(tam) AND year:[1851 TO 1900]",
+      "folder": "ia_tam",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(tam) AND year:[1901 TO 1950]",
+      "folder": "ia_tam",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(tam) AND year:[1951 TO 2100]",
+      "folder": "ia_tam",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(tam) AND NOT year:[0 TO 3000]",
+      "folder": "ia_tam",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(urd) AND year:[0 TO 1850]",
+      "folder": "ia_urd",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(urd) AND year:[1851 TO 1900]",
+      "folder": "ia_urd",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(urd) AND year:[1901 TO 1950]",
+      "folder": "ia_urd",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(urd) AND year:[1951 TO 2100]",
+      "folder": "ia_urd",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(urd) AND NOT year:[0 TO 3000]",
+      "folder": "ia_urd",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(swe) AND year:[0 TO 1850]",
+      "folder": "ia_swe",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(swe) AND year:[1851 TO 1900]",
+      "folder": "ia_swe",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(swe) AND year:[1901 TO 1950]",
+      "folder": "ia_swe",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(swe) AND year:[1951 TO 2100]",
+      "folder": "ia_swe",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(swe) AND NOT year:[0 TO 3000]",
+      "folder": "ia_swe",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(jpn) AND year:[0 TO 1850]",
+      "folder": "ia_jpn",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(jpn) AND year:[1851 TO 1900]",
+      "folder": "ia_jpn",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(jpn) AND year:[1901 TO 1950]",
+      "folder": "ia_jpn",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(jpn) AND year:[1951 TO 2100]",
+      "folder": "ia_jpn",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(jpn) AND NOT year:[0 TO 3000]",
+      "folder": "ia_jpn",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(dan) AND year:[0 TO 1850]",
+      "folder": "ia_dan",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(dan) AND year:[1851 TO 1900]",
+      "folder": "ia_dan",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(dan) AND year:[1901 TO 1950]",
+      "folder": "ia_dan",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(dan) AND year:[1951 TO 2100]",
+      "folder": "ia_dan",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(dan) AND NOT year:[0 TO 3000]",
+      "folder": "ia_dan",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(hun) AND year:[0 TO 1850]",
+      "folder": "ia_hun",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(hun) AND year:[1851 TO 1900]",
+      "folder": "ia_hun",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(hun) AND year:[1901 TO 1950]",
+      "folder": "ia_hun",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(hun) AND year:[1951 TO 2100]",
+      "folder": "ia_hun",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(hun) AND NOT year:[0 TO 3000]",
+      "folder": "ia_hun",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(gre) AND year:[0 TO 1850]",
+      "folder": "ia_gre",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(gre) AND year:[1851 TO 1900]",
+      "folder": "ia_gre",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(gre) AND year:[1901 TO 1950]",
+      "folder": "ia_gre",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(gre) AND year:[1951 TO 2100]",
+      "folder": "ia_gre",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(gre) AND NOT year:[0 TO 3000]",
+      "folder": "ia_gre",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(ben) AND year:[0 TO 1850]",
+      "folder": "ia_ben",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(ben) AND year:[1851 TO 1900]",
+      "folder": "ia_ben",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(ben) AND year:[1901 TO 1950]",
+      "folder": "ia_ben",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(ben) AND year:[1951 TO 2100]",
+      "folder": "ia_ben",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(ben) AND NOT year:[0 TO 3000]",
+      "folder": "ia_ben",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(mar) AND year:[0 TO 1850]",
+      "folder": "ia_mar",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(mar) AND year:[1851 TO 1900]",
+      "folder": "ia_mar",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(mar) AND year:[1901 TO 1950]",
+      "folder": "ia_mar",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(mar) AND year:[1951 TO 2100]",
+      "folder": "ia_mar",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(mar) AND NOT year:[0 TO 3000]",
+      "folder": "ia_mar",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(nor) AND year:[0 TO 1850]",
+      "folder": "ia_nor",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(nor) AND year:[1851 TO 1900]",
+      "folder": "ia_nor",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(nor) AND year:[1901 TO 1950]",
+      "folder": "ia_nor",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(nor) AND year:[1951 TO 2100]",
+      "folder": "ia_nor",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(nor) AND NOT year:[0 TO 3000]",
+      "folder": "ia_nor",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(cze) AND year:[0 TO 1850]",
+      "folder": "ia_cze",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(cze) AND year:[1851 TO 1900]",
+      "folder": "ia_cze",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(cze) AND year:[1901 TO 1950]",
+      "folder": "ia_cze",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(cze) AND year:[1951 TO 2100]",
+      "folder": "ia_cze",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(cze) AND NOT year:[0 TO 3000]",
+      "folder": "ia_cze",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(rum) AND year:[0 TO 1850]",
+      "folder": "ia_rum",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(rum) AND year:[1851 TO 1900]",
+      "folder": "ia_rum",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(rum) AND year:[1901 TO 1950]",
+      "folder": "ia_rum",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(rum) AND year:[1951 TO 2100]",
+      "folder": "ia_rum",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(rum) AND NOT year:[0 TO 3000]",
+      "folder": "ia_rum",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(geo) AND year:[0 TO 1850]",
+      "folder": "ia_geo",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(geo) AND year:[1851 TO 1900]",
+      "folder": "ia_geo",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(geo) AND year:[1901 TO 1950]",
+      "folder": "ia_geo",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(geo) AND year:[1951 TO 2100]",
+      "folder": "ia_geo",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(geo) AND NOT year:[0 TO 3000]",
+      "folder": "ia_geo",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(heb) AND year:[0 TO 1850]",
+      "folder": "ia_heb",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(heb) AND year:[1851 TO 1900]",
+      "folder": "ia_heb",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(heb) AND year:[1901 TO 1950]",
+      "folder": "ia_heb",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(heb) AND year:[1951 TO 2100]",
+      "folder": "ia_heb",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(heb) AND NOT year:[0 TO 3000]",
+      "folder": "ia_heb",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(guj) AND year:[0 TO 1850]",
+      "folder": "ia_guj",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(guj) AND year:[1851 TO 1900]",
+      "folder": "ia_guj",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(guj) AND year:[1901 TO 1950]",
+      "folder": "ia_guj",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(guj) AND year:[1951 TO 2100]",
+      "folder": "ia_guj",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(guj) AND NOT year:[0 TO 3000]",
+      "folder": "ia_guj",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(kor) AND year:[0 TO 1850]",
+      "folder": "ia_kor",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(kor) AND year:[1851 TO 1900]",
+      "folder": "ia_kor",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(kor) AND year:[1901 TO 1950]",
+      "folder": "ia_kor",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(kor) AND year:[1951 TO 2100]",
+      "folder": "ia_kor",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(kor) AND NOT year:[0 TO 3000]",
+      "folder": "ia_kor",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(fin) AND year:[0 TO 1850]",
+      "folder": "ia_fin",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(fin) AND year:[1851 TO 1900]",
+      "folder": "ia_fin",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(fin) AND year:[1901 TO 1950]",
+      "folder": "ia_fin",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(fin) AND year:[1951 TO 2100]",
+      "folder": "ia_fin",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(fin) AND NOT year:[0 TO 3000]",
+      "folder": "ia_fin",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(bul) AND year:[0 TO 1850]",
+      "folder": "ia_bul",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(bul) AND year:[1851 TO 1900]",
+      "folder": "ia_bul",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(bul) AND year:[1901 TO 1950]",
+      "folder": "ia_bul",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(bul) AND year:[1951 TO 2100]",
+      "folder": "ia_bul",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(bul) AND NOT year:[0 TO 3000]",
+      "folder": "ia_bul",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(kaz) AND year:[0 TO 1850]",
+      "folder": "ia_kaz",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(kaz) AND year:[1851 TO 1900]",
+      "folder": "ia_kaz",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(kaz) AND year:[1901 TO 1950]",
+      "folder": "ia_kaz",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(kaz) AND year:[1951 TO 2100]",
+      "folder": "ia_kaz",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(kaz) AND NOT year:[0 TO 3000]",
+      "folder": "ia_kaz",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(arm) AND year:[0 TO 1850]",
+      "folder": "ia_arm",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(arm) AND year:[1851 TO 1900]",
+      "folder": "ia_arm",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(arm) AND year:[1901 TO 1950]",
+      "folder": "ia_arm",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(arm) AND year:[1951 TO 2100]",
+      "folder": "ia_arm",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(arm) AND NOT year:[0 TO 3000]",
+      "folder": "ia_arm",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(uzb) AND year:[0 TO 1850]",
+      "folder": "ia_uzb",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(uzb) AND year:[1851 TO 1900]",
+      "folder": "ia_uzb",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(uzb) AND year:[1901 TO 1950]",
+      "folder": "ia_uzb",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(uzb) AND year:[1951 TO 2100]",
+      "folder": "ia_uzb",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(uzb) AND NOT year:[0 TO 3000]",
+      "folder": "ia_uzb",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(rus) AND year:[1930 TO 2100]",
+      "folder": "ia_rus",
+      "repeat": false
+    },
+    {
+      "query": "mediatype:(texts) AND format:(\"Text PDF\") AND (subject:(science OR physics OR chemistry OR biology OR mathematics OR geology OR astronomy OR engineering) OR collection:(journals)) AND language:(rus) AND NOT year:[0 TO 3000]",
+      "folder": "ia_rus",
+      "repeat": false
+    }
+  ],
+  "science_gutenberg": [
+    {
+      "topic": "science",
+      "languages": "de",
+      "folder": "gutenberg_de",
+      "repeat": false
+    },
+    {
+      "topic": "mathematics",
+      "languages": "de",
+      "folder": "gutenberg_de",
+      "repeat": false
+    },
+    {
+      "topic": "physics",
+      "languages": "de",
+      "folder": "gutenberg_de",
+      "repeat": false
+    },
+    {
+      "topic": "chemistry",
+      "languages": "de",
+      "folder": "gutenberg_de",
+      "repeat": false
+    },
+    {
+      "topic": "biology",
+      "languages": "de",
+      "folder": "gutenberg_de",
+      "repeat": false
+    },
+    {
+      "topic": "astronomy",
+      "languages": "de",
+      "folder": "gutenberg_de",
+      "repeat": false
+    },
+    {
+      "topic": "geology",
+      "languages": "de",
+      "folder": "gutenberg_de",
+      "repeat": false
+    },
+    {
+      "topic": "botany",
+      "languages": "de",
+      "folder": "gutenberg_de",
+      "repeat": false
+    },
+    {
+      "topic": "zoology",
+      "languages": "de",
+      "folder": "gutenberg_de",
+      "repeat": false
+    },
+    {
+      "topic": "engineering",
+      "languages": "de",
+      "folder": "gutenberg_de",
+      "repeat": false
+    },
+    {
+      "topic": "science",
+      "languages": "fr",
+      "folder": "gutenberg_fr",
+      "repeat": false
+    },
+    {
+      "topic": "mathematics",
+      "languages": "fr",
+      "folder": "gutenberg_fr",
+      "repeat": false
+    },
+    {
+      "topic": "physics",
+      "languages": "fr",
+      "folder": "gutenberg_fr",
+      "repeat": false
+    },
+    {
+      "topic": "chemistry",
+      "languages": "fr",
+      "folder": "gutenberg_fr",
+      "repeat": false
+    },
+    {
+      "topic": "biology",
+      "languages": "fr",
+      "folder": "gutenberg_fr",
+      "repeat": false
+    },
+    {
+      "topic": "astronomy",
+      "languages": "fr",
+      "folder": "gutenberg_fr",
+      "repeat": false
+    },
+    {
+      "topic": "geology",
+      "languages": "fr",
+      "folder": "gutenberg_fr",
+      "repeat": false
+    },
+    {
+      "topic": "botany",
+      "languages": "fr",
+      "folder": "gutenberg_fr",
+      "repeat": false
+    },
+    {
+      "topic": "zoology",
+      "languages": "fr",
+      "folder": "gutenberg_fr",
+      "repeat": false
+    },
+    {
+      "topic": "engineering",
+      "languages": "fr",
+      "folder": "gutenberg_fr",
+      "repeat": false
+    },
+    {
+      "topic": "science",
+      "languages": "es",
+      "folder": "gutenberg_es",
+      "repeat": false
+    },
+    {
+      "topic": "mathematics",
+      "languages": "es",
+      "folder": "gutenberg_es",
+      "repeat": false
+    },
+    {
+      "topic": "physics",
+      "languages": "es",
+      "folder": "gutenberg_es",
+      "repeat": false
+    },
+    {
+      "topic": "chemistry",
+      "languages": "es",
+      "folder": "gutenberg_es",
+      "repeat": false
+    },
+    {
+      "topic": "biology",
+      "languages": "es",
+      "folder": "gutenberg_es",
+      "repeat": false
+    },
+    {
+      "topic": "astronomy",
+      "languages": "es",
+      "folder": "gutenberg_es",
+      "repeat": false
+    },
+    {
+      "topic": "geology",
+      "languages": "es",
+      "folder": "gutenberg_es",
+      "repeat": false
+    },
+    {
+      "topic": "botany",
+      "languages": "es",
+      "folder": "gutenberg_es",
+      "repeat": false
+    },
+    {
+      "topic": "zoology",
+      "languages": "es",
+      "folder": "gutenberg_es",
+      "repeat": false
+    },
+    {
+      "topic": "engineering",
+      "languages": "es",
+      "folder": "gutenberg_es",
+      "repeat": false
+    },
+    {
+      "topic": "science",
+      "languages": "it",
+      "folder": "gutenberg_it",
+      "repeat": false
+    },
+    {
+      "topic": "mathematics",
+      "languages": "it",
+      "folder": "gutenberg_it",
+      "repeat": false
+    },
+    {
+      "topic": "physics",
+      "languages": "it",
+      "folder": "gutenberg_it",
+      "repeat": false
+    },
+    {
+      "topic": "chemistry",
+      "languages": "it",
+      "folder": "gutenberg_it",
+      "repeat": false
+    },
+    {
+      "topic": "biology",
+      "languages": "it",
+      "folder": "gutenberg_it",
+      "repeat": false
+    },
+    {
+      "topic": "astronomy",
+      "languages": "it",
+      "folder": "gutenberg_it",
+      "repeat": false
+    },
+    {
+      "topic": "geology",
+      "languages": "it",
+      "folder": "gutenberg_it",
+      "repeat": false
+    },
+    {
+      "topic": "botany",
+      "languages": "it",
+      "folder": "gutenberg_it",
+      "repeat": false
+    },
+    {
+      "topic": "zoology",
+      "languages": "it",
+      "folder": "gutenberg_it",
+      "repeat": false
+    },
+    {
+      "topic": "engineering",
+      "languages": "it",
+      "folder": "gutenberg_it",
+      "repeat": false
+    },
+    {
+      "topic": "science",
+      "languages": "nl",
+      "folder": "gutenberg_nl",
+      "repeat": false
+    },
+    {
+      "topic": "mathematics",
+      "languages": "nl",
+      "folder": "gutenberg_nl",
+      "repeat": false
+    },
+    {
+      "topic": "physics",
+      "languages": "nl",
+      "folder": "gutenberg_nl",
+      "repeat": false
+    },
+    {
+      "topic": "chemistry",
+      "languages": "nl",
+      "folder": "gutenberg_nl",
+      "repeat": false
+    },
+    {
+      "topic": "biology",
+      "languages": "nl",
+      "folder": "gutenberg_nl",
+      "repeat": false
+    },
+    {
+      "topic": "astronomy",
+      "languages": "nl",
+      "folder": "gutenberg_nl",
+      "repeat": false
+    },
+    {
+      "topic": "geology",
+      "languages": "nl",
+      "folder": "gutenberg_nl",
+      "repeat": false
+    },
+    {
+      "topic": "botany",
+      "languages": "nl",
+      "folder": "gutenberg_nl",
+      "repeat": false
+    },
+    {
+      "topic": "zoology",
+      "languages": "nl",
+      "folder": "gutenberg_nl",
+      "repeat": false
+    },
+    {
+      "topic": "engineering",
+      "languages": "nl",
+      "folder": "gutenberg_nl",
+      "repeat": false
+    },
+    {
+      "topic": "science",
+      "languages": "pt",
+      "folder": "gutenberg_pt",
+      "repeat": false
+    },
+    {
+      "topic": "mathematics",
+      "languages": "pt",
+      "folder": "gutenberg_pt",
+      "repeat": false
+    },
+    {
+      "topic": "physics",
+      "languages": "pt",
+      "folder": "gutenberg_pt",
+      "repeat": false
+    },
+    {
+      "topic": "chemistry",
+      "languages": "pt",
+      "folder": "gutenberg_pt",
+      "repeat": false
+    },
+    {
+      "topic": "biology",
+      "languages": "pt",
+      "folder": "gutenberg_pt",
+      "repeat": false
+    },
+    {
+      "topic": "astronomy",
+      "languages": "pt",
+      "folder": "gutenberg_pt",
+      "repeat": false
+    },
+    {
+      "topic": "geology",
+      "languages": "pt",
+      "folder": "gutenberg_pt",
+      "repeat": false
+    },
+    {
+      "topic": "botany",
+      "languages": "pt",
+      "folder": "gutenberg_pt",
+      "repeat": false
+    },
+    {
+      "topic": "zoology",
+      "languages": "pt",
+      "folder": "gutenberg_pt",
+      "repeat": false
+    },
+    {
+      "topic": "engineering",
+      "languages": "pt",
+      "folder": "gutenberg_pt",
+      "repeat": false
+    },
+    {
+      "topic": "science",
+      "languages": "fi",
+      "folder": "gutenberg_fi",
+      "repeat": false
+    },
+    {
+      "topic": "mathematics",
+      "languages": "fi",
+      "folder": "gutenberg_fi",
+      "repeat": false
+    },
+    {
+      "topic": "physics",
+      "languages": "fi",
+      "folder": "gutenberg_fi",
+      "repeat": false
+    },
+    {
+      "topic": "chemistry",
+      "languages": "fi",
+      "folder": "gutenberg_fi",
+      "repeat": false
+    },
+    {
+      "topic": "biology",
+      "languages": "fi",
+      "folder": "gutenberg_fi",
+      "repeat": false
+    },
+    {
+      "topic": "astronomy",
+      "languages": "fi",
+      "folder": "gutenberg_fi",
+      "repeat": false
+    },
+    {
+      "topic": "geology",
+      "languages": "fi",
+      "folder": "gutenberg_fi",
+      "repeat": false
+    },
+    {
+      "topic": "botany",
+      "languages": "fi",
+      "folder": "gutenberg_fi",
+      "repeat": false
+    },
+    {
+      "topic": "zoology",
+      "languages": "fi",
+      "folder": "gutenberg_fi",
+      "repeat": false
+    },
+    {
+      "topic": "engineering",
+      "languages": "fi",
+      "folder": "gutenberg_fi",
+      "repeat": false
+    },
+    {
+      "topic": "science",
+      "languages": "sv",
+      "folder": "gutenberg_sv",
+      "repeat": false
+    },
+    {
+      "topic": "mathematics",
+      "languages": "sv",
+      "folder": "gutenberg_sv",
+      "repeat": false
+    },
+    {
+      "topic": "physics",
+      "languages": "sv",
+      "folder": "gutenberg_sv",
+      "repeat": false
+    },
+    {
+      "topic": "chemistry",
+      "languages": "sv",
+      "folder": "gutenberg_sv",
+      "repeat": false
+    },
+    {
+      "topic": "biology",
+      "languages": "sv",
+      "folder": "gutenberg_sv",
+      "repeat": false
+    },
+    {
+      "topic": "astronomy",
+      "languages": "sv",
+      "folder": "gutenberg_sv",
+      "repeat": false
+    },
+    {
+      "topic": "geology",
+      "languages": "sv",
+      "folder": "gutenberg_sv",
+      "repeat": false
+    },
+    {
+      "topic": "botany",
+      "languages": "sv",
+      "folder": "gutenberg_sv",
+      "repeat": false
+    },
+    {
+      "topic": "zoology",
+      "languages": "sv",
+      "folder": "gutenberg_sv",
+      "repeat": false
+    },
+    {
+      "topic": "engineering",
+      "languages": "sv",
+      "folder": "gutenberg_sv",
+      "repeat": false
+    },
+    {
+      "topic": "science",
+      "languages": "da",
+      "folder": "gutenberg_da",
+      "repeat": false
+    },
+    {
+      "topic": "mathematics",
+      "languages": "da",
+      "folder": "gutenberg_da",
+      "repeat": false
+    },
+    {
+      "topic": "physics",
+      "languages": "da",
+      "folder": "gutenberg_da",
+      "repeat": false
+    },
+    {
+      "topic": "chemistry",
+      "languages": "da",
+      "folder": "gutenberg_da",
+      "repeat": false
+    },
+    {
+      "topic": "biology",
+      "languages": "da",
+      "folder": "gutenberg_da",
+      "repeat": false
+    },
+    {
+      "topic": "astronomy",
+      "languages": "da",
+      "folder": "gutenberg_da",
+      "repeat": false
+    },
+    {
+      "topic": "geology",
+      "languages": "da",
+      "folder": "gutenberg_da",
+      "repeat": false
+    },
+    {
+      "topic": "botany",
+      "languages": "da",
+      "folder": "gutenberg_da",
+      "repeat": false
+    },
+    {
+      "topic": "zoology",
+      "languages": "da",
+      "folder": "gutenberg_da",
+      "repeat": false
+    },
+    {
+      "topic": "engineering",
+      "languages": "da",
+      "folder": "gutenberg_da",
+      "repeat": false
+    },
+    {
+      "topic": "science",
+      "languages": "la",
+      "folder": "gutenberg_la",
+      "repeat": false
+    },
+    {
+      "topic": "mathematics",
+      "languages": "la",
+      "folder": "gutenberg_la",
+      "repeat": false
+    },
+    {
+      "topic": "physics",
+      "languages": "la",
+      "folder": "gutenberg_la",
+      "repeat": false
+    },
+    {
+      "topic": "chemistry",
+      "languages": "la",
+      "folder": "gutenberg_la",
+      "repeat": false
+    },
+    {
+      "topic": "biology",
+      "languages": "la",
+      "folder": "gutenberg_la",
+      "repeat": false
+    },
+    {
+      "topic": "astronomy",
+      "languages": "la",
+      "folder": "gutenberg_la",
+      "repeat": false
+    },
+    {
+      "topic": "geology",
+      "languages": "la",
+      "folder": "gutenberg_la",
+      "repeat": false
+    },
+    {
+      "topic": "botany",
+      "languages": "la",
+      "folder": "gutenberg_la",
+      "repeat": false
+    },
+    {
+      "topic": "zoology",
+      "languages": "la",
+      "folder": "gutenberg_la",
+      "repeat": false
+    },
+    {
+      "topic": "engineering",
+      "languages": "la",
+      "folder": "gutenberg_la",
+      "repeat": false
+    },
+    {
+      "topic": "science",
+      "languages": "pl",
+      "folder": "gutenberg_pl",
+      "repeat": false
+    },
+    {
+      "topic": "mathematics",
+      "languages": "pl",
+      "folder": "gutenberg_pl",
+      "repeat": false
+    },
+    {
+      "topic": "physics",
+      "languages": "pl",
+      "folder": "gutenberg_pl",
+      "repeat": false
+    },
+    {
+      "topic": "chemistry",
+      "languages": "pl",
+      "folder": "gutenberg_pl",
+      "repeat": false
+    },
+    {
+      "topic": "biology",
+      "languages": "pl",
+      "folder": "gutenberg_pl",
+      "repeat": false
+    },
+    {
+      "topic": "astronomy",
+      "languages": "pl",
+      "folder": "gutenberg_pl",
+      "repeat": false
+    },
+    {
+      "topic": "geology",
+      "languages": "pl",
+      "folder": "gutenberg_pl",
+      "repeat": false
+    },
+    {
+      "topic": "botany",
+      "languages": "pl",
+      "folder": "gutenberg_pl",
+      "repeat": false
+    },
+    {
+      "topic": "zoology",
+      "languages": "pl",
+      "folder": "gutenberg_pl",
+      "repeat": false
+    },
+    {
+      "topic": "engineering",
+      "languages": "pl",
+      "folder": "gutenberg_pl",
+      "repeat": false
+    },
+    {
+      "topic": "science",
+      "languages": "hu",
+      "folder": "gutenberg_hu",
+      "repeat": false
+    },
+    {
+      "topic": "mathematics",
+      "languages": "hu",
+      "folder": "gutenberg_hu",
+      "repeat": false
+    },
+    {
+      "topic": "physics",
+      "languages": "hu",
+      "folder": "gutenberg_hu",
+      "repeat": false
+    },
+    {
+      "topic": "chemistry",
+      "languages": "hu",
+      "folder": "gutenberg_hu",
+      "repeat": false
+    },
+    {
+      "topic": "biology",
+      "languages": "hu",
+      "folder": "gutenberg_hu",
+      "repeat": false
+    },
+    {
+      "topic": "astronomy",
+      "languages": "hu",
+      "folder": "gutenberg_hu",
+      "repeat": false
+    },
+    {
+      "topic": "geology",
+      "languages": "hu",
+      "folder": "gutenberg_hu",
+      "repeat": false
+    },
+    {
+      "topic": "botany",
+      "languages": "hu",
+      "folder": "gutenberg_hu",
+      "repeat": false
+    },
+    {
+      "topic": "zoology",
+      "languages": "hu",
+      "folder": "gutenberg_hu",
+      "repeat": false
+    },
+    {
+      "topic": "engineering",
+      "languages": "hu",
+      "folder": "gutenberg_hu",
+      "repeat": false
+    },
+    {
+      "topic": "science",
+      "languages": "ca",
+      "folder": "gutenberg_ca",
+      "repeat": false
+    },
+    {
+      "topic": "mathematics",
+      "languages": "ca",
+      "folder": "gutenberg_ca",
+      "repeat": false
+    },
+    {
+      "topic": "physics",
+      "languages": "ca",
+      "folder": "gutenberg_ca",
+      "repeat": false
+    },
+    {
+      "topic": "chemistry",
+      "languages": "ca",
+      "folder": "gutenberg_ca",
+      "repeat": false
+    },
+    {
+      "topic": "biology",
+      "languages": "ca",
+      "folder": "gutenberg_ca",
+      "repeat": false
+    },
+    {
+      "topic": "astronomy",
+      "languages": "ca",
+      "folder": "gutenberg_ca",
+      "repeat": false
+    },
+    {
+      "topic": "geology",
+      "languages": "ca",
+      "folder": "gutenberg_ca",
+      "repeat": false
+    },
+    {
+      "topic": "botany",
+      "languages": "ca",
+      "folder": "gutenberg_ca",
+      "repeat": false
+    },
+    {
+      "topic": "zoology",
+      "languages": "ca",
+      "folder": "gutenberg_ca",
+      "repeat": false
+    },
+    {
+      "topic": "engineering",
+      "languages": "ca",
+      "folder": "gutenberg_ca",
+      "repeat": false
+    },
+    {
+      "topic": "science",
+      "languages": "eo",
+      "folder": "gutenberg_eo",
+      "repeat": false
+    },
+    {
+      "topic": "mathematics",
+      "languages": "eo",
+      "folder": "gutenberg_eo",
+      "repeat": false
+    },
+    {
+      "topic": "physics",
+      "languages": "eo",
+      "folder": "gutenberg_eo",
+      "repeat": false
+    },
+    {
+      "topic": "chemistry",
+      "languages": "eo",
+      "folder": "gutenberg_eo",
+      "repeat": false
+    },
+    {
+      "topic": "biology",
+      "languages": "eo",
+      "folder": "gutenberg_eo",
+      "repeat": false
+    },
+    {
+      "topic": "astronomy",
+      "languages": "eo",
+      "folder": "gutenberg_eo",
+      "repeat": false
+    },
+    {
+      "topic": "geology",
+      "languages": "eo",
+      "folder": "gutenberg_eo",
+      "repeat": false
+    },
+    {
+      "topic": "botany",
+      "languages": "eo",
+      "folder": "gutenberg_eo",
+      "repeat": false
+    },
+    {
+      "topic": "zoology",
+      "languages": "eo",
+      "folder": "gutenberg_eo",
+      "repeat": false
+    },
+    {
+      "topic": "engineering",
+      "languages": "eo",
+      "folder": "gutenberg_eo",
+      "repeat": false
+    }
   ]
 }

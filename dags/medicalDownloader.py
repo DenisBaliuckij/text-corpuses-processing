@@ -143,7 +143,8 @@ def fetch_ia(criterion, page, proxy):
                         proxies=proxies, timeout=60, headers=_UA)
     resp.raise_for_status()
     found = resp.json().get('response', {})
-    tag = f"#medical_{criterion.get('folder', 'ia')}.pdf"
+    # tag_prefix: 'medical' (default) or 'science' (scienceDownloader reuses this adapter)
+    tag = f"#{criterion.get('tag_prefix', 'medical')}_{criterion.get('folder', 'ia')}.pdf"
     urls = []
     for doc in found.get('docs', []):
         identifier = doc.get('identifier')
@@ -163,18 +164,22 @@ def fetch_ia(criterion, page, proxy):
 
 # ----------------------------------------------------------------------------- Gutenberg
 def fetch_gutenberg(criterion, page, proxy):
-    """criterion: {topic} - Gutendex 'topic' matches subjects and bookshelves."""
+    """criterion: {topic, languages (optional, e.g. 'de'), folder, tag_prefix} - Gutendex
+    'topic' matches subjects and bookshelves."""
     from gutenbergDownloader import _pick_format
-    resp = requests.get(_GUTENDEX, params={'topic': criterion['topic'], 'page': page},
-                        proxies=_proxies(proxy), timeout=60, headers=_UA)
+    params = {'topic': criterion['topic'], 'page': page}
+    if criterion.get('languages'):
+        params['languages'] = criterion['languages']
+    resp = requests.get(_GUTENDEX, params=params, proxies=_proxies(proxy), timeout=60, headers=_UA)
     resp.raise_for_status()
     data = resp.json()
+    prefix, folder = criterion.get('tag_prefix', 'medical'), criterion.get('folder', 'gutenberg')
     urls = []
     for book in data.get('results', []):
         picked = _pick_format(book.get('formats', {}))
         if picked:
             url, ext = picked
-            urls.append(f'{url}#medical_gutenberg.{ext}')
+            urls.append(f'{url}#{prefix}_{folder}.{ext}')
     return urls, bool(data.get('next'))
 
 
