@@ -78,6 +78,9 @@ SOURCE_PATTERNS = [
     ('medical_ia', '%#medical_ia%'),
     ('medical_gutenberg', '%#medical_gutenberg%'),
     ('medical_cyberleninka', '%#medical_cyberleninka%'),
+    # multilingual science sources (2026-10-11), dags/scienceDownloader.py
+    ('science_ia', '%#science_ia%'),
+    ('science_gutenberg', '%#science_gutenberg%'),
 ]
 
 # Updated 2026-08-19: pdf-downloading-dag.py's downloadOne() writes into
@@ -138,6 +141,57 @@ FTP_FOLDERS = [
     # medical sources (2026-10-11), also on sdb
     'medical3/pmc', 'medical3/pmc_historical', 'medical3/wellcome', 'medical3/ia',
     'medical3/gutenberg', 'medical3/cyberleninka',
+    # multilingual science sources (2026-10-11): science3/<source>_<language>
+    'science3/gutenberg_ca',
+    'science3/gutenberg_da',
+    'science3/gutenberg_de',
+    'science3/gutenberg_eo',
+    'science3/gutenberg_es',
+    'science3/gutenberg_fi',
+    'science3/gutenberg_fr',
+    'science3/gutenberg_hu',
+    'science3/gutenberg_it',
+    'science3/gutenberg_la',
+    'science3/gutenberg_nl',
+    'science3/gutenberg_pl',
+    'science3/gutenberg_pt',
+    'science3/gutenberg_sv',
+    'science3/ia_ara',
+    'science3/ia_arm',
+    'science3/ia_ben',
+    'science3/ia_bul',
+    'science3/ia_chi',
+    'science3/ia_cze',
+    'science3/ia_dan',
+    'science3/ia_dut',
+    'science3/ia_fin',
+    'science3/ia_fre',
+    'science3/ia_geo',
+    'science3/ia_ger',
+    'science3/ia_gre',
+    'science3/ia_guj',
+    'science3/ia_heb',
+    'science3/ia_hin',
+    'science3/ia_hun',
+    'science3/ia_ita',
+    'science3/ia_jpn',
+    'science3/ia_kaz',
+    'science3/ia_kor',
+    'science3/ia_lat',
+    'science3/ia_mar',
+    'science3/ia_nor',
+    'science3/ia_per',
+    'science3/ia_pol',
+    'science3/ia_por',
+    'science3/ia_rum',
+    'science3/ia_rus',
+    'science3/ia_spa',
+    'science3/ia_swe',
+    'science3/ia_tam',
+    'science3/ia_tur',
+    'science3/ia_ukr',
+    'science3/ia_urd',
+    'science3/ia_uzb',
 ]
 
 FTP_ROOT = '/opt/pdfs'  # FileZilla mount point of the 'airflow' FTP user
@@ -171,10 +225,11 @@ DAG_IDS = [
     'download_gutenberg_children', 'download_gutenberg_literature',
     'download_medical_pmc', 'download_medical_wellcome', 'download_medical_ia',
     'download_medical_gutenberg', 'download_medical_cyberleninka',
+    'download_science_ia', 'download_science_gutenberg',
 ]
 
 
-def run_sqlcmd(query: str) -> list[list[str]]:
+def run_sqlcmd(query: str, timeout: int = 60) -> list[list[str]]:
     cmd = [
         'docker', 'exec', MSSQL_CONTAINER,
         '/opt/mssql-tools18/bin/sqlcmd',
@@ -182,7 +237,7 @@ def run_sqlcmd(query: str) -> list[list[str]]:
         '-h', '-1', '-W', '-s', '|',
         '-Q', f'SET NOCOUNT ON; {query}',
     ]
-    result = subprocess.run(cmd, capture_output=True, text=True, timeout=60)
+    result = subprocess.run(cmd, capture_output=True, text=True, timeout=timeout)
     rows = []
     for line in result.stdout.splitlines():
         line = line.strip()
@@ -212,16 +267,20 @@ def get_source_breakdown() -> list[dict]:
     case_expr = 'CASE ' + ' '.join(
         f"WHEN PDFUrl LIKE '{pattern}' THEN '{name}'" for name, pattern in SOURCE_PATTERNS
     ) + " ELSE 'other' END"
+    # 2026-10-11: the CASE (one LIKE '%...%' per source over nvarchar(max) PDFUrl) is computed
+    # once in a derived table instead of twice (SELECT + GROUP BY); with the medical/science
+    # sources added the old form ran past the 60 s sqlcmd timeout and every report run failed.
     query = f"""
-        SELECT {case_expr} AS Source, COUNT(*) AS Total,
+        SELECT Source, COUNT(*) AS Total,
           SUM(CASE WHEN LocationInFileSystem NOT IN ('','NA') THEN 1 ELSE 0 END) AS Downloaded,
           SUM(CASE WHEN LocationInFileSystem = '' THEN 1 ELSE 0 END) AS Pending,
           SUM(CASE WHEN LocationInFileSystem = 'NA' THEN 1 ELSE 0 END) AS NotAvailable
-        FROM TextCorpuses.dbo.PdfDocuments
-        GROUP BY {case_expr}
+        FROM (SELECT {case_expr} AS Source, LocationInFileSystem
+              FROM TextCorpuses.dbo.PdfDocuments) AS t
+        GROUP BY Source
         ORDER BY Downloaded DESC;
     """
-    rows = run_sqlcmd(query)
+    rows = run_sqlcmd(query, timeout=240)
     return [
         {'source': r[0], 'total': int(r[1]), 'downloaded': int(r[2]),
          'pending': int(r[3]), 'na': int(r[4])}
