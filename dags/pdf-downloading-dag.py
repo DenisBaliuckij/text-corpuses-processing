@@ -39,6 +39,7 @@ with DAG(
         from gutenbergDownloader import parse_download_tag
         from medicalDownloader import parse_medical_tag
         from scienceDownloader import parse_science_tag
+        import diskGuard
         import ftpConnector
         from ftpConnector import ftpConnector
 
@@ -61,6 +62,18 @@ with DAG(
             ftpConnector.storeFile(filename, file)
             PdfRepository.save_location(initialUrl, filename)
 
+        # Free-space guard (2026-10-11, see diskGuard.py): nothing is downloaded when the 20 TB
+        # download disk is nearly full; the large-file sources stop earlier.
+        free_pct = diskGuard.free_pct()
+        if not diskGuard.all_allowed(free_pct):
+            print(f'[pdf_downloading] download disk {diskGuard.describe()} - below '
+                  f'{diskGuard.ALL_MIN_FREE_PCT}%, not downloading; backing off {QUEUE_EMPTY_BACKOFF_SECONDS}s')
+            time.sleep(QUEUE_EMPTY_BACKOFF_SECONDS)
+            return
+        heavy_allowed = diskGuard.heavy_allowed(free_pct)
+        if not heavy_allowed:
+            print(f'[pdf_downloading] download disk {diskGuard.describe()} - Wellcome/IA downloads paused')
+
         def downloadOne():
             # Returns whether a URL was actually claimed from the queue (True),
             # as opposed to the queue having nothing left to give out (False) -
@@ -81,6 +94,9 @@ with DAG(
                     # Excluded for now due to a known Springer-specific issue.
                     # Left pending (not marked NA) so it resumes automatically
                     # once re-enabled.
+                    return True
+                if not heavy_allowed and diskGuard.is_heavy_url(url):
+                    # left unsaved: the claim expires and the URL is downloaded once space is freed
                     return True
                 filename = ""
                 ext = 'pdf'
@@ -176,6 +192,12 @@ with DAG(
                 proxieProtocol = proxieResult["proxieProtocol"]
                 proxies = {'http': proxieProtocol.strip() + '://' + str(proxieIp).strip() + ':' + str(proxiePort),
                            'https': proxieProtocol.strip() + '://' + str(proxieIp).strip() + ':' + str(proxiePort)}
+                # Open archives (PMC S3, Wellcome IIIF, Internet Archive, Gutenberg) don't block this
+                # host, but the pool proxies fail on their large files (Wellcome builds 100 MB PDFs on
+                # the fly), so medical/science downloads go direct; CyberLeninka keeps the proxy.
+                if (medical_match or science_match) and folder != 'cyberleninka':
+                    proxies = None
+                    proxieIp = None
                 print(proxies)
                 response = requests.get(url,
                                     data=None,
@@ -187,8 +209,13 @@ with DAG(
                                     stream=True)
                 if (response.status_code == 200 and (medical_match or science_match) and ext != 'html'
                         and 'text/html' in response.headers.get('Content-Type', '')):
-                    print(f'[pdf_downloading] HTML page instead of a .{ext} file, marking NA: {initialUrl}')
-                    PdfRepository.save_location(initialUrl, "NA")
+                    if folder == 'cyberleninka':
+                        # a captcha page served to this proxy: leave the URL unsaved - its claim
+                        # expires after 5 minutes and it is retried through another proxy
+                        print(f'[pdf_downloading] HTML page via proxy, retrying later: {initialUrl}')
+                    else:
+                        print(f'[pdf_downloading] HTML page instead of a .{ext} file, marking NA: {initialUrl}')
+                        PdfRepository.save_location(initialUrl, "NA")
                 elif response.status_code == 200:
                     # stream=True + response.raw (not response.content) so the file
                     # body is never fully buffered in process memory - it's read in
@@ -200,7 +227,7 @@ with DAG(
                     # 2026-07-19 zero-throughput report, §3.1/3.3).
                     response.raw.decode_content = True
                     storeFile(initialUrl, filename, response.raw)
-                    ProxyRepository.mark_success(str(proxieIp).strip())
+                    proxieIp and ProxyRepository.mark_success(str(proxieIp).strip())
 
                 else:
                     response = requests.get(url.replace('.pdf', '_reference.pdf'),
@@ -214,7 +241,7 @@ with DAG(
                     if response.status_code == 200:
                         response.raw.decode_content = True
                         storeFile(initialUrl, filename, response.raw)
-                        ProxyRepository.mark_success(str(proxieIp).strip())
+                        proxieIp and ProxyRepository.mark_success(str(proxieIp).strip())
                     else:
                         PdfRepository.save_location(initialUrl, "NA")
             except Exception as e:

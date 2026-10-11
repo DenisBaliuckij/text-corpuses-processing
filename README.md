@@ -484,6 +484,16 @@ This fetches all `metrics.json` files for the job, produces `metrics_report.html
 
 ---
 
+### Free-space guard
+
+New downloads land on the 20 TB drive (`/mnt/text-corpus`, the `<source>3/` FTP folders). The worker uploads over FTP and can't see that disk, so the host cron `tools/write_disk_status.py` (deployed as `scripts/write_disk_status.py`, every 5 min) writes its free space to `dags/configs/disk_status.json`, and `dags/diskGuard.py` reads it:
+
+- below **15%** free, the large-file sources (Wellcome Collection, Internet Archive medical/science) pause both URL discovery and downloading. Their claimed URLs are left unsaved and retried once space is freed;
+- below **5%** free, `pdf_downloading` downloads nothing;
+- a missing or stale (>2 h) status file pauses the large-file sources only.
+
+Medical/science downloads from the open archives (PMC S3, Wellcome IIIF, Internet Archive, Gutenberg) go direct, without a proxy. CyberLeninka still goes through the proxy pool; when a proxy is served a captcha page, the URL is retried later instead of being marked NA.
+
 ## Database
 
 SQL Server database `TextCorpuses` on `LAPTOP-I91584GB\SQLEXPRESS`.
@@ -1047,6 +1057,16 @@ python dags/tools/generate_metrics_report.py <job_id>
 ```
 
 ---
+
+### Контроль свободного места
+
+Новые загрузки сохраняются на 20-ТБ диск (`/mnt/text-corpus`, FTP-папки `<источник>3/`). Воркер загружает файлы по FTP и этот диск не видит, поэтому cron на сервере (`tools/write_disk_status.py`, развёрнут как `scripts/write_disk_status.py`, раз в 5 минут) записывает свободное место в `dags/configs/disk_status.json`, а `dags/diskGuard.py` его читает:
+
+- при свободном месте ниже **15%** источники с крупными файлами (Wellcome Collection, Internet Archive — медицина и наука) приостанавливают и поиск URL, и загрузку. Уже выданные им URL не помечаются и будут загружены, когда место освободится;
+- при свободном месте ниже **5%** `pdf_downloading` ничего не загружает;
+- если файл статуса отсутствует или устарел (более 2 ч), приостанавливаются только источники с крупными файлами.
+
+Медицинские и научные файлы из открытых архивов (PMC S3, Wellcome IIIF, Internet Archive, Gutenberg) загружаются напрямую, без прокси. CyberLeninka по-прежнему идёт через пул прокси; если прокси получил страницу с капчей, URL повторяется позже, а не помечается как NA.
 
 ## База данных
 

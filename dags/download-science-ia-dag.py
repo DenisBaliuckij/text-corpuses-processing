@@ -17,6 +17,13 @@ with DAG(
 
     @task()
     def download_science_ia():
+        import time
+        import diskGuard
+        if not diskGuard.heavy_allowed():
+            # free-space guard (2026-10-11): large-file source, paused while the download disk is low
+            print(f'[diskGuard] download disk {diskGuard.describe()} - discovery paused for 30 min')
+            time.sleep(30 * 60)
+            return
         from paperDownloader import run_search
         from scienceDownloader import fetch_ia
 
