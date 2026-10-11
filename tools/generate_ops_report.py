@@ -229,6 +229,29 @@ DAG_IDS = [
 ]
 
 
+def get_disk_guard() -> dict | None:
+    """State of the Airflow free-space guard (dags/diskGuard.py, added 2026-10-11): free space
+    of the download disk as written by the write_disk_status.py cron, and what is paused.
+    Loads diskGuard.py itself so the thresholds shown are the ones the DAGs use."""
+    import importlib.util
+    import time
+    try:
+        spec = importlib.util.spec_from_file_location('diskGuard', '/home/s939/apache-airflow/dags/diskGuard.py')
+        guard = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(guard)
+        with open(guard.STATUS_PATH, encoding='utf-8') as f:
+            status = json.load(f)
+    except (OSError, ValueError, AttributeError):
+        return None
+    pct = guard.free_pct()
+    return {
+        'free_pct': pct, 'free_tb': status.get('free_bytes', 0) / 1e12,
+        'age_min': (time.time() - status.get('checked_at', 0)) / 60,
+        'heavy_min': guard.HEAVY_MIN_FREE_PCT, 'all_min': guard.ALL_MIN_FREE_PCT,
+        'heavy_allowed': guard.heavy_allowed(pct), 'all_allowed': guard.all_allowed(pct),
+    }
+
+
 def run_sqlcmd(query: str, timeout: int = 60) -> list[list[str]]:
     cmd = [
         'docker', 'exec', MSSQL_CONTAINER,
@@ -934,7 +957,7 @@ def get_catalog_stats() -> dict:
 def render(sources, grand_total, dag_runs, ftp_stats, host, containers,
            shodhganga_up, paused_states, generated_at, inserted_24h, disks,
            pdf_downloading_runs, recent_throughput, grammar_containers, twirpx_details,
-           grammar_pdf_totals, catalog_stats=None) -> str:
+           grammar_pdf_totals, catalog_stats=None, disk_guard=None) -> str:
     total_24h_downloads = sum(f['recent_24h'] for f in ftp_stats.values())
     total_dag_success = sum(d['success'] for d in dag_runs.values())
     total_dag_failed = sum(d['failed'] for d in dag_runs.values())
@@ -1099,12 +1122,45 @@ def render(sources, grand_total, dag_runs, ftp_stats, host, containers,
     if not shodhganga_up:
         issues.append(('bad', 'Shodhganga недоступна',
                         'shodhganga.inflibnet.ac.in не принимает соединения сейчас, что блокирует поиск для gujarati_science_social.'))
+    if disk_guard is None or disk_guard['free_pct'] is None:
+        issues.append(('warn', 'Контроль свободного места: нет свежих данных',
+                        'dags/configs/disk_status.json отсутствует или старше 2 ч (cron write_disk_status.py не работает?) - '
+                        'Wellcome и Internet Archive (медицина/наука) приостановлены до появления данных.'))
+    elif not disk_guard['all_allowed']:
+        issues.append(('bad', f"Диск загрузок sdb почти заполнен ({disk_guard['free_pct']:.1f}% свободно)",
+                        f"Ниже {disk_guard['all_min']:.0f}% - pdf_downloading не загружает ничего. Освободите место на /mnt/text-corpus."))
+    elif not disk_guard['heavy_allowed']:
+        issues.append(('warn', f"Wellcome / Internet Archive приостановлены ({disk_guard['free_pct']:.1f}% свободно на sdb)",
+                        f"Ниже {disk_guard['heavy_min']:.0f}% свободного места источники с крупными файлами не ищут и не загружают новые файлы; "
+                        'остальные источники продолжают работу. Возобновится автоматически, когда место освободится.'))
     swap_pct = (host['swap_used_gb'] / host['swap_total_gb'] * 100) if host['swap_total_gb'] else 0
     if swap_pct >= 50:
         issues.append(('warn', f'Повышенное использование подкачки (swap) ({swap_pct:.0f}%)',
                         'Коррелирует с более медленным холодным стартом контейнеров на этом сервере из-за конкуренции за дисковый ввод-вывод. Не срочно, но стоит наблюдать.'))
     if not issues:
         issues.append(('good', 'Активных проблем не обнаружено', 'Все отслеживаемые показатели в норме.'))
+
+    if disk_guard is None or disk_guard['free_pct'] is None:
+        guard_state, guard_class = 'нет свежих данных - Wellcome/IA приостановлены', 'bad'
+    elif not disk_guard['all_allowed']:
+        guard_state, guard_class = 'загрузки остановлены', 'bad'
+    elif not disk_guard['heavy_allowed']:
+        guard_state, guard_class = 'Wellcome/IA приостановлены', 'warn'
+    else:
+        guard_state, guard_class = 'все источники загружаются', 'good'
+    guard_free = ('—' if disk_guard is None or disk_guard['free_pct'] is None else
+                  f"{disk_guard['free_pct']:.1f}% ({disk_guard['free_tb']:.1f} ТБ), проверено {disk_guard['age_min']:.0f} мин назад")
+    guard_heavy_min = disk_guard['heavy_min'] if disk_guard else 15
+    guard_all_min = disk_guard['all_min'] if disk_guard else 5
+    disk_guard_html = f"""<div class="table-wrap"><table>
+      <thead><tr><th>Контроль свободного места (sdb)</th><th>Значение</th></tr></thead>
+      <tbody>
+        <tr><td class="name">Свободно</td><td>{guard_free}</td></tr>
+        <tr><td class="name">Состояние</td><td><span class="pill {guard_class}">{guard_state}</span></td></tr>
+        <tr><td class="name">Пороги</td><td>&lt; {guard_heavy_min:.0f}% - пауза Wellcome и Internet Archive (медицина/наука); &lt; {guard_all_min:.0f}% - pdf_downloading не загружает ничего</td></tr>
+        <tr><td class="name">Прокси</td><td>медицина/наука из открытых архивов (PMC, Wellcome, IA, Gutenberg) - напрямую; CyberLeninka - через пул прокси, капча - повтор позже</td></tr>
+      </tbody>
+    </table></div>"""
 
     issue_html = ''.join(
         f'<div class="issue {level}"><div class="issue-head"><span class="issue-title">{html.escape(title)}</span></div>'
@@ -1188,6 +1244,7 @@ def render(sources, grand_total, dag_runs, ftp_stats, host, containers,
       остаются на nvme0n1, кроме перенесённых на sdb (rsync + симлинк); путь на FTP не меняется.
       Колонка «Диск» определяется по реальному пути папки.
     </p>
+    {disk_guard_html}
   </section>
 
   <section>
@@ -1349,11 +1406,12 @@ def main():
     pdf_downloading_runs = get_pdf_downloading_runs()
     recent_throughput = get_recent_throughput()
     catalog_stats = get_catalog_stats()
+    disk_guard = get_disk_guard()
 
     output = render(sources, grand_total, dag_runs, ftp_stats, host, containers,
                      shodhganga_up, paused_states, generated_at, inserted_24h, disks,
                      pdf_downloading_runs, recent_throughput, grammar_containers, twirpx_details,
-                     grammar_pdf_totals, catalog_stats)
+                     grammar_pdf_totals, catalog_stats, disk_guard)
 
     with open(REPORT_OUTPUT_PATH, 'w', encoding='utf-8') as f:
         f.write(output)
